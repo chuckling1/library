@@ -1,0 +1,21 @@
+<Project>
+  <PropertyGroup>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <WarningsNotAsErrors />
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <WarningLevel>0</WarningLevel>
+    <NoWarn>$(NoWarn);StyleCop</NoWarn>
+  </PropertyGroup>
+</Project>

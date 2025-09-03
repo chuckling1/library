@@ -1,0 +1,35 @@
+{
+  "name": "library-fullstack",
+  "version": "1.0.0",
+  "description": "Full-stack Book Library application with AI-assisted development workflow",
+  "scripts": {
+    "setup": "node setup.js",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && dotnet run --project src/LibraryApi",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd backend && dotnet build --configuration Release",
+    "build:frontend": "cd frontend && npm run build",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && dotnet test",
+    "test:frontend": "cd frontend && npm run test",
+    "validate": "npm run validate:backend && npm run validate:frontend",
+    "validate:backend": "cd backend && .\\validate.ps1",
+    "validate:frontend": "cd frontend && node validate.js",
+    "generate-client": "cd frontend && npm run generate-client"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "."
+  },
+  "keywords": ["library", "books", "react", "dotnet", "ai-assisted-development"],
+  "author": "AI-Assisted Development Team",
+  "license": "MIT"
+}

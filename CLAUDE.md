@@ -6,19 +6,50 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Full-stack book library application with C# .NET Core Web API backend and React frontend using Vite. This project demonstrates structured AI-assisted development with strict code quality standards.
 
+## 🚨 CRITICAL: Always Use Latest Stable Versions
+
+**MANDATORY REQUIREMENT**: Before selecting any technology version, you MUST verify and use the latest stable release available at the time of implementation. This applies to:
+
+- **Frameworks**: .NET, React, Vue, Angular, etc.
+- **Build Tools**: Vite, Webpack, esbuild, etc.
+- **Package Managers**: npm, yarn, pnpm versions
+- **Databases**: Entity Framework, Prisma, etc.
+- **Testing**: xUnit, Vitest, Jest, etc.
+- **Languages**: C#, TypeScript, Node.js LTS versions
+
+**Verification Process**:
+1. Check official websites/GitHub releases for latest stable version
+2. Verify LTS (Long Term Support) status where applicable
+3. Ensure compatibility between major version updates
+4. Update documentation to reflect actual versions used
+
+**Examples of Current Latest (as of 2025)**:
+- .NET 9.0 (latest stable)
+- React 19.1 (latest stable) 
+- Node.js 22+ LTS
+- TypeScript 5.7+
+- Vite 6+
+
+**Why This Matters**:
+- Security updates and vulnerability fixes
+- Performance improvements and optimizations  
+- Latest language features and capabilities
+- Community support and ecosystem compatibility
+- Professional development standards
+
 ## Technology Stack
 
 **Backend:**
-- .NET Core 8+ Web API
-- Entity Framework Core with SQLite
-- xUnit for testing
+- .NET 9.0+ Web API (latest stable)
+- Entity Framework Core (latest compatible)
+- xUnit (latest) for testing
 - Swagger/OpenAPI for documentation
 
 **Frontend:**
-- React 18+ with TypeScript
-- Vite for build tooling
-- Vitest for testing
-- Minimal state management (Context API or Zustand)
+- React 19+ with TypeScript (latest stable)
+- Vite (latest) for build tooling
+- Vitest (latest) for testing
+- Modern state management solutions
 
 ## Development Commands
 

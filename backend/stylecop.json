@@ -1,0 +1,21 @@
+{
+  "$schema": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json",
+  "settings": {
+    "documentationRules": {
+      "companyName": "Library API",
+      "copyrightText": "Copyright (c) {companyName}. All rights reserved.",
+      "documentExposedElements": false,
+      "documentInternalElements": false
+    },
+    "orderingRules": {
+      "usingDirectivesPlacement": "outsideNamespace"
+    },
+    "namingRules": {
+      "allowCommonHungarianPrefixes": true,
+      "allowedHungarianPrefixes": ["_"]
+    },
+    "layoutRules": {
+      "newlineAtEndOfFile": "allow"
+    }
+  }
+}
