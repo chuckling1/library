@@ -260,6 +260,29 @@ Entry Point (/)
     └── Validation Errors → Stay on form
 ```
 
+### Visual Design: Book Card System
+
+**Cover Image Strategy:**
+- **Primary**: User-uploaded book covers (future enhancement)
+- **Fallback**: Generated covers with:
+  - Gradient backgrounds based on genre/title hash
+  - Title and Author text overlay with readable typography
+  - Consistent color palette (5-6 predefined gradients)
+  - Book-like styling with subtle border/shadow
+
+**Card Interaction States:**
+- **Default**: Subtle shadow, clean presentation
+- **Hover**: Elevated shadow, slight scale (1.02x), action menu fade-in
+- **Focus**: Accessible outline, keyboard navigation support
+- **Loading**: Skeleton placeholder with shimmer effect
+
+**Responsive Behavior:**
+- **Desktop (1200px+)**: 4-6 cards per row, 180px width per card
+- **Tablet (768-1199px)**: 3-4 cards per row, 160px width per card  
+- **Mobile (320-767px)**: 1-2 cards per row, 140px width per card
+- **Vertical scrolling**: Natural page scroll with optional infinite scroll
+- **Grid layout**: CSS Grid or Flexbox with responsive breakpoints
+
 ### User Journey: Add New Book
 
 1. **Entry**: User clicks "Add Book" button on Book List
@@ -269,7 +292,7 @@ Entry Point (/)
 5. **Rating Input**: 1-5 star selector
 6. **Date Input**: Date picker with validation
 7. **Submit**: 
-   - **Success**: Redirect to book list with success message
+   - **Success**: Redirect to book list with success message and new card highlighted
    - **Error**: Display field-level validation errors
 8. **Cancel**: Return to book list without saving
 
@@ -451,18 +474,30 @@ const useGenres = () => {
 - Active filters display as removable chips below
 
 **Books Display Area:**
-- View toggle: Grid/List view (top right)
-- **Grid View**: Responsive cards (3-4 per row desktop, 2 tablet, 1 mobile)
-  - Book cover placeholder or generated cover
-  - Title (bold, truncated)
-  - Author (secondary text)
-  - Genres (small chips, max 3 shown + "...")
-  - Star rating (read-only display)
-  - Action buttons: Edit | Delete (on hover/focus)
-- **List View**: Table format
-  - Columns: Title | Author | Genres | Published | Rating | Actions
-  - Sortable headers
-  - Row hover states
+- **Primary View**: Responsive card grid layout (4-6 cards per row)
+- **Card Design**: 
+  - Aspect ratio: ~3:4 (book-like proportions)
+  - Prominent cover image (generated or placeholder with title/author overlay)
+  - Card shadows and subtle hover animations
+  - Size: ~180px width × 240px height (desktop)
+- **Card Content**:
+  - **Cover Area** (70% of card height):
+    - Book cover image or generated colored background
+    - Overlay text if no image: Title + Author (readable typography)
+  - **Info Area** (30% of card height):
+    - Title (bold, 2 lines max with ellipsis)
+    - Author (secondary text, 1 line with ellipsis)
+    - Star rating (compact, bottom left)
+    - Action menu (3-dot, bottom right, visible on hover)
+- **Layout Behavior**:
+  - **Desktop**: 4-6 cards per row (responsive based on screen width)
+  - **Tablet**: 3-4 cards per row  
+  - **Mobile**: 1-2 cards per row
+  - **Vertical scrolling** with infinite scroll or pagination
+  - Grid gaps for clean spacing between cards
+- **Alternative List View** (toggle option):
+  - Compact table format for power users
+  - Columns: Cover | Title | Author | Genres | Published | Rating | Actions
 
 **Footer Section:**
 - Pagination controls

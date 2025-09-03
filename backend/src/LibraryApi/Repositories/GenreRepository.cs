@@ -30,7 +30,7 @@ public class GenreRepository : IGenreRepository
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            query = query.Where(g => g.Name.Contains(searchTerm));
+            query = query.Where(g => EF.Functions.Like(g.Name.ToLower(), $"%{searchTerm.ToLower()}%"));
         }
 
         return await query.OrderBy(g => g.Name).ToListAsync(cancellationToken);
@@ -41,7 +41,7 @@ public class GenreRepository : IGenreRepository
     {
         return await _context.Genres
             .AsNoTracking()
-            .FirstOrDefaultAsync(g => g.Name == name, cancellationToken);
+            .FirstOrDefaultAsync(g => g.Name.ToLower() == name.ToLower(), cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -62,10 +62,18 @@ public class GenreRepository : IGenreRepository
     public async Task<IEnumerable<Genre>> EnsureGenresExistAsync(IEnumerable<string> genreNames, CancellationToken cancellationToken = default)
     {
         var genres = new List<Genre>();
+        var processedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         
         foreach (var genreName in genreNames)
         {
             var normalizedName = genreName.Trim();
+            
+            // Skip duplicates (case-insensitive)
+            if (!processedNames.Add(normalizedName))
+            {
+                continue;
+            }
+            
             var existing = await GetGenreByNameAsync(normalizedName, cancellationToken);
             
             if (existing != null)

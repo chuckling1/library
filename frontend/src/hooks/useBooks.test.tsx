@@ -1,0 +1,312 @@
+import React from 'react';
+import { renderHook, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { ReactNode } from 'react';
+import type { Book, CreateBookRequest, UpdateBookRequest } from '../generated/api';
+import {
+  useBooks,
+  useBook,
+  useBookStats,
+  useCreateBook,
+  useUpdateBook,
+  useDeleteBook,
+  getBookGenres,
+  formatDate,
+  formatRating,
+  type BooksFilters
+} from './useBooks';
+
+// Use vi.hoisted to create mocks that are hoisted to the top
+const { mockApiBooksGet, mockApiBooksIdDelete, mockApiBooksIdGet, mockApiBooksIdPut, mockApiBooksPost, mockApiBooksStatsGet } = vi.hoisted(() => {
+  const mocks = {
+    mockApiBooksGet: vi.fn(),
+    mockApiBooksIdDelete: vi.fn(),
+    mockApiBooksIdGet: vi.fn(),
+    mockApiBooksIdPut: vi.fn(),
+    mockApiBooksPost: vi.fn(),
+    mockApiBooksStatsGet: vi.fn(),
+  };
+  return mocks;
+});
+
+// Mock the API module
+vi.mock('../generated/api', () => {
+  return {
+    BooksApi: vi.fn().mockImplementation(() => ({
+      apiBooksGet: mockApiBooksGet,
+      apiBooksIdDelete: mockApiBooksIdDelete,
+      apiBooksIdGet: mockApiBooksIdGet,
+      apiBooksIdPut: mockApiBooksIdPut,
+      apiBooksPost: mockApiBooksPost,
+      apiBooksStatsGet: mockApiBooksStatsGet,
+    })),
+    Configuration: vi.fn()
+  };
+});
+
+const createMockBook = (overrides: Partial<Book> = {}): Book => ({
+  id: '123',
+  title: 'Test Book',
+  author: 'Test Author',
+  publishedDate: '2023-01-01T00:00:00.000Z',
+  rating: 4,
+  edition: '1st Edition',
+  isbn: '978-0123456789',
+  createdAt: '2023-06-01T00:00:00.000Z',
+  updatedAt: '2023-06-01T00:00:00.000Z',
+  bookGenres: [
+    { bookId: '123', genreName: 'Fiction' },
+    { bookId: '123', genreName: 'Mystery' }
+  ],
+  ...overrides,
+});
+
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+      mutations: {
+        retry: false,
+      },
+    },
+  });
+  
+  return ({ children }: { children: ReactNode }): React.JSX.Element => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+};
+
+describe('useBooks hook', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe('useBooks', () => {
+    it('fetches books with default filters', async () => {
+      const mockBooks = [createMockBook(), createMockBook({ id: '456', title: 'Another Book' })];
+      mockApiBooksGet.mockResolvedValue({ data: mockBooks });
+
+      const { result } = renderHook(() => useBooks(), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(mockApiBooksGet).toHaveBeenCalledWith(
+        undefined, // genres
+        undefined, // rating
+        undefined, // search
+        undefined, // sortBy
+        undefined, // sortDirection
+        undefined, // page
+        undefined  // pageSize
+      );
+      expect(result.current.data).toEqual(mockBooks);
+    });
+
+    it('fetches books with custom filters', async () => {
+      const filters: BooksFilters = {
+        genres: ['Fiction'],
+        rating: 4,
+        search: 'test',
+        sortBy: 'title',
+        sortDirection: 'asc',
+        page: 2,
+        pageSize: 10
+      };
+      
+      mockApiBooksGet.mockResolvedValue({ data: [] });
+
+      renderHook(() => useBooks(filters), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(mockApiBooksGet).toHaveBeenCalledWith(
+          ['Fiction'], // genres
+          4,           // rating
+          'test',      // search
+          'title',     // sortBy
+          'asc',       // sortDirection
+          2,           // page
+          10           // pageSize
+        );
+      });
+    });
+  });
+
+  describe('useBook', () => {
+    it('fetches a single book by ID', async () => {
+      const mockBook = createMockBook();
+      mockApiBooksIdGet.mockResolvedValue({ data: mockBook });
+
+      const { result } = renderHook(() => useBook('123'), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(mockApiBooksIdGet).toHaveBeenCalledWith('123');
+      expect(result.current.data).toEqual(mockBook);
+    });
+
+    it('is disabled when no ID is provided', () => {
+      renderHook(() => useBook(''), {
+        wrapper: createWrapper(),
+      });
+
+      expect(mockApiBooksIdGet).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('useBookStats', () => {
+    it('fetches book statistics', async () => {
+      const mockStats = { totalBooks: 100, averageRating: 4.2 };
+      mockApiBooksStatsGet.mockResolvedValue({ data: mockStats });
+
+      const { result } = renderHook(() => useBookStats(), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(mockApiBooksStatsGet).toHaveBeenCalled();
+      expect(result.current.data).toEqual(mockStats);
+    });
+  });
+
+  describe('useCreateBook', () => {
+    it('creates a new book', async () => {
+      const createRequest: CreateBookRequest = {
+        title: 'New Book',
+        author: 'New Author',
+        publishedDate: '2023-01-01T00:00:00.000Z',
+        genres: ['Fiction']
+      };
+      const createdBook = createMockBook(createRequest);
+      
+      mockApiBooksPost.mockResolvedValue({ data: createdBook });
+
+      const { result } = renderHook(() => useCreateBook(), {
+        wrapper: createWrapper(),
+      });
+
+      await result.current.mutateAsync(createRequest);
+
+      expect(mockApiBooksPost).toHaveBeenCalledWith(createRequest);
+    });
+  });
+
+  describe('useUpdateBook', () => {
+    it('updates an existing book', async () => {
+      const updateData = {
+        id: '123',
+        bookData: {
+          title: 'Updated Book',
+          author: 'Updated Author',
+          publishedDate: '2023-01-01T00:00:00.000Z',
+          genres: ['Fiction']
+        } as UpdateBookRequest
+      };
+      const updatedBook = createMockBook({ id: '123', title: 'Updated Book' });
+      
+      mockApiBooksIdPut.mockResolvedValue({ data: updatedBook });
+
+      const { result } = renderHook(() => useUpdateBook(), {
+        wrapper: createWrapper(),
+      });
+
+      await result.current.mutateAsync(updateData);
+
+      expect(mockApiBooksIdPut).toHaveBeenCalledWith('123', updateData.bookData);
+    });
+  });
+
+  describe('useDeleteBook', () => {
+    it('deletes a book', async () => {
+      mockApiBooksIdDelete.mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useDeleteBook(), {
+        wrapper: createWrapper(),
+      });
+
+      await result.current.mutateAsync('123');
+
+      expect(mockApiBooksIdDelete).toHaveBeenCalledWith('123');
+    });
+  });
+});
+
+describe('Helper functions', () => {
+  describe('getBookGenres', () => {
+    it('extracts genre names from book genres', () => {
+      const book = createMockBook();
+      const genres = getBookGenres(book);
+      
+      expect(genres).toEqual(['Fiction', 'Mystery']);
+    });
+
+    it('returns empty array when bookGenres is null', () => {
+      const book = createMockBook({ bookGenres: null });
+      const genres = getBookGenres(book);
+      
+      expect(genres).toEqual([]);
+    });
+
+    it('returns empty array when bookGenres is undefined', () => {
+      const book = createMockBook({ bookGenres: undefined });
+      const genres = getBookGenres(book);
+      
+      expect(genres).toEqual([]);
+    });
+
+    it('handles genres with null names', () => {
+      const book = createMockBook({
+        bookGenres: [
+          { bookId: '123', genreName: 'Fiction' },
+          { bookId: '123', genreName: null }
+        ]
+      });
+      const genres = getBookGenres(book);
+      
+      expect(genres).toEqual(['Fiction', '']);
+    });
+  });
+
+  describe('formatDate', () => {
+    it('formats ISO date string to locale date', () => {
+      const formatted = formatDate('2023-12-25T10:30:00.000Z');
+      expect(formatted).toBe('12/25/2023');
+    });
+
+    it('formats different date correctly', () => {
+      const formatted = formatDate('2023-01-01T00:00:00.000Z');
+      expect(formatted).toBe('12/31/2022');
+    });
+  });
+
+  describe('formatRating', () => {
+    it('formats rating as star string', () => {
+      expect(formatRating(0)).toBe('☆☆☆☆☆');
+      expect(formatRating(1)).toBe('★☆☆☆☆');
+      expect(formatRating(2)).toBe('★★☆☆☆');
+      expect(formatRating(3)).toBe('★★★☆☆');
+      expect(formatRating(4)).toBe('★★★★☆');
+      expect(formatRating(5)).toBe('★★★★★');
+    });
+
+    it('handles edge cases', () => {
+      expect(() => formatRating(-1)).toThrow('Invalid count value: -1');
+      expect(formatRating(6)).toBe('★★★★★☆');
+    });
+  });
+});

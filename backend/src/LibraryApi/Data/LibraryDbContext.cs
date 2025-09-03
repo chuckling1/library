@@ -76,17 +76,18 @@ public class LibraryDbContext : DbContext
         });
 
         // Seed system genres
+        var seedDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         modelBuilder.Entity<Genre>().HasData(
-            new Genre { Name = "Fiction", IsSystemGenre = true, CreatedAt = DateTime.UtcNow },
-            new Genre { Name = "Non-Fiction", IsSystemGenre = true, CreatedAt = DateTime.UtcNow },
-            new Genre { Name = "Science", IsSystemGenre = true, CreatedAt = DateTime.UtcNow },
-            new Genre { Name = "Technology", IsSystemGenre = true, CreatedAt = DateTime.UtcNow },
-            new Genre { Name = "Biography", IsSystemGenre = true, CreatedAt = DateTime.UtcNow },
-            new Genre { Name = "History", IsSystemGenre = true, CreatedAt = DateTime.UtcNow },
-            new Genre { Name = "Romance", IsSystemGenre = true, CreatedAt = DateTime.UtcNow },
-            new Genre { Name = "Mystery", IsSystemGenre = true, CreatedAt = DateTime.UtcNow },
-            new Genre { Name = "Fantasy", IsSystemGenre = true, CreatedAt = DateTime.UtcNow },
-            new Genre { Name = "Self-Help", IsSystemGenre = true, CreatedAt = DateTime.UtcNow }
+            new Genre { Name = "Fiction", IsSystemGenre = true, CreatedAt = seedDate },
+            new Genre { Name = "Non-Fiction", IsSystemGenre = true, CreatedAt = seedDate },
+            new Genre { Name = "Science", IsSystemGenre = true, CreatedAt = seedDate },
+            new Genre { Name = "Technology", IsSystemGenre = true, CreatedAt = seedDate },
+            new Genre { Name = "Biography", IsSystemGenre = true, CreatedAt = seedDate },
+            new Genre { Name = "History", IsSystemGenre = true, CreatedAt = seedDate },
+            new Genre { Name = "Romance", IsSystemGenre = true, CreatedAt = seedDate },
+            new Genre { Name = "Mystery", IsSystemGenre = true, CreatedAt = seedDate },
+            new Genre { Name = "Fantasy", IsSystemGenre = true, CreatedAt = seedDate },
+            new Genre { Name = "Self-Help", IsSystemGenre = true, CreatedAt = seedDate }
         );
     }
 
