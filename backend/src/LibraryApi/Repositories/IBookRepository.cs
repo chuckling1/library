@@ -38,6 +38,14 @@ public interface IBookRepository
     Task<Book?> GetBookByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets a book by its identifier for updating (with tracking enabled).
+    /// </summary>
+    /// <param name="id">The book identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The book if found, null otherwise, with tracking enabled for updates.</returns>
+    Task<Book?> GetBookForUpdateAsync(Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Creates a new book.
     /// </summary>
     /// <param name="book">The book to create.</param>

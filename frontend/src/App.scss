@@ -1,0 +1,77 @@
+@import 'styles/variables';
+
+.app {
+  min-height: 100vh;
+  background: $bg-primary;
+}
+
+.header {
+  background: $bg-surface;
+  border-bottom: 1px solid $border-color;
+  padding: $spacing-lg $spacing-xl;
+  
+  .header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  h1 {
+    margin: 0;
+    color: $text-primary;
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+  }
+}
+
+.nav {
+  display: flex;
+  gap: $spacing-md;
+
+  a {
+    color: $text-secondary;
+    text-decoration: none;
+    padding: $spacing-sm $spacing-md;
+    border-radius: $border-radius-md;
+    font-weight: $font-weight-medium;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+
+    &:hover {
+      color: $text-primary;
+      background: $bg-primary;
+      border-color: $border-color;
+    }
+
+    &.active {
+      background: $accent-primary;
+      color: $bg-primary;
+      border-color: $accent-primary;
+    }
+  }
+}
+
+.main-content {
+  min-height: calc(100vh - 80px); // Adjust based on header height
+}
+
+// Loading states
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: $spacing-xxl;
+  color: $text-secondary;
+}
+
+// Error states
+.error {
+  background-color: rgba(244, 63, 94, 0.1);
+  border: 1px solid $semantic-danger;
+  color: $text-primary;
+  padding: $spacing-md;
+  border-radius: $border-radius-md;
+  margin-bottom: $spacing-lg;
+}

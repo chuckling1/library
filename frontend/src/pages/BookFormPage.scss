@@ -1,0 +1,112 @@
+@import '../styles/variables';
+
+// Page wrapper for BookFormPage
+.book-form-page {
+  background-color: $bg-primary;
+  min-height: 100vh;
+  padding: $spacing-lg 0;
+}
+
+// Loading container
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: $spacing-xl;
+  text-align: center;
+  background-color: $bg-primary;
+
+  .loading-spinner {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-medium;
+    color: $accent-primary;
+    animation: pulse 1.5s ease-in-out infinite;
+
+    &::after {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      margin-left: $spacing-sm;
+      border: 2px solid transparent;
+      border-top: 2px solid $accent-primary;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  }
+}
+
+// Error container
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: $spacing-xl;
+  text-align: center;
+  background-color: $bg-primary;
+
+  h2 {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $text-primary;
+    margin-bottom: $spacing-md;
+  }
+
+  p {
+    font-size: $font-size-sm;
+    color: $text-secondary;
+    margin-bottom: $spacing-lg;
+    max-width: 500px;
+    line-height: 1.5;
+  }
+
+  .btn {
+    min-width: 140px;
+  }
+}
+
+// Animations
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .book-form-page {
+    padding: $spacing-md 0;
+  }
+
+  .loading-container,
+  .error-container {
+    padding: $spacing-lg;
+    min-height: 50vh;
+  }
+
+  .error-container {
+    h2 {
+      font-size: $font-size-lg;
+    }
+
+    p {
+      font-size: $font-size-xs;
+    }
+  }
+}

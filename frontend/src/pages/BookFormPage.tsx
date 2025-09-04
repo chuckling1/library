@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useBook } from '../hooks/useBooks';
 import BookForm from '../components/BookForm';
+import './BookFormPage.scss';
 
 const BookFormPage: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
@@ -41,7 +42,11 @@ const BookFormPage: React.FC = () => {
     );
   }
 
-  return <BookForm book={book} isEditing={isEditing} />;
+  return (
+    <div className="book-form-page">
+      <BookForm book={book} isEditing={isEditing} />
+    </div>
+  );
 };
 
 export default BookFormPage

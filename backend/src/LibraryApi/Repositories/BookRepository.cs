@@ -87,6 +87,20 @@ public class BookRepository : IBookRepository
             .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
     }
 
+    /// <summary>
+    /// Gets a book by ID for updating (with tracking enabled).
+    /// </summary>
+    /// <param name="id">The book ID.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The book if found, with tracking enabled for updates.</returns>
+    public async Task<Book?> GetBookForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Books
+            .Include(b => b.BookGenres)
+            .ThenInclude(bg => bg.Genre)
+            .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
+    }
+
     /// <inheritdoc/>
     public async Task<Book> CreateBookAsync(Book book, CancellationToken cancellationToken = default)
     {

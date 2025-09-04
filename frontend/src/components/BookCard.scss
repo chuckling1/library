@@ -1,0 +1,240 @@
+@import '../styles/variables';
+
+// Main Container
+.book-card {
+  display: flex;
+  gap: $spacing-lg;
+  background-color: $bg-surface;
+  padding: $spacing-lg;
+  border-radius: $border-radius-md;
+  border: 1px solid $border-color;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    box-shadow: $box-shadow-md;
+    border-color: $accent-primary;
+    
+    .book-card__actions {
+      opacity: 1;
+    }
+  }
+}
+
+// Left Column - Cover Image
+.book-card__cover {
+  width: 120px;
+  height: 180px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  border-radius: $border-radius-sm;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: $border-radius-sm;
+    display: block;
+  }
+
+  .book-cover-fallback {
+    display: none;
+    width: 100%;
+    height: 100%;
+    
+    &.show {
+      display: block;
+    }
+  }
+}
+
+// Right Column - Content
+.book-card__content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-height: 180px; // Match cover height
+}
+
+// Header section with title and actions
+.book-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-sm;
+}
+
+.book-card__title-section {
+  flex: 1;
+  margin-right: $spacing-md;
+}
+
+// Title
+.book-card__title {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $text-primary;
+  margin: 0 0 $spacing-xs 0;
+  line-height: 1.3;
+}
+
+// Author
+.book-card__author {
+  font-size: $font-size-sm;
+  color: $text-secondary;
+  margin: 0;
+}
+
+// Rating
+.book-card__rating {
+  margin-bottom: $spacing-md;
+
+  .rating-stars {
+    color: $accent-primary;
+    font-weight: $font-weight-medium;
+    font-size: $font-size-sm;
+  }
+}
+
+// Tags Container
+.book-card__tags-container {
+  margin-bottom: $spacing-md;
+  flex: 1;
+}
+
+.book-card__tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+}
+
+// Individual Tag Pills
+.book-card__tag {
+  font-size: $font-size-xs;
+  color: $text-secondary;
+  background-color: $bg-primary;
+  padding: $spacing-xs $spacing-sm;
+  border: 1px solid $border-color;
+  border-radius: 12px; // More pill-like
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  line-height: 1.2;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: $border-color;
+    color: $text-primary;
+  }
+
+  // Special styling for expand/collapse buttons
+  &--more,
+  &--less {
+    background-color: $accent-primary;
+    color: $bg-primary;
+    cursor: pointer;
+    font-weight: $font-weight-medium;
+    border: 1px solid $accent-primary;
+
+    &:hover {
+      background-color: $accent-hover;
+      border-color: $accent-hover;
+      color: $bg-primary;
+    }
+  }
+
+  &--more {
+    font-weight: $font-weight-bold;
+    min-width: 32px;
+  }
+}
+
+// Published Date
+.book-card__published-date {
+  margin-top: auto;
+  font-size: $font-size-xs;
+  color: $text-secondary;
+  text-align: right;
+  padding-top: $spacing-sm;
+  border-top: 1px solid rgba($border-color, 0.5);
+}
+
+// Action Buttons Container
+.book-card__actions {
+  display: flex;
+  gap: $spacing-xs;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  flex-shrink: 0;
+
+  button {
+    min-width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    
+    // Icon buttons should have consistent sizing
+    &.btn-secondary,
+    &.btn-destructive {
+      min-width: 32px;
+      height: 32px;
+    }
+
+    // SVG icon styling
+    img {
+      width: 16px;
+      height: 16px;
+      filter: brightness(0) saturate(100%) invert(89%) sepia(6%) saturate(126%) hue-rotate(200deg) brightness(92%) contrast(91%);
+    }
+
+    &:hover {
+      transform: scale(1.05);
+      
+      img {
+        filter: brightness(0) saturate(100%) invert(100%);
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .book-card {
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  .book-card__cover {
+    width: 100%;
+    height: 200px;
+  }
+
+  .book-card__content {
+    min-height: auto;
+  }
+
+  .book-card__header {
+    flex-direction: column;
+    gap: $spacing-sm;
+  }
+
+  .book-card__title-section {
+    margin-right: 0;
+  }
+
+  .book-card__actions {
+    align-self: flex-end;
+    opacity: 1; // Always visible on mobile
+  }
+
+  .book-card__published-date {
+    text-align: left;
+  }
+}

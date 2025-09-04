@@ -327,7 +327,7 @@ describe('BookListPage', () => {
   it('shows clear search button when search has value and filters have search', () => {
     // Mock with search filter to show clear button
     mockUseBooks.mockImplementation((filters) => {
-      if (filters.search) {
+      if (filters?.search) {
         return createSuccessQuery([createMockBook()]);
       }
       return createSuccessQuery([]);
@@ -433,7 +433,7 @@ describe('BookListPage', () => {
   it('shows empty state with search filters', async () => {
     // Mock to return empty results when there's a search filter
     mockUseBooks.mockImplementation((filters) => {
-      if (filters.search) {
+      if (filters?.search) {
         return createSuccessQuery([]);
       }
       return createSuccessQuery([createMockBook()]);

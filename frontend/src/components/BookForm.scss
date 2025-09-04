@@ -1,0 +1,393 @@
+@import '../styles/variables';
+
+// Main container
+.book-form-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: $spacing-xl;
+  background-color: $bg-primary;
+  min-height: 100vh;
+}
+
+// Header
+.book-form-header {
+  margin-bottom: $spacing-xl;
+  text-align: center;
+
+  h2 {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $text-primary;
+    margin: 0;
+  }
+}
+
+// Form
+.book-form {
+  background-color: $bg-surface;
+  padding: $spacing-xl;
+  border-radius: $border-radius-lg;
+  border: 1px solid $border-color;
+}
+
+// Form groups
+.form-group {
+  margin-bottom: $spacing-lg;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Labels
+.form-label {
+  display: block;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $text-primary;
+  margin-bottom: $spacing-xs;
+
+  .required {
+    color: $accent-error;
+    margin-left: $spacing-xs;
+  }
+}
+
+// Input fields
+.form-input {
+  width: 100%;
+  padding: $spacing-sm $spacing-md;
+  font-size: $font-size-sm;
+  color: $text-primary;
+  background-color: $bg-primary;
+  border: 1px solid $border-color;
+  border-radius: $border-radius-md;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &::placeholder {
+    color: $text-tertiary;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $accent-primary;
+    box-shadow: 0 0 0 3px rgba($accent-primary, 0.1);
+  }
+
+  &:disabled {
+    background-color: $bg-secondary;
+    color: $text-secondary;
+    cursor: not-allowed;
+  }
+
+  &.error {
+    border-color: $accent-error;
+    
+    &:focus {
+      border-color: $accent-error;
+      box-shadow: 0 0 0 3px rgba($accent-error, 0.1);
+    }
+  }
+}
+
+// Book search container
+.book-search-container {
+  position: relative;
+}
+
+.search-loading {
+  position: absolute;
+  right: $spacing-md;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: $font-size-xs;
+  color: $text-secondary;
+}
+
+// Book suggestions
+.book-suggestions {
+  margin-top: $spacing-md;
+  background-color: $bg-primary;
+  border: 1px solid $border-color;
+  border-radius: $border-radius-md;
+  overflow: hidden;
+}
+
+.suggestions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-sm $spacing-md;
+  background-color: $bg-secondary;
+  font-size: $font-size-sm;
+  color: $text-secondary;
+  border-bottom: 1px solid $border-color;
+}
+
+.suggestions-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.suggestion-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-md;
+  border-bottom: 1px solid $border-color;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: $bg-secondary;
+  }
+}
+
+.suggestion-content {
+  flex: 1;
+  margin-right: $spacing-md;
+}
+
+.suggestion-title {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.suggestion-author {
+  font-size: $font-size-xs;
+  color: $text-secondary;
+  margin-bottom: $spacing-xs;
+}
+
+.suggestion-date {
+  font-size: $font-size-xs;
+  color: $text-tertiary;
+  margin-bottom: $spacing-xs;
+}
+
+.suggestion-subjects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+}
+
+.subject-tag {
+  font-size: $font-size-xs;
+  color: $text-secondary;
+  background-color: $bg-secondary;
+  padding: 2px $spacing-xs;
+  border-radius: $border-radius-sm;
+  border: 1px solid $border-color;
+}
+
+// Genre input container
+.genre-input-container {
+  display: flex;
+  gap: $spacing-sm;
+  align-items: flex-start;
+
+  .form-input {
+    flex: 1;
+  }
+}
+
+// Selected genres
+.selected-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+  margin-top: $spacing-sm;
+}
+
+.genre-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-xs;
+  font-size: $font-size-xs;
+  color: $text-primary;
+  background-color: $accent-primary;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $border-radius-sm;
+  font-weight: $font-weight-medium;
+
+  .genre-remove {
+    background: none;
+    border: none;
+    color: $text-primary;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    line-height: 1;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $accent-error;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+}
+
+// Rating input
+.rating-input {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.star-button {
+  background: none;
+  border: none;
+  font-size: $font-size-lg;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease, transform 0.1s ease;
+
+  &.filled {
+    color: $accent-primary;
+  }
+
+  &.empty {
+    color: $text-tertiary;
+  }
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+.rating-text {
+  font-size: $font-size-sm;
+  color: $text-secondary;
+  margin-left: $spacing-sm;
+}
+
+// Error messages
+.error-message {
+  display: block;
+  font-size: $font-size-xs;
+  color: $accent-error;
+  margin-top: $spacing-xs;
+
+  &.submit-error {
+    background-color: rgba($accent-error, 0.1);
+    border: 1px solid $accent-error;
+    border-radius: $border-radius-md;
+    padding: $spacing-sm $spacing-md;
+    margin-bottom: $spacing-lg;
+    text-align: center;
+  }
+}
+
+// Form actions
+.form-actions {
+  display: flex;
+  gap: $spacing-md;
+  justify-content: flex-end;
+  margin-top: $spacing-xl;
+  padding-top: $spacing-lg;
+  border-top: 1px solid $border-color;
+
+  .btn {
+    min-width: 120px;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .book-form-container {
+    padding: $spacing-md;
+  }
+
+  .book-form {
+    padding: $spacing-lg;
+  }
+
+  .genre-input-container {
+    flex-direction: column;
+
+    .form-input {
+      margin-bottom: $spacing-sm;
+    }
+  }
+
+  .form-actions {
+    flex-direction: column;
+
+    .btn {
+      width: 100%;
+    }
+  }
+
+  .suggestion-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $spacing-sm;
+
+    .suggestion-content {
+      margin-right: 0;
+    }
+  }
+
+  .suggestions-header {
+    flex-direction: column;
+    gap: $spacing-sm;
+    align-items: flex-start;
+  }
+}
+
+// Loading and error states for page wrapper
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  padding: $spacing-xl;
+  text-align: center;
+
+  h2 {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $text-primary;
+    margin-bottom: $spacing-md;
+  }
+
+  p {
+    font-size: $font-size-sm;
+    color: $text-secondary;
+    margin-bottom: $spacing-lg;
+  }
+}
+
+.loading-spinner {
+  font-size: $font-size-sm;
+  color: $text-secondary;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

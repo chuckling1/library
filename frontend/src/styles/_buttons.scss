@@ -1,0 +1,79 @@
+@import 'variables';
+
+// Base button styles - shared by all button types
+%btn-base {
+  padding: $spacing-sm $spacing-md;
+  font-size: $font-size-sm;
+  border-radius: $border-radius-md;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: $font-family-sans;
+  font-weight: $font-weight-medium;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+
+  &:focus {
+    outline: 2px solid $accent-primary;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Primary Button
+.btn-primary {
+  @extend %btn-base;
+  background: $accent-primary;
+  color: $bg-primary;
+  border: 1px solid $accent-primary;
+
+  &:hover:not(:disabled) {
+    background: $accent-hover;
+    border-color: $accent-hover;
+  }
+}
+
+// Secondary Button
+.btn-secondary {
+  @extend %btn-base;
+  background: transparent;
+  color: $text-secondary;
+  border: 1px solid $border-color;
+
+  &:hover:not(:disabled) {
+    background: $border-color;
+    color: $text-primary;
+  }
+}
+
+// Destructive Button
+.btn-destructive {
+  @extend %btn-base;
+  background: transparent;
+  color: $semantic-danger;
+  border: 1px solid $semantic-danger;
+
+  &:hover:not(:disabled) {
+    background: $semantic-danger;
+    color: $text-primary;
+    border-color: $semantic-danger-hover;
+  }
+}
+
+// Button sizes (if needed)
+.btn-sm {
+  padding: $spacing-xs $spacing-sm;
+  font-size: $font-size-xs;
+}
+
+.btn-lg {
+  padding: $spacing-md $spacing-lg;
+  font-size: $font-size-md;
+}

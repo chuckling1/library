@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Book, CreateBookRequest, UpdateBookRequest } from '../generated/api';
 import { useCreateBook, useUpdateBook } from '../hooks/useBooks';
 import { openLibraryService } from '../services/openLibraryService';
+import './BookForm.scss';
 // import BookCover from './BookCover'; // Not used yet
 
 interface BookFormProps {

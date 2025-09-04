@@ -3,6 +3,7 @@ import { useDebouncedCallback } from 'use-debounce';
 import { useBooks, useDeleteBook, BooksFilters } from '../hooks/useBooks';
 import BookCard from '../components/BookCard';
 import { Book } from '../generated/api';
+import './BookListPage.scss';
 
 const BookListPage: React.FC = () => {
   // Core state for filters
@@ -88,7 +89,7 @@ const BookListPage: React.FC = () => {
       <div className="error-container">
         <h2>Error Loading Books</h2>
         <p>Failed to load books. Please try again.</p>
-        <button onClick={() => void refetch()} className="btn btn-primary">
+        <button onClick={() => void refetch()} className="btn-primary">
           Retry
         </button>
       </div>
@@ -119,7 +120,7 @@ const BookListPage: React.FC = () => {
             <button
               type="button"
               onClick={clearSearch}
-              className="btn btn-secondary btn-sm clear-search"
+              className="btn-secondary clear-search"
             >
               Clear
             </button>
@@ -167,7 +168,7 @@ const BookListPage: React.FC = () => {
             <option value="1">1+ Stars</option>
           </select>
 
-          <button onClick={clearFilters} className="btn btn-secondary">
+          <button onClick={clearFilters} className="btn-secondary">
             Clear Filters
           </button>
         </div>

@@ -15,15 +15,23 @@ class MockCanvas {
   }
 }
 
+// Mock CanvasGradient
+class MockCanvasGradient {
+  addColorStop = vi.fn();
+}
+
 // Mock CanvasRenderingContext2D
 class MockCanvasRenderingContext2D {
   fillStyle = '#000000';
   font = '10px sans-serif';
   textAlign = 'left';
   textBaseline = 'top';
-  
+  strokeStyle = '#000000';
+  lineWidth = 1;
+
   fillRect = vi.fn();
   fillText = vi.fn();
+  strokeRect = vi.fn();
   measureText = vi.fn().mockReturnValue({ width: 100 });
   clearRect = vi.fn();
   beginPath = vi.fn();
@@ -38,6 +46,8 @@ class MockCanvasRenderingContext2D {
   translate = vi.fn();
   rotate = vi.fn();
   scale = vi.fn();
+
+  createLinearGradient = vi.fn().mockReturnValue(new MockCanvasGradient());
 }
 
 // Mock HTMLCanvasElement.prototype.getContext

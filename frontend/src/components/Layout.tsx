@@ -15,26 +15,28 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="app">
       <header className="header">
-        <h1>My Book Library</h1>
-        <nav className="nav">
-          <Link 
-            to="/books" 
-            className={isActive('/books') ? 'active' : ''}
-          >
-            Books
+        <div className="header-content">
+          <h1>My Book Library</h1>
+          <nav className="nav">
+            <Link 
+              to="/books" 
+              className={isActive('/books') ? 'active' : ''}
+            >
+              Books
+            </Link>
+            <Link 
+              to="/stats" 
+              className={isActive('/stats') ? 'active' : ''}
+            >
+              Statistics
+            </Link>
+          </nav>
+          <Link to="/books/new" className="btn-primary">
+            Add Book
           </Link>
-          <Link 
-            to="/stats" 
-            className={isActive('/stats') ? 'active' : ''}
-          >
-            Statistics
-          </Link>
-        </nav>
-        <Link to="/books/new" className="btn btn-primary">
-          Add Book
-        </Link>
+        </div>
       </header>
-      <main>
+      <main className="main-content">
         {children}
       </main>
     </div>

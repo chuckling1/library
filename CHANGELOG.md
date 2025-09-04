@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased] - 2025-09-04
 
+### Added
+- **Modern Dark Theme Design System**: Implemented comprehensive UI/UX overhaul with professional dark theme
+  - **Design Tokens**: Created SCSS variables system with modern slate-and-teal color palette
+  - **Typography System**: Implemented Inter font family with consistent sizing and weight scales
+  - **Spacing System**: Established 8pt grid system for consistent layout rhythm
+  - **Component Library**: Built reusable button system (primary, secondary, destructive styles)
+  - **Visual Hierarchy**: Redesigned BookCard and FilterBar components with improved information organization
+  - **Accessibility**: Added proper focus states, color contrast, and semantic markup
+  - **Responsive Design**: Mobile-first approach with flexible grid layouts
+
 ### Fixed
 - **Case-Sensitive Search Issue**: Resolved critical search functionality problem where live search was case-sensitive
   - **Root Cause**: BookRepository search queries used exact string matching (`b.Title.Contains(searchTerm)`)
@@ -27,6 +37,10 @@ All notable changes to this project will be documented in this file.
   - Tests for lowercase, uppercase, mixed-case, and partial matching
   - Both title and author search functionality covered
   - Non-matching search verification included
+- **Frontend Architecture**: Migrated from CSS to SCSS with modular design system
+  - Component-specific styling with shared design tokens
+  - Eliminated style conflicts and improved maintainability
+  - Google Fonts integration for consistent typography
 
 ## [Unreleased] - 2025-01-03
 

@@ -92,7 +92,7 @@ public class BookService : IBookService
     /// <inheritdoc/>
     public async Task<Book?> UpdateBookAsync(Guid id, UpdateBookRequest request, CancellationToken cancellationToken = default)
     {
-        var existingBook = await _bookRepository.GetBookByIdAsync(id, cancellationToken);
+        var existingBook = await _bookRepository.GetBookForUpdateAsync(id, cancellationToken);
         if (existingBook == null)
         {
             return null;

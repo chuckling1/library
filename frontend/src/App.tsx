@@ -4,7 +4,7 @@ import Layout from './components/Layout'
 import BookListPage from './pages/BookListPage'
 import BookFormPage from './pages/BookFormPage'
 import StatsPage from './pages/StatsPage'
-import './App.css'
+import './App.scss'
 
 const App: React.FC = () => {
   return (
