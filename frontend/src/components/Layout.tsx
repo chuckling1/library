@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import logo from '../images/logo.png'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -16,7 +17,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     <div className="app">
       <header className="header">
         <div className="header-content">
-          <h1>My Book Library</h1>
+          <div className="header-brand">
+            <img src={logo} alt="Library Logo" className="header-logo" />
+            <h1>My Book Library</h1>
+          </div>
           <nav className="nav">
             <Link 
               to="/books" 
@@ -31,9 +35,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               Statistics
             </Link>
           </nav>
-          <Link to="/books/new" className="btn-primary">
-            Add Book
-          </Link>
+          <div className="header-spacer"></div>
         </div>
       </header>
       <main className="main-content">

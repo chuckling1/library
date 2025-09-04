@@ -1,6 +1,8 @@
 // OpenLibrary API service for book search and covers
 // Documentation: https://openlibrary.org/dev/docs/api
 
+import { logger } from '../utils/logger';
+
 export interface OpenLibraryBook {
   key: string;
   title: string;
@@ -38,7 +40,7 @@ class OpenLibraryService {
     const params = new URLSearchParams({
       q: query,
       limit: limit.toString(),
-      fields: 'key,title,author_name,isbn,publish_date,publisher,cover_i,edition_count,first_publish_year,language,subject',
+      fields: '*,availability',
     });
 
     try {
@@ -48,8 +50,7 @@ class OpenLibraryService {
       }
       return await response.json() as OpenLibrarySearchResponse;
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('OpenLibrary search error:', error);
+      logger.error('OpenLibrary search error:', error);
       return { docs: [], numFound: 0, start: 0 };
     }
   }
@@ -140,88 +141,113 @@ class OpenLibraryService {
   }
 
   /**
-   * Parse OpenLibrary date string into YYYY-MM-DD format
+   * Step 2: Filter publish_date array to only entries containing the target year
+   * Simple and efficient substring matching (as suggested)
    */
-  private parseOpenLibraryDate(dateStr: string, expectedYear?: string): string | null {
-    if (!dateStr) return null;
+  private filterDatesByYear(publishDates: string[], targetYear: string): string[] {
+    return publishDates.filter(date => date.includes(targetYear));
+  }
+
+  /**
+   * Step 3: Find the longest (most detailed) date string from filtered array
+   */
+  private findLongestDate(dateStrings: string[]): string {
+    if (dateStrings.length === 0) return '';
+    
+    return dateStrings.reduce((longest, current) => 
+      current.length > longest.length ? current : longest
+    );
+  }
+
+  /**
+   * Step 4: Parse and validate the date string, keeping original format if valid
+   */
+  private parseDate(dateStr: string): string | null {
+    if (!dateStr || dateStr.trim() === '') return null;
     
     const trimmed = dateStr.trim();
     
-    // If it's already in YYYY-MM-DD format, validate and return
-    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
-      const date = new Date(trimmed);
-      if (!isNaN(date.getTime())) {
-        return trimmed;
+    // Try to parse with JavaScript Date to validate
+    let testDate: Date;
+    
+    try {
+      // Handle various formats
+      if (/^\d{4}$/.test(trimmed)) {
+        // Year only: "1980"
+        testDate = new Date(`${trimmed}-01-01`);
+      } else if (/^\w+\s+\d{4}$/.test(trimmed)) {
+        // Month Year: "March 1980"
+        testDate = new Date(`${trimmed} 1`);
+      } else if (/^\d{4}\s+\w+$/.test(trimmed)) {
+        // Year Month: "1980 May"
+        const [year, month] = trimmed.split(' ');
+        testDate = new Date(`${month} 1, ${year}`);
+      } else {
+        // Try to parse as-is: "Apr 07, 1981", "May 20, 2015"
+        testDate = new Date(trimmed);
       }
+      
+      // Validate the parsed date
+      if (isNaN(testDate.getTime())) {
+        return null;
+      }
+      
+      // Validate year is reasonable
+      const year = testDate.getFullYear();
+      const currentYear = new Date().getFullYear();
+      if (year < 1400 || year > currentYear + 5) {
+        return null;
+      }
+      
+      // Return original format if valid (this is the key difference!)
+      return trimmed;
+      
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Smart date extraction following the 4-step algorithm:
+   * 1. Get first_publish_year
+   * 2. Filter publish_date array by year
+   * 3. Find longest/most detailed date
+   * 4. Parse and validate
+   */
+  private extractBestPublishDate(olBook: { first_publish_year?: number; publish_date?: string[] }): string | undefined {
+    // Step 1: Get first_publish_year
+    if (!olBook.first_publish_year) {
+      // Fallback: try first date in array if no first_publish_year
+      if (olBook.publish_date?.[0]) {
+        const parsed = this.parseDate(olBook.publish_date[0]);
+        return parsed ?? undefined;
+      }
+      return undefined;
     }
     
-    // Try to parse various formats using JavaScript Date constructor
-    const formats = [
-      trimmed, // Original string
-      trimmed.replace(/(\d{1,2})(st|nd|rd|th),?\s+(\d{4})/i, '$1, $3'), // "5th, 2020" -> "5, 2020"
-      trimmed.replace(/(\w+)\s+(\d{1,2})(st|nd|rd|th),?\s+(\d{4})/i, '$1 $2, $4'), // "Aug 5th, 2020" -> "Aug 5, 2020"
-    ];
+    const targetYear = olBook.first_publish_year.toString();
     
-    for (const format of formats) {
-      try {
-        const date = new Date(format);
-        if (!isNaN(date.getTime())) {
-          const year = date.getFullYear().toString();
-          
-          // If we have an expected year, make sure it matches
-          if (expectedYear && year !== expectedYear) {
-            continue;
-          }
-          
-          // Ensure it's a reasonable publication year (1400-current year + 5)
-          const currentYear = new Date().getFullYear();
-          if (date.getFullYear() < 1400 || date.getFullYear() > currentYear + 5) {
-            continue;
-          }
-          
-          // Format as YYYY-MM-DD
-          return date.toISOString().split('T')[0] ?? null;
-        }
-      } catch {
-        // Continue to next format
-        continue;
-      }
+    // Step 2: Filter publish_date array by year
+    if (!olBook.publish_date || olBook.publish_date.length === 0) {
+      // No publish_date array, just return the year
+      return targetYear;
     }
     
-    // If all parsing failed but we have an expected year, extract month/day if possible
-    if (expectedYear) {
-      const monthNames = [
-        'january', 'february', 'march', 'april', 'may', 'june',
-        'july', 'august', 'september', 'october', 'november', 'december',
-        'jan', 'feb', 'mar', 'apr', 'may', 'jun',
-        'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
-      ];
-      
-      const lowerStr = trimmed.toLowerCase();
-      let month = '01';
-      let day = '01';
-      
-      // Find month
-      for (let i = 0; i < monthNames.length; i++) {
-        if (lowerStr.includes(monthNames[i]!)) {
-          month = String((i % 12) + 1).padStart(2, '0');
-          break;
-        }
-      }
-      
-      // Find day (look for numbers 1-31)
-      const dayMatch = trimmed.match(/\b([1-9]|[12]\d|3[01])\b/);
-      if (dayMatch) {
-        const dayNum = parseInt(dayMatch[0]);
-        if (dayNum >= 1 && dayNum <= 31) {
-          day = String(dayNum).padStart(2, '0');
-        }
-      }
-      
-      return `${expectedYear}-${month}-${day}`;
+    const filteredDates = this.filterDatesByYear(olBook.publish_date, targetYear);
+    
+    if (filteredDates.length === 0) {
+      // No dates match the target year, fallback to first_publish_year
+      return targetYear;
     }
     
-    return null;
+    // Step 3: Find longest/most detailed date
+    const longestDate = this.findLongestDate(filteredDates);
+    
+    // Step 4: Parse and validate
+    const parsedDate = this.parseDate(longestDate);
+    
+    // Return parsed date if valid, otherwise fallback to year
+    return parsedDate ?? targetYear;
   }
 
   /**
@@ -237,33 +263,8 @@ class OpenLibraryService {
   } {
     const isbn = olBook.isbn?.[0];
     
-    // Parse published date using first_publish_year as anchor
-    let publishDate: string | undefined;
-    
-    if (olBook.first_publish_year) {
-      const targetYear = olBook.first_publish_year.toString();
-      publishDate = `${targetYear}-01-01`; // Default fallback
-      
-      // Search through publish_date array for a date matching the first_publish_year
-      if (olBook.publish_date && olBook.publish_date.length > 0) {
-        for (const dateStr of olBook.publish_date) {
-          if (dateStr.includes(targetYear)) {
-            // Try to parse this date string more intelligently
-            const parsedDate = this.parseOpenLibraryDate(dateStr, targetYear);
-            if (parsedDate) {
-              publishDate = parsedDate;
-              break; // Use first successfully parsed date for the target year
-            }
-          }
-        }
-      }
-    } else if (olBook.publish_date?.[0]) {
-      // Fallback: try to parse the first date if no first_publish_year
-      const parsedDate = this.parseOpenLibraryDate(olBook.publish_date[0]);
-      if (parsedDate) {
-        publishDate = parsedDate;
-      }
-    }
+    // Use the smart 4-step algorithm to extract the best publish date
+    const publishDate = this.extractBestPublishDate(olBook);
     
     return {
       title: olBook.title,

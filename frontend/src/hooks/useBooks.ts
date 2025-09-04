@@ -43,6 +43,7 @@ export const useBooks = (filters: BooksFilters = {}): UseQueryResult<Book[], Err
         filters.page,
         filters.pageSize
       );
+      
       return response.data;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -135,7 +136,41 @@ export const getBookGenres = (book: Book): string[] => {
 
 // Helper function to format date
 export const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString('en-US');
+  if (!dateString) return 'Unknown';
+  
+  // If the date is just a year (4 digits), return it as-is
+  if (/^\d{4}$/.test(dateString.trim())) {
+    return dateString.trim();
+  }
+  
+  // If the date is year-month (YYYY-MM), format it nicely
+  if (/^\d{4}-\d{2}$/.test(dateString.trim())) {
+    const parts = dateString.trim().split('-');
+    const year = parts[0];
+    const month = parts[1];
+    if (year && month) {
+      const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+      ];
+      const monthIndex = parseInt(month, 10) - 1;
+      if (monthIndex >= 0 && monthIndex < monthNames.length) {
+        return `${monthNames[monthIndex]} ${year}`;
+      }
+    }
+  }
+  
+  // For full dates, try to parse and format normally
+  try {
+    const date = new Date(dateString);
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      return dateString; // Return original string if invalid
+    }
+    return date.toLocaleDateString('en-US');
+  } catch {
+    return dateString; // Return original string if parsing fails
+  }
 };
 
 // Helper function to format rating stars

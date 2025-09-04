@@ -1,47 +1,56 @@
-@import '../styles/variables';
+@use '../styles/variables' as vars;
 
 // Main container
 .book-list-page {
-  padding: $spacing-lg;
+  padding: vars.$spacing-lg;
   max-width: 1400px;
   margin: 0 auto;
 }
 
 // Header - Simplified
 .page-header {
-  margin-bottom: $spacing-lg;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: vars.$spacing-lg;
 
   h2 {
     font-size: 2.5rem;
     font-weight: 700;
-    color: $text-primary;
+    color: vars.$text-primary;
     margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: vars.$spacing-md;
+    align-items: stretch;
   }
 }
 
 // Filter Bar - Contains all filter controls (unified with results bar)
 .filter-bar {
-  background-color: $bg-surface;
-  padding: $spacing-lg;
-  border-radius: $border-radius-lg $border-radius-lg 0 0; // Rounded corners only at top
-  border: 1px solid $border-color;
-  border-bottom: 1px solid $border-color; // Normal border thickness for dividing line
+  background-color: vars.$bg-surface;
+  padding: vars.$spacing-lg;
+  border-radius: vars.$border-radius-lg vars.$border-radius-lg 0 0; // Rounded corners only at top
+  border: 1px solid vars.$border-color;
+  border-bottom: 1px solid vars.$border-color; // Normal border thickness for dividing line
   margin-bottom: 0; // No gap with results bar
   display: flex;
   flex-direction: column;
-  gap: $spacing-md;
+  gap: vars.$spacing-md;
 }
 
 // Row 1: Primary Search & Secondary Filters
 .filter-bar__row {
   display: flex;
   flex-direction: row;
-  gap: $spacing-lg;
+  gap: vars.$spacing-lg;
   align-items: center;
   
   @media (max-width: 768px) {
     flex-direction: column;
-    gap: $spacing-md;
+    gap: vars.$spacing-md;
   }
 }
 
@@ -52,44 +61,44 @@
 
   .search-input {
     width: 100%;
-    padding: $spacing-md;
+    padding: vars.$spacing-md;
     padding-right: 2.5rem; // Space for clear button
-    font-size: $font-size-md;
-    border: 2px solid $border-color;
-    border-radius: $border-radius-md;
-    background-color: $bg-primary;
-    color: $text-primary;
+    font-size: vars.$font-size-md;
+    border: 2px solid vars.$border-color;
+    border-radius: vars.$border-radius-md;
+    background-color: vars.$bg-primary;
+    color: vars.$text-primary;
     transition: border-color 0.2s ease;
 
     &:focus {
       outline: none;
-      border-color: $accent-primary;
+      border-color: vars.$accent-primary;
       box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
     }
 
     &::placeholder {
-      color: $text-tertiary;
+      color: vars.$text-tertiary;
     }
   }
 
   .search-clear {
     position: absolute;
-    right: $spacing-xs;
+    right: vars.$spacing-xs;
     top: 50%;
     transform: translateY(-50%);
     background: none;
     border: none;
-    color: $text-secondary;
+    color: vars.$text-secondary;
     cursor: pointer;
-    padding: $spacing-xs;
+    padding: vars.$spacing-xs;
     border-radius: 50%;
-    font-size: $font-size-lg;
+    font-size: vars.$font-size-lg;
     line-height: 1;
     transition: all 0.2s ease;
 
     &:hover {
-      background-color: $border-color;
-      color: $text-primary;
+      background-color: vars.$border-color;
+      color: vars.$text-primary;
     }
   }
 }
@@ -108,51 +117,51 @@
 
 // Results Bar - Shows count and sorting controls (unified with filter bar)
 .results-bar {
-  background-color: $bg-surface;
-  padding: $spacing-md $spacing-lg;
-  border: 1px solid $border-color;
+  background-color: vars.$bg-surface;
+  padding: vars.$spacing-md vars.$spacing-lg;
+  border: 1px solid vars.$border-color;
   border-top: none; // Connect with filter bar seamlessly
-  border-radius: 0 0 $border-radius-lg $border-radius-lg; // Rounded corners only at bottom
-  margin-bottom: $spacing-lg;
+  border-radius: 0 0 vars.$border-radius-lg vars.$border-radius-lg; // Rounded corners only at bottom
+  margin-bottom: vars.$spacing-lg;
   display: flex;
   justify-content: space-between;
   align-items: center;
 
   @media (max-width: 768px) {
     flex-direction: column;
-    gap: $spacing-sm;
+    gap: vars.$spacing-sm;
     align-items: stretch;
   }
 }
 
 .results-bar__count {
-  font-size: $font-size-md;
-  color: $text-primary;
+  font-size: vars.$font-size-md;
+  color: vars.$text-primary;
   font-weight: 500;
 
   .results-bar__filtered {
-    color: $text-secondary;
+    color: vars.$text-secondary;
     font-style: italic;
   }
 }
 
 .results-bar__sorting {
   display: flex;
-  gap: $spacing-sm;
+  gap: vars.$spacing-sm;
   align-items: center;
 
   select {
-    padding: $spacing-xs $spacing-sm;
-    border: 1px solid $border-color;
-    border-radius: $border-radius-sm;
-    background-color: $bg-primary;
-    color: $text-primary;
-    font-size: $font-size-sm;
+    padding: vars.$spacing-xs vars.$spacing-sm;
+    border: 1px solid vars.$border-color;
+    border-radius: vars.$border-radius-sm;
+    background-color: vars.$bg-primary;
+    color: vars.$text-primary;
+    font-size: vars.$font-size-sm;
     cursor: pointer;
 
     &:focus {
       outline: none;
-      border-color: $accent-primary;
+      border-color: vars.$accent-primary;
     }
   }
 
@@ -178,33 +187,34 @@
 .books-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
-  gap: $spacing-xl;
-  margin-bottom: $spacing-xl;
+  gap: vars.$spacing-xl;
+  margin-bottom: vars.$spacing-xl;
+  align-items: start; // Prevent cards from stretching to match row height
 
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
-    gap: $spacing-lg;
+    gap: vars.$spacing-lg;
   }
 }
 
 // Empty state
 .empty-state {
   text-align: center;
-  padding: $spacing-xxl $spacing-lg;
-  background-color: $bg-surface;
-  border-radius: $border-radius-lg;
-  border: 2px dashed $border-color;
+  padding: vars.$spacing-xxl vars.$spacing-lg;
+  background-color: vars.$bg-surface;
+  border-radius: vars.$border-radius-lg;
+  border: 2px dashed vars.$border-color;
 
   h3 {
-    font-size: $font-size-xl;
+    font-size: vars.$font-size-xl;
     font-weight: 600;
-    color: $text-primary;
-    margin: 0 0 $spacing-md 0;
+    color: vars.$text-primary;
+    margin: 0 0 vars.$spacing-md 0;
   }
 
   p {
-    font-size: $font-size-md;
-    color: $text-secondary;
+    font-size: vars.$font-size-md;
+    color: vars.$text-secondary;
     margin: 0;
     max-width: 500px;
     margin: 0 auto;
@@ -215,42 +225,42 @@
 // Loading and error states
 .loading-container, .error-container {
   text-align: center;
-  padding: $spacing-xxl $spacing-lg;
+  padding: vars.$spacing-xxl vars.$spacing-lg;
   max-width: 600px;
   margin: 0 auto;
 
   .loading-spinner {
-    font-size: $font-size-lg;
-    color: $text-secondary;
-    padding: $spacing-xl;
+    font-size: vars.$font-size-lg;
+    color: vars.$text-secondary;
+    padding: vars.$spacing-xl;
   }
 
   h2 {
-    color: $accent-error;
-    margin-bottom: $spacing-md;
-    font-size: $font-size-xl;
+    color: vars.$accent-error;
+    margin-bottom: vars.$spacing-md;
+    font-size: vars.$font-size-xl;
   }
 
   p {
-    color: $text-secondary;
-    margin-bottom: $spacing-lg;
-    font-size: $font-size-md;
+    color: vars.$text-secondary;
+    margin-bottom: vars.$spacing-lg;
+    font-size: vars.$font-size-md;
   }
 }
 
 // Mutation loading overlay
 .mutation-loading {
   position: fixed;
-  top: $spacing-lg;
-  right: $spacing-lg;
-  background-color: $bg-surface;
-  color: $text-primary;
-  padding: $spacing-md $spacing-lg;
-  border-radius: $border-radius-md;
-  border: 1px solid $border-color;
-  box-shadow: $box-shadow-md;
+  top: vars.$spacing-lg;
+  right: vars.$spacing-lg;
+  background-color: vars.$bg-surface;
+  color: vars.$text-primary;
+  padding: vars.$spacing-md vars.$spacing-lg;
+  border-radius: vars.$border-radius-md;
+  border: 1px solid vars.$border-color;
+  box-shadow: vars.$box-shadow-md;
   z-index: 1000;
-  font-size: $font-size-sm;
+  font-size: vars.$font-size-sm;
   animation: slideIn 0.3s ease-out;
 }
 
@@ -268,7 +278,7 @@
 // Responsive adjustments
 @media (max-width: 768px) {
   .book-list-page {
-    padding: $spacing-md;
+    padding: vars.$spacing-md;
   }
 
   .page-header h2 {
@@ -276,10 +286,10 @@
   }
 
   .filter-bar {
-    padding: $spacing-md;
+    padding: vars.$spacing-md;
   }
 
   .results-bar {
-    padding: $spacing-sm $spacing-md;
+    padding: vars.$spacing-sm vars.$spacing-md;
   }
 }

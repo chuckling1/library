@@ -1,19 +1,20 @@
-@import '../styles/variables';
+@use '../styles/variables' as vars;
 
 // Main Container - Two column flex layout
 .book-card {
   display: flex;
-  gap: $spacing-lg;
-  background-color: $bg-surface;
-  padding: $spacing-lg;
-  border-radius: $border-radius-md;
-  border: 1px solid $border-color;
+  gap: vars.$spacing-lg;
+  background-color: vars.$bg-surface;
+  padding: vars.$spacing-lg;
+  border-radius: vars.$border-radius-md;
+  border: 1px solid vars.$border-color;
   position: relative;
   transition: all 0.2s ease-in-out;
+  min-height: 280px; // Consistent height matching cards with genre sections (not expanded)
 
   &:hover {
-    box-shadow: $box-shadow-md;
-    border-color: $accent-primary;
+    box-shadow: vars.$box-shadow-md;
+    border-color: vars.$accent-primary;
     
     .book-card__actions {
       opacity: 1;
@@ -28,13 +29,13 @@
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
-  border-radius: $border-radius-sm;
+  border-radius: vars.$border-radius-sm;
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: $border-radius-sm;
+    border-radius: vars.$border-radius-sm;
     display: block;
   }
 
@@ -60,21 +61,21 @@
 
 // Primary Info - Title, Author, Rating (at top)
 .book-card__primary-info {
-  margin-bottom: $spacing-md;
+  margin-bottom: vars.$spacing-md;
 }
 
 .book-card__title {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-bold;
-  color: $text-primary;
-  margin: 0 0 $spacing-xs 0;
+  font-size: vars.$font-size-lg;
+  font-weight: vars.$font-weight-bold;
+  color: vars.$text-primary;
+  margin: 0 0 vars.$spacing-xs 0;
   line-height: 1.3;
 }
 
 .book-card__author {
-  font-size: $font-size-sm;
-  color: $text-secondary;
-  margin: 0 0 $spacing-xs 0;
+  font-size: vars.$font-size-sm;
+  color: vars.$text-secondary;
+  margin: 0 0 vars.$spacing-xs 0;
 }
 
 .book-card__rating {
@@ -83,18 +84,19 @@
 
 // Genre Pills Container - Supports expandable functionality
 .book-card__genres-container {
-  margin-bottom: $spacing-md;
+  margin-bottom: vars.$spacing-md;
   flex: 1; // Take available space but not more than needed
 }
 
 .book-card__genres {
+  $genres-row-count: 2;
   display: flex;
   flex-wrap: wrap;
-  gap: $spacing-xs;
-  max-height: calc(3 * (22px + #{$spacing-sm})); // Max height for 3 rows + padding
+  gap: vars.$spacing-xs;
+  max-height: calc(#{$genres-row-count} * (24px + #{vars.$spacing-sm})); // Max height based on row count + padding
   overflow: hidden;
   transition: max-height 0.3s ease-in-out;
-  padding: $spacing-sm;
+  padding: vars.$spacing-sm;
   
   &--expanded {
     max-height: none; // Remove height restriction when expanded
@@ -102,36 +104,36 @@
 }
 
 .book-card__genres-toggle {
-  margin-top: $spacing-xs;
-  padding: $spacing-xs $spacing-sm;
-  background-color: $bg-primary;
-  border: 1px solid $border-color;
-  border-radius: $border-radius-sm;
-  color: $text-secondary;
-  font-size: $font-size-xs;
+  margin-top: vars.$spacing-xs;
+  padding: vars.$spacing-xs vars.$spacing-sm;
+  background-color: vars.$bg-primary;
+  border: 1px solid vars.$border-color;
+  border-radius: vars.$border-radius-sm;
+  color: vars.$text-secondary;
+  font-size: vars.$font-size-xs;
   cursor: pointer;
   transition: all 0.2s ease;
   width: 100%;
   text-align: center;
 
   &:hover {
-    background-color: $border-color;
-    color: $text-primary;
+    background-color: vars.$border-color;
+    color: vars.$text-primary;
   }
 
   &:focus {
-    outline: 2px solid $accent-primary;
+    outline: 2px solid vars.$accent-primary;
     outline-offset: 2px;
   }
 }
 
 // Interactive Genre Pills
 .book-card__genre-pill {
-  font-size: $font-size-xs;
-  color: $text-secondary;
-  background-color: $bg-primary;
-  padding: $spacing-xs $spacing-sm;
-  border: 1px solid $border-color;
+  font-size: vars.$font-size-xs;
+  color: vars.$text-secondary;
+  background-color: vars.$bg-primary;
+  padding: vars.$spacing-xs vars.$spacing-sm;
+  border: 1px solid vars.$border-color;
   border-radius: 12px; // Pill-like shape
   white-space: nowrap;
   cursor: pointer;
@@ -144,27 +146,27 @@
   flex-shrink: 0; // Prevent pills from shrinking
 
   &:hover {
-    background-color: $border-color;
-    color: $text-primary;
+    background-color: vars.$border-color;
+    color: vars.$text-primary;
     transform: translateY(-1px);
   }
 
   // Active state when genre filter is applied
   &--active {
-    background-color: $accent-primary;
-    color: $bg-primary;
-    border-color: $accent-primary;
-    font-weight: $font-weight-medium;
+    background-color: vars.$accent-primary;
+    color: vars.$bg-primary;
+    border-color: vars.$accent-primary;
+    font-weight: vars.$font-weight-medium;
 
     &:hover {
-      background-color: $accent-hover;
-      border-color: $accent-hover;
-      color: $bg-primary;
+      background-color: vars.$accent-hover;
+      border-color: vars.$accent-hover;
+      color: vars.$bg-primary;
     }
   }
 
   &:focus {
-    outline: 2px solid $accent-primary;
+    outline: 2px solid vars.$accent-primary;
     outline-offset: 2px;
   }
 }
@@ -172,11 +174,11 @@
 // Published Date - Bottom-right corner
 .book-card__published-date {
   margin-top: auto;
-  font-size: $font-size-xs;
-  color: $text-secondary;
+  font-size: vars.$font-size-xs;
+  color: vars.$text-secondary;
   text-align: right;
-  padding-top: $spacing-sm;
-  border-top: 1px solid rgba($border-color, 0.5);
+  padding-top: vars.$spacing-sm;
+  border-top: 1px solid rgba(vars.$border-color, 0.5);
 }
 
 // Action Buttons - Absolute positioned in top-right corner
@@ -185,7 +187,7 @@
   top: 0;
   right: 0;
   display: flex;
-  gap: $spacing-xs;
+  gap: vars.$spacing-xs;
   opacity: 0;
   transition: opacity 0.2s ease-in-out;
 
@@ -220,7 +222,7 @@
 @media (max-width: 768px) {
   .book-card {
     flex-direction: column;
-    gap: $spacing-md;
+    gap: vars.$spacing-md;
   }
 
   .book-card__cover {
@@ -237,7 +239,7 @@
     position: static;
     align-self: flex-end;
     opacity: 1; // Always visible on mobile
-    margin-top: $spacing-sm;
+    margin-top: vars.$spacing-sm;
   }
 
   .book-card__genres {

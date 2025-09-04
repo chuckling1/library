@@ -1,24 +1,41 @@
-import React, { useState, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useCallback, useRef, useMemo, useEffect } from 'react';
+import { useLocation, Link } from 'react-router-dom';
 import { useDebouncedCallback } from 'use-debounce';
 import { useBooks, useDeleteBook, BooksFilters, getBookGenres } from '../hooks/useBooks';
-import { useGenreFilter } from '../contexts/GenreFilterContext';
+import { useGenreFilter } from '../hooks/useGenreFilter';
 import BookCard from '../components/BookCard';
 import StarRatingFilter from '../components/StarRatingFilter';
 import GenreFilter from '../components/GenreFilter';
 import { Book } from '../generated/api';
 import './BookListPage.scss';
 
+interface LocationState {
+  rating?: number;
+}
+
 const BookListPage: React.FC = () => {
+  const location = useLocation();
+  
   // Core state for filters
   const [filters, setFilters] = useState<BooksFilters>({
     page: 1,
     pageSize: 20,
-    sortBy: 'createdAt',
-    sortDirection: 'desc',
+    sortBy: 'title',
+    sortDirection: 'asc',
     rating: undefined,
     genres: undefined,
     search: undefined,
   });
+
+  // Handle navigation state for rating filter
+  useEffect(() => {
+    const state = location.state as LocationState | null;
+    if (state?.rating) {
+      setFilters(prev => ({ ...prev, rating: state.rating }));
+      // Clear the state to avoid re-applying on page refresh
+      window.history.replaceState(null, '', location.pathname);
+    }
+  }, [location]);
 
   // Use uncontrolled input with ref for search
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -116,6 +133,9 @@ const BookListPage: React.FC = () => {
     <div className="book-list-page">
       <div className="page-header">
         <h2>Book Collection</h2>
+        <Link to="/books/new" className="btn-primary">
+          Add Book
+        </Link>
       </div>
 
       {/* Filter Bar */}
@@ -176,7 +196,6 @@ const BookListPage: React.FC = () => {
             <option value="author">Sort by Author</option>
             <option value="publishedDate">Sort by Published Date</option>
             <option value="rating">Sort by Rating</option>
-            <option value="createdAt">Sort by Date Added</option>
           </select>
 
           <select

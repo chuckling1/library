@@ -1,9 +1,9 @@
-@import '../styles/variables';
+@use '../styles/variables' as vars;
 
 .genre-filter {
   display: flex;
   flex-direction: column;
-  gap: $spacing-sm;
+  gap: vars.$spacing-sm;
 }
 
 .genre-filter__header {
@@ -13,29 +13,29 @@
 }
 
 .genre-filter__label {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-  color: $text-primary;
+  font-size: vars.$font-size-sm;
+  font-weight: vars.$font-weight-medium;
+  color: vars.$text-primary;
 }
 
 .genre-filter__clear {
-  font-size: $font-size-xs;
-  color: $accent-primary;
+  font-size: vars.$font-size-xs;
+  color: vars.$accent-primary;
   background: none;
-  border: 1px solid $accent-primary;
-  padding: $spacing-xs $spacing-sm;
-  border-radius: $border-radius-sm;
+  border: 1px solid vars.$accent-primary;
+  padding: vars.$spacing-xs vars.$spacing-sm;
+  border-radius: vars.$border-radius-sm;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-weight: $font-weight-medium;
+  font-weight: vars.$font-weight-medium;
 
   &:hover {
-    background-color: $accent-primary;
-    color: $bg-primary;
+    background-color: vars.$accent-primary;
+    color: vars.$bg-primary;
   }
 
   &:focus {
-    outline: 2px solid $accent-primary;
+    outline: 2px solid vars.$accent-primary;
     outline-offset: 2px;
   }
 
@@ -45,13 +45,14 @@
 }
 
 .genre-filter__pills {
+  $genres-row-count: 2;
   display: flex;
   flex-wrap: wrap;
-  gap: $spacing-xs;
-  max-height: calc(3 * (22px + #{$spacing-sm})); // Max height for 3 rows + padding
+  gap: vars.$spacing-xs;
+  max-height: calc(#{$genres-row-count} * (24px + #{vars.$spacing-sm})); // Max height for 3 rows + padding
   overflow: hidden;
   transition: max-height 0.3s ease-in-out;
-  padding: $spacing-sm;
+  padding: vars.$spacing-sm;
   
   &--expanded {
     max-height: none; // Remove height restriction when expanded
@@ -59,35 +60,35 @@
 }
 
 .genre-filter__toggle {
-  margin-top: $spacing-xs;
-  padding: $spacing-xs $spacing-sm;
-  background-color: $bg-primary;
-  border: 1px solid $border-color;
-  border-radius: $border-radius-sm;
-  color: $text-secondary;
-  font-size: $font-size-xs;
+  margin-top: vars.$spacing-xs;
+  padding: vars.$spacing-xs vars.$spacing-sm;
+  background-color: vars.$bg-primary;
+  border: 1px solid vars.$border-color;
+  border-radius: vars.$border-radius-sm;
+  color: vars.$text-secondary;
+  font-size: vars.$font-size-xs;
   cursor: pointer;
   transition: all 0.2s ease;
   width: 100%;
   text-align: center;
 
   &:hover {
-    background-color: $border-color;
-    color: $text-primary;
+    background-color: vars.$border-color;
+    color: vars.$text-primary;
   }
 
   &:focus {
-    outline: 2px solid $accent-primary;
+    outline: 2px solid vars.$accent-primary;
     outline-offset: 2px;
   }
 }
 
 .genre-filter__pill {
-  font-size: $font-size-xs;
-  color: $text-secondary;
-  background-color: $bg-primary;
-  padding: $spacing-xs $spacing-sm;
-  border: 1px solid $border-color;
+  font-size: vars.$font-size-xs;
+  color: vars.$text-secondary;
+  background-color: vars.$bg-primary;
+  padding: vars.$spacing-xs vars.$spacing-sm;
+  border: 1px solid vars.$border-color;
   border-radius: 12px;
   white-space: nowrap;
   cursor: pointer;
@@ -100,46 +101,46 @@
   flex-shrink: 0; // Prevent pills from shrinking
 
   &:hover {
-    background-color: $border-color;
-    color: $text-primary;
+    background-color: vars.$border-color;
+    color: vars.$text-primary;
     transform: translateY(-1px);
   }
 
   &--active {
-    background-color: $accent-primary;
-    color: $bg-primary;
-    border-color: $accent-primary;
-    font-weight: $font-weight-medium;
+    background-color: vars.$accent-primary;
+    color: vars.$bg-primary;
+    border-color: vars.$accent-primary;
+    font-weight: vars.$font-weight-medium;
 
     &:hover {
-      background-color: $accent-hover;
-      border-color: $accent-hover;
-      color: $bg-primary;
+      background-color: vars.$accent-hover;
+      border-color: vars.$accent-hover;
+      color: vars.$bg-primary;
     }
   }
 
   &:focus {
-    outline: 2px solid $accent-primary;
+    outline: 2px solid vars.$accent-primary;
     outline-offset: 2px;
   }
 }
 
 .genre-filter__empty {
-  font-size: $font-size-xs;
-  color: $text-secondary;
+  font-size: vars.$font-size-xs;
+  color: vars.$text-secondary;
   font-style: italic;
-  padding: $spacing-sm;
+  padding: vars.$spacing-sm;
   text-align: center;
-  border: 1px dashed $border-color;
-  border-radius: $border-radius-sm;
+  border: 1px dashed vars.$border-color;
+  border-radius: vars.$border-radius-sm;
 }
 
 .genre-filter__description {
-  font-size: $font-size-xs;
-  color: $text-secondary;
+  font-size: vars.$font-size-xs;
+  color: vars.$text-secondary;
   font-style: italic;
-  padding: $spacing-xs;
-  background-color: rgba($accent-primary, 0.1);
-  border-radius: $border-radius-sm;
-  border-left: 3px solid $accent-primary;
+  padding: vars.$spacing-xs;
+  background-color: rgba(vars.$accent-primary, 0.1);
+  border-radius: vars.$border-radius-sm;
+  border-left: 3px solid vars.$accent-primary;
 }

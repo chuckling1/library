@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Book, CreateBookRequest, UpdateBookRequest } from '../generated/api';
 import { useCreateBook, useUpdateBook } from '../hooks/useBooks';
 import { openLibraryService } from '../services/openLibraryService';
+import { logger } from '../utils/logger';
 import StarRating from './StarRating';
 import './BookForm.scss';
 // import BookCover from './BookCover'; // Not used yet
@@ -11,6 +12,48 @@ interface BookFormProps {
   book?: Book;
   isEditing: boolean;
 }
+
+// Helper function to format date for HTML5 date input
+const formatDateForInput = (dateString: string | undefined | null): string => {
+  if (!dateString) return '';
+  
+  try {
+    // Handle different date formats from Open Library service
+    let date: Date;
+    
+    // If it's just a year (e.g., "1980")
+    if (/^\d{4}$/.test(dateString.trim())) {
+      date = new Date(`${dateString}-01-01`);
+    }
+    // If it's month year (e.g., "March 1980") 
+    else if (/^\w+\s+\d{4}$/.test(dateString.trim())) {
+      date = new Date(`${dateString} 1`);
+    }
+    // If it's reverse year month (e.g., "1980 May")
+    else if (/^\d{4}\s+\w+$/.test(dateString.trim())) {
+      const [year, month] = dateString.trim().split(' ');
+      date = new Date(`${month} 1, ${year}`);
+    }
+    // If it's year-month (e.g., "2020-05")  
+    else if (/^\d{4}-\d{2}$/.test(dateString.trim())) {
+      date = new Date(`${dateString}-01`);
+    }
+    // Otherwise try to parse as-is (e.g., "Apr 07, 1981")
+    else {
+      date = new Date(dateString);
+    }
+    
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      return '';
+    }
+    
+    // Return in yyyy-MM-dd format required by HTML5 date input
+    return date.toISOString().split('T')[0] ?? '';
+  } catch {
+    return '';
+  }
+};
 
 const BookForm: React.FC<BookFormProps> = ({ book, isEditing }) => {
   const navigate = useNavigate();
@@ -30,7 +73,7 @@ const BookForm: React.FC<BookFormProps> = ({ book, isEditing }) => {
     title: book?.title ?? '',
     author: book?.author ?? '',
     genres: book?.bookGenres?.map(bg => bg.genreName ?? '').filter(Boolean) ?? [],
-    publishedDate: book?.publishedDate ? new Date(book.publishedDate).toISOString().split('T')[0] ?? '' : '',
+    publishedDate: formatDateForInput(book?.publishedDate),
     rating: book?.rating ?? 5,
     edition: book?.edition ?? '',
     isbn: book?.isbn ?? '',
@@ -67,7 +110,7 @@ const BookForm: React.FC<BookFormProps> = ({ book, isEditing }) => {
         title: book.title || '',
         author: book.author || '',
         genres: book.bookGenres?.map(bg => bg.genreName ?? '').filter(Boolean) ?? [],
-        publishedDate: book.publishedDate ? new Date(book.publishedDate).toISOString().split('T')[0] ?? '' : '',
+        publishedDate: formatDateForInput(book.publishedDate),
         rating: book.rating ?? 5,
         edition: book.edition ?? '',
         isbn: book.isbn ?? '',
@@ -89,8 +132,7 @@ const BookForm: React.FC<BookFormProps> = ({ book, isEditing }) => {
       setBookSuggestions(suggestions);
       setShowSuggestions(suggestions.length > 0);
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to search books:', error);
+      logger.error('Failed to search books:', error);
       setBookSuggestions([]);
     } finally {
       setIsSearching(false);
@@ -114,7 +156,7 @@ const BookForm: React.FC<BookFormProps> = ({ book, isEditing }) => {
       title: suggestion.title,
       author: suggestion.author,
       isbn: suggestion.isbn ?? '',
-      publishedDate: suggestion.publishedDate ?? '',
+      publishedDate: formatDateForInput(suggestion.publishedDate),
       genres: suggestion.subjects?.slice(0, 3) ?? prev.genres, // Add up to 3 genres from subjects
     }));
     
@@ -166,6 +208,19 @@ const BookForm: React.FC<BookFormProps> = ({ book, isEditing }) => {
 
     if (!formData.publishedDate) {
       newErrors.publishedDate = 'Published date is required';
+    } else {
+      // Validate that the date is actually valid
+      const dateValue = new Date(formData.publishedDate);
+      if (isNaN(dateValue.getTime())) {
+        newErrors.publishedDate = 'Published date must be a valid date';
+      } else {
+        // Check that the date is not in the future
+        const today = new Date();
+        today.setHours(23, 59, 59, 999); // Set to end of today
+        if (dateValue > today) {
+          newErrors.publishedDate = 'Published date cannot be in the future';
+        }
+      }
     }
 
     if (formData.rating < 1 || formData.rating > 5) {
@@ -183,11 +238,18 @@ const BookForm: React.FC<BookFormProps> = ({ book, isEditing }) => {
       return;
     }
 
+    // Double-check date validity before submission
+    const dateValue = new Date(formData.publishedDate);
+    if (isNaN(dateValue.getTime())) {
+      setErrors({ submit: 'Invalid date format. Please select a valid date.' });
+      return;
+    }
+
     const bookData: CreateBookRequest | UpdateBookRequest = {
       title: formData.title.trim(),
       author: formData.author.trim(),
       genres: formData.genres,
-      publishedDate: new Date(formData.publishedDate).toISOString(),
+      publishedDate: dateValue.toISOString(),
       rating: formData.rating,
       edition: formData.edition.trim() || null,
       isbn: formData.isbn.trim() || null,
@@ -201,8 +263,7 @@ const BookForm: React.FC<BookFormProps> = ({ book, isEditing }) => {
       }
       void navigate('/');
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error saving book:', error);
+      logger.error('Error saving book:', error);
       setErrors({ submit: 'Failed to save book. Please try again.' });
     }
   };

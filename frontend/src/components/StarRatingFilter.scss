@@ -1,32 +1,32 @@
-@import '../styles/variables';
+@use '../styles/variables' as vars;
 
 .star-rating-filter {
   display: flex;
   flex-direction: column;
-  gap: $spacing-xs;
+  gap: vars.$spacing-xs;
 }
 
 .star-rating-filter__label {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-  color: $text-primary;
+  font-size: vars.$font-size-sm;
+  font-weight: vars.$font-weight-medium;
+  color: vars.$text-primary;
 }
 
 .star-rating-filter__controls {
   display: flex;
   align-items: center;
-  gap: $spacing-sm;
+  gap: vars.$spacing-sm;
 }
 
 .star-rating-filter__clear {
   background: none;
-  border: 1px solid $border-color;
-  color: $text-secondary;
-  padding: $spacing-xs;
+  border: 1px solid vars.$border-color;
+  color: vars.$text-secondary;
+  padding: vars.$spacing-xs;
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: $font-size-lg;
+  font-size: vars.$font-size-lg;
   line-height: 1;
   width: 24px;
   height: 24px;
@@ -35,18 +35,18 @@
   justify-content: center;
 
   &:hover {
-    background-color: $border-color;
-    color: $text-primary;
+    background-color: vars.$border-color;
+    color: vars.$text-primary;
   }
 
   &:focus {
-    outline: 2px solid $accent-primary;
+    outline: 2px solid vars.$accent-primary;
     outline-offset: 2px;
   }
 }
 
 .star-rating-filter__description {
-  font-size: $font-size-xs;
-  color: $text-secondary;
+  font-size: vars.$font-size-xs;
+  color: vars.$text-secondary;
   font-style: italic;
 }

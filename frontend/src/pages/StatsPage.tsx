@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useBookStats, useBooks, formatRating } from '../hooks/useBooks';
+import { useGenreFilter } from '../hooks/useGenreFilter';
 import { 
   BarChart, 
   Bar, 
@@ -15,10 +17,13 @@ import {
 import './StatsPage.scss';
 
 const StatsPage: React.FC = () => {
-  const { data: stats, isLoading, error, refetch } = useBookStats();
+  const { data: stats, isLoading, error } = useBookStats();
   const { data: recentBooks } = useBooks({ sortBy: 'createdAt', sortDirection: 'desc', pageSize: 5 });
+  const navigate = useNavigate();
+  const { clearGenres, toggleGenre } = useGenreFilter();
   
   const [chartType, setChartType] = useState<'bar' | 'pie'>('bar');
+  const [ratingChartType, setRatingChartType] = useState<'bar' | 'pie'>('bar');
 
   // Process genre data for charts with better presentation (top 12 for readability)
   const chartData = useMemo(() => {
@@ -68,8 +73,17 @@ const StatsPage: React.FC = () => {
     return ratingCounts.filter(r => r.count > 0);
   }, [stats?.genreDistribution]);
 
-  const handleRefresh = (): void => {
-    void refetch();
+  // Handle genre chart clicks - navigate to books with genre filter
+  const handleGenreClick = (genre: string): void => {
+    void clearGenres();
+    void toggleGenre(genre);
+    void navigate('/books');
+  };
+
+  // Handle rating chart clicks - navigate to books with rating filter
+  const handleRatingClick = (rating: number): void => {
+    void clearGenres();
+    void navigate('/books', { state: { rating } });
   };
 
   if (isLoading) {
@@ -87,10 +101,7 @@ const StatsPage: React.FC = () => {
       <div className="stats-page">
         <div className="error-container">
           <h2>Error Loading Statistics</h2>
-          <p>Failed to load library statistics. Please try again.</p>
-          <button onClick={handleRefresh} className="btn-primary">
-            Retry
-          </button>
+          <p>Failed to load library statistics. Please refresh the page to try again.</p>
         </div>
       </div>
     );
@@ -112,12 +123,7 @@ const StatsPage: React.FC = () => {
       <div className="page-header">
         <div className="title-section">
           <h2>Library Statistics</h2>
-          <p className="subtitle">Comprehensive overview of your book collection</p>
-        </div>
-        <div className="actions">
-          <button onClick={handleRefresh} className="btn-secondary refresh-btn">
-            🔄 Refresh
-          </button>
+          <p className="subtitle">Comprehensive overview of your book collection • Click charts to filter books</p>
         </div>
       </div>
 
@@ -203,9 +209,19 @@ const StatsPage: React.FC = () => {
                         `${value} book${value !== 1 ? 's' : ''}`,
                         'Count'
                       ]}
-                      labelFormatter={(label: string) => `Genre: ${label}`}
+                      labelFormatter={(label: string) => `Genre: ${label} (click to filter books)`}
                     />
-                    <Bar dataKey="count" fill="#4f46e5" radius={[4, 4, 0, 0]} />
+                    <Bar 
+                      dataKey="count" 
+                      fill="#4f46e5" 
+                      radius={[4, 4, 0, 0]}
+                      onClick={(data: { genre?: string }) => {
+                        if (data.genre) {
+                          handleGenreClick(data.genre);
+                        }
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    />
                   </BarChart>
                 ) : (
                   <PieChart>
@@ -220,13 +236,23 @@ const StatsPage: React.FC = () => {
                       outerRadius={120}
                       fill="#8884d8"
                       dataKey="count"
+                      onClick={(_, index) => {
+                        const genre = chartData[index]?.genre;
+                        if (genre) {
+                          handleGenreClick(genre);
+                        }
+                      }}
+                      style={{ cursor: 'pointer' }}
                     >
                       {chartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
                     </Pie>
                     <Tooltip 
-                      formatter={(value: number) => [`${value} books`, 'Count']}
+                      formatter={(value: number) => [
+                        `${value} books (click to filter)`, 
+                        'Count'
+                      ]}
                     />
                   </PieChart>
                 )}
@@ -243,19 +269,81 @@ const StatsPage: React.FC = () => {
         <div className="chart-container">
           <div className="chart-header">
             <h3>Rating Distribution by Genre</h3>
+            <div className="chart-controls">
+              <button 
+                className={`chart-type-btn ${ratingChartType === 'bar' ? 'active' : ''}`}
+                onClick={() => setRatingChartType('bar')}
+              >
+                📊 Bar
+              </button>
+              <button 
+                className={`chart-type-btn ${ratingChartType === 'pie' ? 'active' : ''}`}
+                onClick={() => setRatingChartType('pie')}
+              >
+                🥧 Pie
+              </button>
+            </div>
           </div>
           <div className="chart-content">
             {ratingData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={ratingData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="rating" />
-                  <YAxis />
-                  <Tooltip 
-                    formatter={(value: number) => [`${value} genre${value !== 1 ? 's' : ''}`, 'Count']}
-                  />
-                  <Bar dataKey="count" fill="#10b981" radius={[4, 4, 0, 0]} />
-                </BarChart>
+                {ratingChartType === 'bar' ? (
+                  <BarChart data={ratingData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="rating" />
+                    <YAxis />
+                    <Tooltip 
+                      formatter={(value: number) => [`${value} genre${value !== 1 ? 's' : ''} (click to filter books)`, 'Count']}
+                    />
+                    <Bar 
+                      dataKey="count" 
+                      fill="#10b981" 
+                      radius={[4, 4, 0, 0]}
+                      onClick={(data: { rating?: string }) => {
+                        const ratingString = data.rating;
+                        if (ratingString) {
+                          const ratingMatch = ratingString.match(/^(\d+)/);
+                          if (ratingMatch?.[1]) {
+                            handleRatingClick(parseInt(ratingMatch[1]));
+                          }
+                        }
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </BarChart>
+                ) : (
+                  <PieChart>
+                    <Pie
+                      data={ratingData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ rating, count, percent }) => 
+                        `${rating}: ${count} (${(percent * 100).toFixed(1)}%)`
+                      }
+                      outerRadius={100}
+                      fill="#10b981"
+                      dataKey="count"
+                      onClick={(_, index) => {
+                        const ratingString = ratingData[index]?.rating;
+                        if (ratingString) {
+                          const ratingMatch = ratingString.match(/^(\d+)/);
+                          if (ratingMatch?.[1]) {
+                            handleRatingClick(parseInt(ratingMatch[1]));
+                          }
+                        }
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      {ratingData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: number) => [`${value} genres (click to filter books)`, 'Count']}
+                    />
+                  </PieChart>
+                )}
               </ResponsiveContainer>
             ) : (
               <div className="chart-empty-state">
@@ -306,7 +394,12 @@ const StatsPage: React.FC = () => {
             </thead>
             <tbody>
               {allGenreData.map((genre, index) => (
-                <tr key={index}>
+                <tr 
+                  key={index} 
+                  onClick={() => handleGenreClick(genre.genre)}
+                  style={{ cursor: 'pointer' }}
+                  title="Click to filter books by this genre"
+                >
                   <td className="genre-cell">{genre.genre}</td>
                   <td className="count-cell">{genre.count}</td>
                   <td className="rating-cell">

@@ -1,4 +1,5 @@
 import { Book } from '../generated/api';
+import { logger } from './logger';
 import { openLibraryService } from '../services/openLibraryService';
 
 /**
@@ -110,8 +111,7 @@ export async function getBookCoverUrl(book: Book): Promise<string> {
       return coverUrl;
     }
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.warn('Failed to fetch cover from OpenLibrary:', error);
+    logger.warn('Failed to fetch cover from OpenLibrary:', error);
   }
   
   // Fallback to generated cover

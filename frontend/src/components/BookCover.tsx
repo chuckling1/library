@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Book } from '../generated/api';
 import { BookCoverManager } from '../utils/bookCovers';
+import { logger } from '../utils/logger';
 
 interface BookCoverProps {
   book: Book;
@@ -32,8 +33,7 @@ const BookCover: React.FC<BookCoverProps> = ({ book, size = 'medium', className 
           setCoverUrl(url);
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Failed to load book cover:', error);
+        logger.error('Failed to load book cover:', error);
         if (isMounted) {
           setHasError(true);
         }

@@ -1,10 +1,10 @@
-@import '../styles/variables';
+@use '../styles/variables' as vars;
 
 // Page wrapper for BookFormPage
 .book-form-page {
-  background-color: $bg-primary;
+  background-color: vars.$bg-primary;
   min-height: 100vh;
-  padding: $spacing-lg 0;
+  padding: vars.$spacing-lg 0;
 }
 
 // Loading container
@@ -14,14 +14,14 @@
   align-items: center;
   justify-content: center;
   min-height: 60vh;
-  padding: $spacing-xl;
+  padding: vars.$spacing-xl;
   text-align: center;
-  background-color: $bg-primary;
+  background-color: vars.$bg-primary;
 
   .loading-spinner {
-    font-size: $font-size-lg;
-    font-weight: $font-weight-medium;
-    color: $accent-primary;
+    font-size: vars.$font-size-lg;
+    font-weight: vars.$font-weight-medium;
+    color: vars.$accent-primary;
     animation: pulse 1.5s ease-in-out infinite;
 
     &::after {
@@ -29,9 +29,9 @@
       display: inline-block;
       width: 20px;
       height: 20px;
-      margin-left: $spacing-sm;
+      margin-left: vars.$spacing-sm;
       border: 2px solid transparent;
-      border-top: 2px solid $accent-primary;
+      border-top: 2px solid vars.$accent-primary;
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
@@ -45,21 +45,21 @@
   align-items: center;
   justify-content: center;
   min-height: 60vh;
-  padding: $spacing-xl;
+  padding: vars.$spacing-xl;
   text-align: center;
-  background-color: $bg-primary;
+  background-color: vars.$bg-primary;
 
   h2 {
-    font-size: $font-size-xl;
-    font-weight: $font-weight-bold;
-    color: $text-primary;
-    margin-bottom: $spacing-md;
+    font-size: vars.$font-size-xl;
+    font-weight: vars.$font-weight-bold;
+    color: vars.$text-primary;
+    margin-bottom: vars.$spacing-md;
   }
 
   p {
-    font-size: $font-size-sm;
-    color: $text-secondary;
-    margin-bottom: $spacing-lg;
+    font-size: vars.$font-size-sm;
+    color: vars.$text-secondary;
+    margin-bottom: vars.$spacing-lg;
     max-width: 500px;
     line-height: 1.5;
   }
@@ -91,22 +91,22 @@
 // Responsive design
 @media (max-width: 768px) {
   .book-form-page {
-    padding: $spacing-md 0;
+    padding: vars.$spacing-md 0;
   }
 
   .loading-container,
   .error-container {
-    padding: $spacing-lg;
+    padding: vars.$spacing-lg;
     min-height: 50vh;
   }
 
   .error-container {
     h2 {
-      font-size: $font-size-lg;
+      font-size: vars.$font-size-lg;
     }
 
     p {
-      font-size: $font-size-xs;
+      font-size: vars.$font-size-xs;
     }
   }
 }

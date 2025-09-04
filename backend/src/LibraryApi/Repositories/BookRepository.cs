@@ -64,7 +64,7 @@ public class BookRepository : IBookRepository
             "publisheddate" => sortDirection == "desc" ? query.OrderByDescending(b => b.PublishedDate) : query.OrderBy(b => b.PublishedDate),
             "rating" => sortDirection == "desc" ? query.OrderByDescending(b => b.Rating) : query.OrderBy(b => b.Rating),
             "createdat" => sortDirection == "desc" ? query.OrderByDescending(b => b.CreatedAt) : query.OrderBy(b => b.CreatedAt),
-            _ => query.OrderByDescending(b => b.CreatedAt) // Default sort
+            _ => query.OrderBy(b => b.Title) // Default sort by title
         };
 
         var totalCount = await query.CountAsync(cancellationToken);

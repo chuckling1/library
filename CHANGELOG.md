@@ -4,8 +4,188 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased] - 2025-09-04
 
+### Fixed
+- **Published Date Validation Issue**: Resolved critical validation gap allowing invalid dates in book creation/editing forms
+  - **Root Cause**: Backend relied only on `[Required]` attribute validation without validating actual date format or semantic validity
+  - **Issue Impact**: Users could submit invalid date strings (empty, malformed, or future dates) that passed basic validation but caused errors during processing
+  - **Backend Solution**: 
+    - Implemented comprehensive FluentValidation with `CreateBookRequestValidator` and `UpdateBookRequestValidator`
+    - Added semantic date validation: `BeValidDateString()` ensures parseable dates, `BeValidDateRange()` prevents future dates
+    - All validation rules now include meaningful error messages for better user experience
+  - **Frontend Solution**:
+    - Enhanced `validateForm()` in BookForm.tsx with proper date validation logic
+    - Added checks for invalid dates using `isNaN(dateValue.getTime())`
+    - Added future date prevention with proper timezone handling
+    - Added double-validation before form submission to prevent invalid Date objects
+  - **Comprehensive Testing**:
+    - Added 69 backend unit tests covering all validation scenarios (invalid formats, future dates, edge cases)
+    - Added frontend component tests for date validation user experience
+    - Tests verify both valid scenarios (past dates, today) and invalid scenarios (empty, malformed, future dates)
+  - **Technical Details**:
+    - Backend: `CreateBookRequestValidator.cs`, `UpdateBookRequestValidator.cs` with DateTime.TryParse validation
+    - Frontend: Enhanced date validation in `BookForm.tsx` with proper error state management
+    - FluentValidation integrated into DI container for automatic validation pipeline
+  - **Files Updated**: 
+    - Backend: `src/LibraryApi/Validators/CreateBookRequestValidator.cs`, `src/LibraryApi/Validators/UpdateBookRequestValidator.cs`
+    - Frontend: `src/components/BookForm.tsx` (lines 152-190, 199-214)
+    - Tests: `src/LibraryApi.Tests/Validators/`, `src/components/BookForm.test.tsx`
+  - **Smart Open Library Date Extraction**: Implemented elegant 4-step algorithm for accurate publication dates from messy Open Library data
+    - **Root Problem**: Open Library API returns publication dates in wildly inconsistent formats across dozens of variations
+      - Examples from "A Confederacy of Dunces": ["April 2005", "1987", "1980", "2006 May", "Apr 07, 1981", etc.]
+      - Previous solution used "01-01" padding hack that gave inaccurate dates like "1980-01-01" instead of actual publication info
+    - **TDD Implementation**: Used real "A Confederacy of Dunces" Open Library data to drive test development
+    - **4-Step Smart Algorithm**:
+      1. **Get first_publish_year** (e.g., 1980) as the canonical publication year
+      2. **Filter publish_date array** to only entries containing that year (["1980", "March 1980", "Apr 15, 1980"])
+      3. **Find longest string** assuming more characters = more detail ("Apr 15, 1980" wins over "1980")
+      4. **Parse and validate** while preserving original format if valid ("Apr 15, 1980" stays as-is, not converted to ISO)
+    - **Key Innovation**: Preserves meaningful date formats instead of converting everything to artificial ISO dates
+      - "March 1980" stays "March 1980" (not "1980-03-01")  
+      - "Apr 07, 1981" stays "Apr 07, 1981" (not "1981-04-07")
+      - "1980" stays "1980" (not "1980-01-01")
+    - **Enhanced BookForm compatibility**: Updated `formatDateForInput()` to handle all preserved formats for HTML5 date inputs
+      - Fixed critical bug in `handleBookSuggestionSelect()` where raw dates bypassed formatting (caused console errors)
+    - **Enhanced Open Library API usage**: Changed from limited field selection to `fields=*,availability` for richer date data
+      - Example improvement: Harry Potter now returns detailed dates like "26 June 1997" instead of just "1997"
+    - **Smarter year filtering**: Enhanced `filterDatesByYear()` to extract years from complex formats using regex pattern matching
+      - Handles "26 June 1997", "2001 October", "Apr 07, 1981" etc., not just simple substring matching
+    - **Comprehensive test coverage**: 10 TDD test cases covering real Open Library data scenarios and edge cases
+    - **Benefits**: Users now see accurate publication dates from Open Library suggestions, no more artificial "January 1st" dates, no more console errors
+  - **Validation**: All validation gates pass - backend tests (69/69), frontend linting, TypeScript compilation, and production build successful
+- **BookCard Show More Button Logic**: Fixed broken "Show More" button logic for genre pills using character-based width calculation
+  - **Root Cause**: Recent commit `05d8933` replaced simple count-based logic with unreliable DOM height measurement during render cycles
+  - **Issue Impact**: "Show More" button appeared for cards with only 3 genres like "Harry Potter and the Order of the Phoenix" when only 2 rows were needed
+  - **Solution**: Implemented character-based width calculation to accurately predict when genre pills will overflow 2 rows
+  - **Technical Approach**: 
+    - Calculate approximate width for each genre pill based on character count (base width + text length * average character width)
+    - Simulate flex-wrap layout to count required rows
+    - Show "Show More" only when more than 2 rows are needed
+  - **Benefits**: Deterministic logic that accounts for varying genre name lengths, no DOM measurement timing issues
+  - **Files Updated**: `frontend/src/components/BookCard.tsx` (lines 28-61)
+  - **Validation**: TypeScript compilation and ESLint pass successfully, logic now accurately reflects actual layout needs
+
 ### Added
-- **Modern Dark Theme Design System**: Implemented comprehensive UI/UX overhaul with professional dark theme
+- **Header Logo Integration**: Added company logo to application header
+  - **Logo Location**: `frontend/src/images/logo.png` (provided by user)
+  - **Implementation**: Logo displayed alongside "My Book Library" title in header brand section
+  - **Styling**: 40x40px logo with proper spacing and alignment using flexbox
+  - **Components Updated**: Layout.tsx component and App.scss styles
+  - **Visual Impact**: Professional branding now visible on all pages
+  - **Validation**: Build successful with logo properly bundled as static asset
+
+### Fixed
+- **Comprehensive Published Date System Overhaul**: Complete fix for suspicious 1/1/year date display issues
+  - **Root Cause Identified**: OpenLibrary service was adding fake "-01-01" to year-only data, creating misleading dates like "1/1/2020" for books published in "2020"
+  - **Backend Changes**:
+    - **Model Update**: Changed `Book.PublishedDate` from `DateTime` to `string` to support flexible date formats
+    - **Migration Created**: `ConvertPublishedDateToString` migration converts existing database records:
+      - Dates like "2020-01-01T00:00:00" → "2020" (year-only)
+      - Valid full dates → "YYYY-MM-DD" format (preserve specific dates)
+    - **Request DTOs Updated**: `CreateBookRequest` and `UpdateBookRequest` now accept string dates
+    - **Test Updates**: All backend tests updated to use string date formats
+    - **Validation**: All 39 backend tests pass successfully
+  - **Frontend Changes**:
+    - **OpenLibrary Service Fix**: No longer adds fake "-01-01" for year-only publication data
+    - **Improved Date Logic**: Only uses parsed dates when more specific than year-only
+    - **Enhanced Formatting**: Already handles year, year-month, and full date formats properly
+  - **Data Conversion Strategy**:
+    - Existing corrupted dates automatically fixed during migration
+    - New book entries from OpenLibrary will store appropriate precision (year vs full date)
+    - Frontend formatting displays dates naturally without fake month/day components
+  - **Files Updated**: 
+    - Backend: `Models/Book.cs`, `Requests/*.cs`, migration files, all test files
+    - Frontend: `services/openLibraryService.ts`
+  - **Result**: Books now display "2020" instead of "1/1/2020" when only year data is available
+  - **Note**: API client regeneration required when backend server is running
+
+### Enhanced
+- **Comprehensive Header Layout Redesign**: Complete restructuring of header layout for optimal visual hierarchy
+  - **Vertical Padding Reduction**: Changed header padding from 24px to 1rem (16px) for more compact appearance
+  - **Content Separation**: Added 2rem (32px) bottom margin to create clean separation between header and main content
+  - **Width Alignment**: Increased header content max-width from 1200px to 1400px to match page content width
+  - **Navigation Centering**: Restructured header layout using CSS Grid (1fr auto 1fr) to perfectly center navigation links
+  - **Logo Positioning**: Logo and brand now properly float left while maintaining consistent spacing
+  - **Action Button Relocation**: Moved "Add Book" button from header to page content area, aligned with "Book Collection" title
+  - **Responsive Design**: Added mobile-friendly responsive behavior for header layout and page content
+  - **Design Goal**: Achieved balanced layout with centered navigation, proper content alignment, and clear visual hierarchy
+  - **Implementation**: Updated Layout.tsx, App.scss, BookListPage.tsx, and BookListPage.scss with grid-based layout system
+  - **Impact**: Professional, balanced design with intuitive navigation placement and improved content organization
+  - **Validation**: TypeScript compilation, linting, and production build all pass successfully
+
+### Fixed
+- **BookCard Grid Layout Issue**: Fixed neighboring cards expanding when one card's genres are expanded
+  - **Root Cause**: CSS Grid layout with implicit row heights caused cards to share heights across rows
+  - **Solution**: Added `align-items: start` to `.books-grid` to prevent cards from stretching to match row height
+  - **Impact**: Cards now maintain individual heights when content expands, improving visual stability
+  - **Files Updated**: `frontend/src/pages/BookListPage.scss`
+
+- **BookCard Height Consistency**: Implemented consistent minimum height for all book cards
+  - **Root Cause**: Cards without genre tags appeared significantly shorter than cards with genre sections, creating visual inconsistency
+  - **Solution**: Added `min-height: 280px` to `.book-card` to ensure all cards have consistent baseline height
+  - **Calculation**: Height matches cards with genre sections (not expanded) including cover (180px), content areas, padding, and margins
+  - **Impact**: All cards now have uniform height for cleaner grid appearance, while still allowing expansion when "Show More" is activated
+  - **Files Updated**: `frontend/src/components/BookCard.scss`
+
+- **Published Date Display Issue**: Fixed misleading 1/1/year date format for incomplete publication dates
+  - **Root Cause**: `formatDate` function converted year-only dates like "2020" to "1/1/2020" using JavaScript Date constructor
+  - **Solution**: Enhanced date formatting logic to handle different date formats appropriately:
+    - Year only (e.g., "2020") → displays as "2020"
+    - Year-month (e.g., "2020-05") → displays as "May 2020"
+    - Full dates → displays using standard locale formatting
+    - Invalid dates → displays original string
+  - **Impact**: Users see accurate publication date information without misleading month/day additions
+  - **Files Updated**: `frontend/src/hooks/useBooks.ts` (formatDate function)
+  - **Validation**: TypeScript compilation, linting, and build pass successfully
+
+- **Sass Deprecation Warnings**: Converted remaining Sass files from @import to @use syntax
+  - **Root Cause**: Sass @import is deprecated in favor of @use syntax for better performance and module system
+  - **Files Updated**: GenreFilter.scss, StarRating.scss, StarRatingFilter.scss, BookListPage.scss, BookFormPage.scss
+  - **Changes Made**: Replaced `@import '../styles/variables';` with `@use '../styles/variables' as vars;`
+  - **Variable Updates**: Updated all variable references from `$variable` to `vars.$variable` format
+  - **Index.scss Fix**: Fixed incorrect `vars.vars.$` references and moved @use statements before @import rules per Sass requirements
+  - **Impact**: Eliminates Sass deprecation warnings and improves build performance with modern module system
+  - **Validation**: Frontend build and linting pass successfully with new @use syntax
+  - **Note**: StatsPage.scss did not require conversion as it contains no variable imports
+
+### Removed
+- **Sort by Date Added Option**: Removed "Sort by Date Added" from user-facing dropdown in book collection
+  - **UI Change**: Dropdown no longer shows "Sort by Date Added" as an option
+  - **Default Sort**: Changed default sorting from "Date Added (desc)" to "Title (asc)" for better user experience
+  - **Backend Compatibility**: Maintained createdAt sorting capability for internal functionality (e.g., recent books display)
+  - **Test Updates**: Updated all related tests to reflect new default sorting behavior
+  - **Validation**: All frontend linting, type checking, and core functionality tests pass
+
+### Enhanced
+- **Interactive Statistics Dashboard**: Added comprehensive chart interactivity and live data capabilities
+  - **Clickable Genre Distribution Charts**: Both bar and pie charts now navigate to book collection with selected genre filter
+  - **Clickable Rating Distribution Charts**: Bar and pie chart variants navigate to book collection with rating filter
+  - **Live Data Updates**: Removed manual refresh button - statistics data now updates automatically via React Query
+  - **Enhanced User Experience**: Added "Click charts to filter books" subtitle with clear visual indicators (pointer cursor)
+  - **Dual Chart Types**: Both genre and rating distribution now support bar/pie chart toggle functionality
+  - **Seamless Navigation**: Clicking charts clears existing filters and applies new ones in book collection
+  - **Table Interactivity**: Genre breakdown table rows are now clickable to filter by genre
+  - **Clear Filters Button**: Added "Clear All" button in BookListPage for easy filter reset
+  - **Rating State Passing**: Statistics page passes rating filters via React Router state to BookListPage
+  - **Real-time Integration**: Charts reflect current data state without requiring manual refreshes
+
+## [Unreleased] - 2025-09-04
+
+### Added
+- **Advanced Filtering and Statistics System**: Comprehensive book discovery and analytics features
+  - **Genre Filter Component**: Interactive tag-based genre filtering with visual selection state
+  - **Star Rating Filter**: 5-star rating filter with visual star display and "All" option
+  - **Statistics Dashboard**: Professional analytics page with data visualizations
+    - **Overview Cards**: Key metrics display (Total Books, Average Rating, Unique Genres, Top Genre)
+    - **Interactive Charts**: Recharts-powered bar and pie charts for genre distribution with toggle functionality
+    - **Rating Analytics**: Visual breakdown of rating distribution by genre with color-coded bars
+    - **Recent Books Section**: Display of 5 most recently added books with genre tags and ratings
+    - **Detailed Stats Table**: Comprehensive table with genre breakdown, book counts, average ratings, and percentages
+  - **GenreFilterContext**: Global state management for genre filtering across components
+  - **Enhanced useBooks Hook**: Support for genre and rating filtering with backend integration
+  - **Type-Safe Integration**: Full integration with OpenAPI-generated types (BookStatsResponse, GenreCount)
+
+- **Modern Dark Theme Design System**: Comprehensive UI/UX overhaul with professional styling
+  - **SCSS Architecture**: Migrated from CSS to SCSS with modular component styles and design system
   - **Design Tokens**: Created SCSS variables system with modern slate-and-teal color palette
   - **Typography System**: Implemented Inter font family with consistent sizing and weight scales
   - **Spacing System**: Established 8pt grid system for consistent layout rhythm
@@ -13,16 +193,34 @@ All notable changes to this project will be documented in this file.
   - **Visual Hierarchy**: Redesigned BookCard and FilterBar components with improved information organization
   - **Accessibility**: Added proper focus states, color contrast, and semantic markup
   - **Responsive Design**: Mobile-first approach with flexible grid layouts
+  - **Icon Assets**: Added SVG icons for delete and edit functionality
 
-- **Comprehensive Statistics Dashboard**: Implemented professional analytics dashboard with interactive visualizations
-  - **Overview Cards**: Key metrics display (Total Books, Average Rating, Unique Genres, Top Genre)
-  - **Interactive Charts**: Recharts-powered bar and pie charts for genre distribution with toggle functionality
-  - **Rating Analytics**: Visual breakdown of rating distribution by genre with color-coded bars
-  - **Recent Books Section**: Display of 5 most recently added books with genre tags and ratings
-  - **Detailed Stats Table**: Sortable table with genre breakdown, book counts, average ratings, and percentages
-  - **Type-Safe Integration**: Full integration with OpenAPI-generated types (BookStatsResponse, GenreCount)
-  - **Error Handling**: Comprehensive loading states, error boundaries, and empty states
-  - **Responsive Design**: Mobile-optimized layouts with collapsible sections and horizontal scrolling tables
+### Enhanced
+- **Backend Filtering Infrastructure**: Extended repository and service layers to support new filtering capabilities
+  - **BookRepository**: Added genre and rating filtering methods with proper async/await patterns
+  - **BookService**: Enhanced service layer to handle filtering operations
+  - **BooksController**: Updated API endpoints to support new query parameters
+  - **Statistics Endpoints**: Added `/api/Books/stats` endpoint for dashboard data
+  - **Test Coverage**: Comprehensive unit tests for new filtering functionality
+
+## [2025-09-03] - Complete Book Management System
+
+### Added
+- **OpenLibrary Integration**: Complete book search and metadata retrieval system
+  - **Book Search API**: Real-time book search with debounced API calls to OpenLibrary
+  - **Auto-fill Functionality**: Automatic population of book details from search results
+  - **Cover Image Integration**: Dynamic book cover retrieval and display
+  - **Genre Management**: Autocomplete and tag-based genre system with custom genre support
+  - **BookCover Component**: Responsive cover image display with fallback handling
+  - **OpenLibrary Service**: Comprehensive service layer for external API integration
+
+- **Comprehensive Book Form System**: Advanced book creation and editing capabilities
+  - **BookForm Component**: Full-featured form with validation, search integration, and UX enhancements
+  - **Real-time Validation**: Form validation with user-friendly error messages
+  - **Search Integration**: Embedded book search with result selection
+  - **Genre Autocomplete**: Smart genre selection with existing genre suggestions
+  - **Cover Preview**: Live preview of selected book covers
+  - **Form State Management**: Proper form state handling with TypeScript interfaces
 
 ### Fixed
 - **Case-Sensitive Search Issue**: Resolved critical search functionality problem where live search was case-sensitive

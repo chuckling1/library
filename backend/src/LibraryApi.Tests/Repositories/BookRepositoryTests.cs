@@ -43,7 +43,7 @@ public class BookRepositoryTests : IDisposable
                 Id = Guid.NewGuid(),
                 Title = "The Great Gatsby",
                 Author = "F. Scott Fitzgerald",
-                PublishedDate = new DateTime(1925, 4, 10),
+                PublishedDate = "1925-04-10",
                 Rating = 4,
                 CreatedAt = DateTime.UtcNow.AddDays(-10),
                 UpdatedAt = DateTime.UtcNow.AddDays(-10)
@@ -53,7 +53,7 @@ public class BookRepositoryTests : IDisposable
                 Id = Guid.NewGuid(),
                 Title = "A Brief History of Time",
                 Author = "Stephen Hawking",
-                PublishedDate = new DateTime(1988, 4, 1),
+                PublishedDate = "1988-04-01",
                 Rating = 5,
                 CreatedAt = DateTime.UtcNow.AddDays(-5),
                 UpdatedAt = DateTime.UtcNow.AddDays(-5)
@@ -63,7 +63,7 @@ public class BookRepositoryTests : IDisposable
                 Id = Guid.NewGuid(),
                 Title = "Steve Jobs",
                 Author = "Walter Isaacson",
-                PublishedDate = new DateTime(2011, 10, 24),
+                PublishedDate = "2011-10-24",
                 Rating = 4,
                 Edition = "First Edition",
                 Isbn = "978-1451648539",
@@ -287,7 +287,7 @@ public class BookRepositoryTests : IDisposable
         {
             Title = "New Test Book",
             Author = "Test Author",
-            PublishedDate = new DateTime(2024, 1, 1),
+            PublishedDate = "2024",
             Rating = 3
         };
 

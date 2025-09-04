@@ -29,10 +29,12 @@ public class UpdateBookRequest
     public List<string> Genres { get; set; } = new List<string>();
 
     /// <summary>
-    /// Gets or sets the published date of the book.
+    /// Gets or sets the published date of the book as a string.
+    /// Can be a year (e.g., "2020"), year-month (e.g., "2020-05"), or full date (e.g., "2020-05-15").
     /// </summary>
     [Required(ErrorMessage = "Published date is required")]
-    public DateTime PublishedDate { get; set; }
+    [MaxLength(50, ErrorMessage = "Published date cannot exceed 50 characters")]
+    public string PublishedDate { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the user's rating of the book.

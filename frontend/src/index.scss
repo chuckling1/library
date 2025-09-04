@@ -1,9 +1,9 @@
+// Import design system (must come before any @import rules)
+@use 'styles/variables' as vars;
+@use 'styles/buttons' as *;
+
 // Import Google Fonts
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
-
-// Import design system
-@import 'styles/variables';
-@import 'styles/buttons';
 
 // Global styles
 * {
@@ -11,17 +11,17 @@
 }
 
 html {
-  font-size: $font-size-base;
+  font-size: vars.$font-size-base;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: $font-family-sans;
-  font-weight: $font-weight-regular;
+  font-family: vars.$font-family-sans;
+  font-weight: vars.$font-weight-regular;
   line-height: 1.5;
-  color: $text-primary;
-  background-color: $bg-primary;
+  color: vars.$text-primary;
+  background-color: vars.$bg-primary;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -35,19 +35,19 @@ body {
 
 // Typography defaults
 h1, h2, h3, h4, h5, h6 {
-  color: $text-primary;
-  font-weight: $font-weight-bold;
-  margin: 0 0 $spacing-md 0;
+  color: vars.$text-primary;
+  font-weight: vars.$font-weight-bold;
+  margin: 0 0 vars.$spacing-md 0;
   line-height: 1.2;
 }
 
-h1 { font-size: $font-size-xl; }
-h2 { font-size: $font-size-lg; }
-h3 { font-size: $font-size-md; }
+h1 { font-size: vars.$font-size-xl; }
+h2 { font-size: vars.$font-size-lg; }
+h3 { font-size: vars.$font-size-md; }
 
 p {
-  color: $text-secondary;
-  margin: 0 0 $spacing-sm 0;
+  color: vars.$text-secondary;
+  margin: 0 0 vars.$spacing-sm 0;
 }
 
 // Form elements defaults
@@ -58,11 +58,11 @@ input, select, textarea {
 
 // Link defaults
 a {
-  color: $accent-primary;
+  color: vars.$accent-primary;
   text-decoration: none;
   
   &:hover {
-    color: $accent-hover;
+    color: vars.$accent-hover;
   }
 }
 
@@ -74,35 +74,35 @@ a {
 .book-form-container {
   max-width: 800px;
   margin: 0 auto;
-  padding: $spacing-xl;
-  background-color: $bg-primary;
+  padding: vars.$spacing-xl;
+  background-color: vars.$bg-primary;
   min-height: 100vh;
 }
 
 // Header
 .book-form-header {
-  margin-bottom: $spacing-xl;
+  margin-bottom: vars.$spacing-xl;
   text-align: center;
 
   h2 {
-    font-size: $font-size-xl;
-    font-weight: $font-weight-bold;
-    color: $text-primary;
+    font-size: vars.$font-size-xl;
+    font-weight: vars.$font-weight-bold;
+    color: vars.$text-primary;
     margin: 0;
   }
 }
 
 // Form
 .book-form {
-  background-color: $bg-surface;
-  padding: $spacing-xl;
-  border-radius: $border-radius-lg;
-  border: 1px solid $border-color;
+  background-color: vars.$bg-surface;
+  padding: vars.$spacing-xl;
+  border-radius: vars.$border-radius-lg;
+  border: 1px solid vars.$border-color;
 }
 
 // Form groups
 .form-group {
-  margin-bottom: $spacing-lg;
+  margin-bottom: vars.$spacing-lg;
 
   &:last-child {
     margin-bottom: 0;
@@ -112,50 +112,50 @@ a {
 // Labels
 .form-label {
   display: block;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-  color: $text-primary;
-  margin-bottom: $spacing-xs;
+  font-size: vars.$font-size-sm;
+  font-weight: vars.$font-weight-medium;
+  color: vars.$text-primary;
+  margin-bottom: vars.$spacing-xs;
 
   .required {
-    color: $accent-error;
-    margin-left: $spacing-xs;
+    color: vars.$accent-error;
+    margin-left: vars.$spacing-xs;
   }
 }
 
 // Input fields
 .form-input {
   width: 100%;
-  padding: $spacing-sm $spacing-md;
-  font-size: $font-size-sm;
-  color: $text-primary;
-  background-color: $bg-primary;
-  border: 1px solid $border-color;
-  border-radius: $border-radius-md;
+  padding: vars.$spacing-sm vars.$spacing-md;
+  font-size: vars.$font-size-sm;
+  color: vars.$text-primary;
+  background-color: vars.$bg-primary;
+  border: 1px solid vars.$border-color;
+  border-radius: vars.$border-radius-md;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
   &::placeholder {
-    color: $text-tertiary;
+    color: vars.$text-tertiary;
   }
 
   &:focus {
     outline: none;
-    border-color: $accent-primary;
-    box-shadow: 0 0 0 3px rgba($accent-primary, 0.1);
+    border-color: vars.$accent-primary;
+    box-shadow: 0 0 0 3px rgba(vars.$accent-primary, 0.1);
   }
 
   &:disabled {
-    background-color: $bg-secondary;
-    color: $text-secondary;
+    background-color: vars.$bg-secondary;
+    color: vars.$text-secondary;
     cursor: not-allowed;
   }
 
   &.error {
-    border-color: $accent-error;
+    border-color: vars.$accent-error;
     
     &:focus {
-      border-color: $accent-error;
-      box-shadow: 0 0 0 3px rgba($accent-error, 0.1);
+      border-color: vars.$accent-error;
+      box-shadow: 0 0 0 3px rgba(vars.$accent-error, 0.1);
     }
   }
 }
@@ -167,19 +167,19 @@ a {
 
 .search-loading {
   position: absolute;
-  right: $spacing-md;
+  right: vars.$spacing-md;
   top: 50%;
   transform: translateY(-50%);
-  font-size: $font-size-xs;
-  color: $text-secondary;
+  font-size: vars.$font-size-xs;
+  color: vars.$text-secondary;
 }
 
 // Book suggestions
 .book-suggestions {
-  margin-top: $spacing-md;
-  background-color: $bg-primary;
-  border: 1px solid $border-color;
-  border-radius: $border-radius-md;
+  margin-top: vars.$spacing-md;
+  background-color: vars.$bg-primary;
+  border: 1px solid vars.$border-color;
+  border-radius: vars.$border-radius-md;
   overflow: hidden;
 }
 
@@ -187,11 +187,11 @@ a {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: $spacing-sm $spacing-md;
-  background-color: $bg-secondary;
-  font-size: $font-size-sm;
-  color: $text-secondary;
-  border-bottom: 1px solid $border-color;
+  padding: vars.$spacing-sm vars.$spacing-md;
+  background-color: vars.$bg-secondary;
+  font-size: vars.$font-size-sm;
+  color: vars.$text-secondary;
+  border-bottom: 1px solid vars.$border-color;
 }
 
 .suggestions-list {
@@ -203,8 +203,8 @@ a {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: $spacing-md;
-  border-bottom: 1px solid $border-color;
+  padding: vars.$spacing-md;
+  border-bottom: 1px solid vars.$border-color;
   cursor: pointer;
   transition: background-color 0.2s ease;
 
@@ -213,53 +213,53 @@ a {
   }
 
   &:hover {
-    background-color: $bg-secondary;
+    background-color: vars.$bg-secondary;
   }
 }
 
 .suggestion-content {
   flex: 1;
-  margin-right: $spacing-md;
+  margin-right: vars.$spacing-md;
 }
 
 .suggestion-title {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-  color: $text-primary;
-  margin-bottom: $spacing-xs;
+  font-size: vars.$font-size-sm;
+  font-weight: vars.$font-weight-medium;
+  color: vars.$text-primary;
+  margin-bottom: vars.$spacing-xs;
 }
 
 .suggestion-author {
-  font-size: $font-size-xs;
-  color: $text-secondary;
-  margin-bottom: $spacing-xs;
+  font-size: vars.$font-size-xs;
+  color: vars.$text-secondary;
+  margin-bottom: vars.$spacing-xs;
 }
 
 .suggestion-date {
-  font-size: $font-size-xs;
-  color: $text-tertiary;
-  margin-bottom: $spacing-xs;
+  font-size: vars.$font-size-xs;
+  color: vars.$text-tertiary;
+  margin-bottom: vars.$spacing-xs;
 }
 
 .suggestion-subjects {
   display: flex;
   flex-wrap: wrap;
-  gap: $spacing-xs;
+  gap: vars.$spacing-xs;
 }
 
 .subject-tag {
-  font-size: $font-size-xs;
-  color: $text-secondary;
-  background-color: $bg-secondary;
-  padding: 2px $spacing-xs;
-  border-radius: $border-radius-sm;
-  border: 1px solid $border-color;
+  font-size: vars.$font-size-xs;
+  color: vars.$text-secondary;
+  background-color: vars.$bg-secondary;
+  padding: 2px vars.$spacing-xs;
+  border-radius: vars.$border-radius-sm;
+  border: 1px solid vars.$border-color;
 }
 
 // Genre input container
 .genre-input-container {
   display: flex;
-  gap: $spacing-sm;
+  gap: vars.$spacing-sm;
   align-items: flex-start;
 
   .form-input {
@@ -271,27 +271,27 @@ a {
 .selected-genres {
   display: flex;
   flex-wrap: wrap;
-  gap: $spacing-xs;
-  margin-top: $spacing-sm;
+  gap: vars.$spacing-xs;
+  margin-top: vars.$spacing-sm;
 }
 
 .genre-tag {
   display: inline-flex;
   align-items: center;
-  gap: $spacing-xs;
-  font-size: $font-size-xs;
-  color: $text-primary;
-  background-color: $accent-primary;
-  padding: $spacing-xs $spacing-sm;
-  border-radius: $border-radius-sm;
-  font-weight: $font-weight-medium;
+  gap: vars.$spacing-xs;
+  font-size: vars.$font-size-xs;
+  color: vars.$text-primary;
+  background-color: vars.$accent-primary;
+  padding: vars.$spacing-xs vars.$spacing-sm;
+  border-radius: vars.$border-radius-sm;
+  font-weight: vars.$font-weight-medium;
 
   .genre-remove {
     background: none;
     border: none;
-    color: $text-primary;
-    font-size: $font-size-sm;
-    font-weight: $font-weight-bold;
+    color: vars.$text-primary;
+    font-size: vars.$font-size-sm;
+    font-weight: vars.$font-weight-bold;
     cursor: pointer;
     padding: 0;
     margin: 0;
@@ -299,7 +299,7 @@ a {
     transition: color 0.2s ease;
 
     &:hover {
-      color: $accent-error;
+      color: vars.$accent-error;
     }
 
     &:disabled {
@@ -313,23 +313,23 @@ a {
 .rating-input {
   display: flex;
   align-items: center;
-  gap: $spacing-xs;
+  gap: vars.$spacing-xs;
 }
 
 .star-button {
   background: none;
   border: none;
-  font-size: $font-size-lg;
+  font-size: vars.$font-size-lg;
   cursor: pointer;
   padding: 0;
   transition: color 0.2s ease, transform 0.1s ease;
 
   &.filled {
-    color: $accent-primary;
+    color: vars.$accent-primary;
   }
 
   &.empty {
-    color: $text-tertiary;
+    color: vars.$text-tertiary;
   }
 
   &:hover {
@@ -337,30 +337,29 @@ a {
   }
 
   &:disabled {
-    cursor: not-allowed;
     opacity: 0.5;
   }
 }
 
 .rating-text {
-  font-size: $font-size-sm;
-  color: $text-secondary;
-  margin-left: $spacing-sm;
+  font-size: vars.$font-size-sm;
+  color: vars.$text-secondary;
+  margin-left: vars.$spacing-sm;
 }
 
 // Error messages
 .error-message {
   display: block;
-  font-size: $font-size-xs;
-  color: $accent-error;
-  margin-top: $spacing-xs;
+  font-size: vars.$font-size-xs;
+  color: vars.$accent-error;
+  margin-top: vars.$spacing-xs;
 
   &.submit-error {
-    background-color: rgba($accent-error, 0.1);
-    border: 1px solid $accent-error;
-    border-radius: $border-radius-md;
-    padding: $spacing-sm $spacing-md;
-    margin-bottom: $spacing-lg;
+    background-color: rgba(vars.$accent-error, 0.1);
+    border: 1px solid vars.$accent-error;
+    border-radius: vars.$border-radius-md;
+    padding: vars.$spacing-sm vars.$spacing-md;
+    margin-bottom: vars.$spacing-lg;
     text-align: center;
   }
 }
@@ -368,11 +367,11 @@ a {
 // Form actions
 .form-actions {
   display: flex;
-  gap: $spacing-md;
+  gap: vars.$spacing-md;
   justify-content: flex-end;
-  margin-top: $spacing-xl;
-  padding-top: $spacing-lg;
-  border-top: 1px solid $border-color;
+  margin-top: vars.$spacing-xl;
+  padding-top: vars.$spacing-lg;
+  border-top: 1px solid vars.$border-color;
 
   .btn {
     min-width: 120px;
@@ -382,18 +381,18 @@ a {
 // Responsive design for forms
 @media (max-width: 768px) {
   .book-form-container {
-    padding: $spacing-md;
+    padding: vars.$spacing-md;
   }
 
   .book-form {
-    padding: $spacing-lg;
+    padding: vars.$spacing-lg;
   }
 
   .genre-input-container {
     flex-direction: column;
 
     .form-input {
-      margin-bottom: $spacing-sm;
+      margin-bottom: vars.$spacing-sm;
     }
   }
 
@@ -408,7 +407,7 @@ a {
   .suggestion-item {
     flex-direction: column;
     align-items: flex-start;
-    gap: $spacing-sm;
+    gap: vars.$spacing-sm;
 
     .suggestion-content {
       margin-right: 0;
@@ -417,7 +416,7 @@ a {
 
   .suggestions-header {
     flex-direction: column;
-    gap: $spacing-sm;
+    gap: vars.$spacing-sm;
     align-items: flex-start;
   }
 }
@@ -430,26 +429,26 @@ a {
   align-items: center;
   justify-content: center;
   min-height: 50vh;
-  padding: $spacing-xl;
+  padding: vars.$spacing-xl;
   text-align: center;
 
   h2 {
-    font-size: $font-size-xl;
-    font-weight: $font-weight-bold;
-    color: $text-primary;
-    margin-bottom: $spacing-md;
+    font-size: vars.$font-size-xl;
+    font-weight: vars.$font-weight-bold;
+    color: vars.$text-primary;
+    margin-bottom: vars.$spacing-md;
   }
 
   p {
-    font-size: $font-size-sm;
-    color: $text-secondary;
-    margin-bottom: $spacing-lg;
+    font-size: vars.$font-size-sm;
+    color: vars.$text-secondary;
+    margin-bottom: vars.$spacing-lg;
   }
 }
 
 .loading-spinner {
-  font-size: $font-size-sm;
-  color: $text-secondary;
+  font-size: vars.$font-size-sm;
+  color: vars.$text-secondary;
   animation: pulse 1.5s ease-in-out infinite;
 }
 

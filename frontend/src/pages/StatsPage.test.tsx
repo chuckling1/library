@@ -1,7 +1,9 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter } from 'react-router-dom';
+import { GenreFilterProvider } from '../contexts/GenreFilterContext';
 import StatsPage from './StatsPage';
 import * as useBooks from '../hooks/useBooks';
 
@@ -38,7 +40,11 @@ const createWrapper = (): React.FC<{ children: React.ReactNode }> => {
     });
     return (
       <QueryClientProvider client={queryClient}>
-        {children}
+        <BrowserRouter>
+          <GenreFilterProvider>
+            {children}
+          </GenreFilterProvider>
+        </BrowserRouter>
       </QueryClientProvider>
     );
   };
@@ -58,8 +64,7 @@ describe('StatsPage', () => {
     mockUseBookStats.mockReturnValue({
       data: undefined,
       isLoading: true,
-      error: null,
-      refetch: vi.fn()
+      error: null
     } as never);
 
     mockUseBooks.mockReturnValue({
@@ -74,12 +79,10 @@ describe('StatsPage', () => {
   });
 
   it('renders error state', () => {
-    const mockRefetch = vi.fn();
     mockUseBookStats.mockReturnValue({
       data: undefined,
       isLoading: false,
-      error: new Error('Failed to load'),
-      refetch: mockRefetch
+      error: new Error('Failed to load')
     } as never);
 
     mockUseBooks.mockReturnValue({
@@ -91,16 +94,14 @@ describe('StatsPage', () => {
     render(<StatsPage />, { wrapper: createWrapper() });
 
     expect(screen.getByText('Error Loading Statistics')).toBeInTheDocument();
-    expect(screen.getByText('Failed to load library statistics. Please try again.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+    expect(screen.getByText('Failed to load library statistics. Please refresh the page to try again.')).toBeInTheDocument();
   });
 
   it('renders empty state when no stats', () => {
     mockUseBookStats.mockReturnValue({
       data: null,
       isLoading: false,
-      error: null,
-      refetch: vi.fn()
+      error: null
     } as never);
 
     mockUseBooks.mockReturnValue({
@@ -146,8 +147,7 @@ describe('StatsPage', () => {
     mockUseBookStats.mockReturnValue({
       data: mockStats,
       isLoading: false,
-      error: null,
-      refetch: vi.fn()
+      error: null
     } as never);
 
     mockUseBooks.mockReturnValue({
@@ -179,6 +179,9 @@ describe('StatsPage', () => {
     expect(screen.getByText('Detailed Genre Breakdown')).toBeInTheDocument();
     expect(screen.getByText('Science Fiction')).toBeInTheDocument();
     expect(screen.getByText('Mystery')).toBeInTheDocument();
+    
+    // Check for interactive instructions
+    expect(screen.getByText(/Click charts to filter books/)).toBeInTheDocument();
   });
 
   it('handles chart type switching', async () => {
@@ -193,8 +196,7 @@ describe('StatsPage', () => {
     mockUseBookStats.mockReturnValue({
       data: mockStats,
       isLoading: false,
-      error: null,
-      refetch: vi.fn()
+      error: null
     } as never);
 
     mockUseBooks.mockReturnValue({
@@ -205,34 +207,39 @@ describe('StatsPage', () => {
 
     render(<StatsPage />, { wrapper: createWrapper() });
 
-    // Initially bar chart should be active
+    // Initially bar chart should be active for genre distribution (use getAllByText for multiple buttons)
     await waitFor(() => {
-      expect(screen.getByText('📊 Bar')).toHaveClass('active');
+      const barButtons = screen.getAllByText('📊 Bar');
+      expect(barButtons[0]).toHaveClass('active'); // Genre chart bar button
     });
 
-    // Click pie chart button
-    const pieButton = screen.getByText('🥧 Pie');
-    pieButton.click();
+    // Click pie chart button for genre distribution
+    const pieButtons = screen.getAllByText('🥧 Pie');
+    expect(pieButtons.length).toBeGreaterThan(0);
+    
+    act(() => {
+      fireEvent.click(pieButtons[0]!); // Click first pie button (genre distribution)
+    });
 
     await waitFor(() => {
-      expect(screen.getByText('🥧 Pie')).toHaveClass('active');
-      expect(screen.getByText('📊 Bar')).not.toHaveClass('active');
+      const pieButtonsAfter = screen.getAllByText('🥧 Pie');
+      const barButtonsAfter = screen.getAllByText('📊 Bar');
+      expect(pieButtonsAfter[0]).toHaveClass('active');
+      expect(barButtonsAfter[0]).not.toHaveClass('active');
     });
   });
 
-  it('handles refresh button click', () => {
-    const mockRefetch = vi.fn();
+  it('displays interactive chart instructions', () => {
     const mockStats = {
       totalBooks: 5,
       averageRating: 3.0,
-      genreDistribution: []
+      genreDistribution: [{ genre: 'Fantasy', count: 5, averageRating: 4.0 }]
     };
 
     mockUseBookStats.mockReturnValue({
       data: mockStats,
       isLoading: false,
-      error: null,
-      refetch: mockRefetch
+      error: null
     } as never);
 
     mockUseBooks.mockReturnValue({
@@ -243,10 +250,7 @@ describe('StatsPage', () => {
 
     render(<StatsPage />, { wrapper: createWrapper() });
 
-    const refreshButton = screen.getByText('🔄 Refresh');
-    refreshButton.click();
-
-    expect(mockRefetch).toHaveBeenCalledTimes(1);
+    expect(screen.getByText(/Click charts to filter books/)).toBeInTheDocument();
   });
 
   it('handles empty genre distribution gracefully', () => {
@@ -259,8 +263,7 @@ describe('StatsPage', () => {
     mockUseBookStats.mockReturnValue({
       data: mockStats,
       isLoading: false,
-      error: null,
-      refetch: vi.fn()
+      error: null
     } as never);
 
     mockUseBooks.mockReturnValue({

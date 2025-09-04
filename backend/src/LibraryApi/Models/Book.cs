@@ -28,10 +28,12 @@ public class Book
     public string Author { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the published date of the book.
+    /// Gets or sets the published date of the book as a string.
+    /// Can be a year (e.g., "2020"), year-month (e.g., "2020-05"), or full date (e.g., "2020-05-15").
     /// </summary>
     [Required]
-    public DateTime PublishedDate { get; set; }
+    [MaxLength(50)]
+    public string PublishedDate { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the user's rating of the book (1-5).

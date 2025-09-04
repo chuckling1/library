@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useBooks } from '../hooks/useBooks';
-import { useGenreFilter } from '../contexts/GenreFilterContext';
+import { useGenreFilter } from '../hooks/useGenreFilter';
 import { getBookGenres } from '../hooks/useBooks';
 import './GenreFilter.scss';
 
@@ -13,16 +13,18 @@ const GenreFilter: React.FC = () => {
 
   // Extract all unique genres from the book collection
   const allGenres = useMemo(() => {
-    if (!books || books.length === 0) return [];
+    if (!books || !Array.isArray(books) || books.length === 0) return [];
 
     const genreSet = new Set<string>();
     books.forEach(book => {
       const bookGenres = getBookGenres(book);
-      bookGenres.forEach(genre => {
-        if (genre.trim()) {
-          genreSet.add(genre.trim());
-        }
-      });
+      if (Array.isArray(bookGenres)) {
+        bookGenres.forEach(genre => {
+          if (genre && typeof genre === 'string' && genre.trim()) {
+            genreSet.add(genre.trim());
+          }
+        });
+      }
     });
 
     return Array.from(genreSet).sort();

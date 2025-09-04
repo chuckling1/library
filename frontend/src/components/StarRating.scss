@@ -1,10 +1,10 @@
-@import '../styles/variables';
+@use '../styles/variables' as vars;
 
 // Reusable star rating component - matches BookForm styling
 .star-rating {
   display: flex;
   align-items: center;
-  gap: $spacing-xs;
+  gap: vars.$spacing-xs;
 
   &--readonly {
     .star-button {
@@ -25,9 +25,9 @@
       }
 
       &:focus {
-        outline: 2px solid $accent-primary;
+        outline: 2px solid vars.$accent-primary;
         outline-offset: 2px;
-        border-radius: $border-radius-sm;
+        border-radius: vars.$border-radius-sm;
       }
     }
   }
@@ -37,19 +37,19 @@
 .star-button {
   background: none;
   border: none;
-  font-size: $font-size-lg;
+  font-size: vars.$font-size-lg;
   cursor: pointer;
   padding: 0;
   transition: color 0.2s ease, transform 0.1s ease;
-  color: $text-tertiary;
+  color: vars.$text-tertiary;
   line-height: 1;
 
   &.filled {
-    color: $accent-primary;
+    color: vars.$accent-primary;
   }
 
   &.empty {
-    color: $text-tertiary;
+    color: vars.$text-tertiary;
   }
 
   &:disabled {
@@ -59,8 +59,8 @@
 
 // Rating text label
 .rating-text {
-  font-size: $font-size-sm;
-  color: $text-secondary;
-  margin-left: $spacing-xs;
+  font-size: vars.$font-size-sm;
+  color: vars.$text-secondary;
+  margin-left: vars.$spacing-xs;
   white-space: nowrap;
 }

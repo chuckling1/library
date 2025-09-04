@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Book } from '../generated/api';
 import { getBookGenres, formatDate } from '../hooks/useBooks';
-import { useGenreFilter } from '../contexts/GenreFilterContext';
+import { useGenreFilter } from '../hooks/useGenreFilter';
 import StarRating from './StarRating';
 import BookCover from './BookCover';
 import EditIcon from '../images/edit_icon.svg';
@@ -16,53 +16,48 @@ interface BookCardProps {
 
 const BookCard: React.FC<BookCardProps> = React.memo(({ book, onDelete }) => {
   const navigate = useNavigate();
-  const genres = getBookGenres(book);
+  const genres = useMemo(() => {
+    const bookGenres = getBookGenres(book);
+    return Array.isArray(bookGenres) ? bookGenres : [];
+  }, [book]);
   const { toggleGenre, isGenreActive } = useGenreFilter();
   const [isGenresExpanded, setIsGenresExpanded] = useState<boolean>(false);
   const [needsExpansion, setNeedsExpansion] = useState<boolean>(false);
-  const genresContainerRef = useRef<HTMLDivElement>(null);
   
-  // Detect overflow by measuring actual container height
+  // Calculate if genres will overflow 2 rows based on text length
   useEffect(() => {
-    const checkOverflow = (): void => {
-      if (!genresContainerRef.current || genres.length === 0) {
-        setNeedsExpansion(false);
-        return;
-      }
+    if (genres.length === 0) {
+      setNeedsExpansion(false);
+      return;
+    }
 
-      const container = genresContainerRef.current;
-      
-      // Always measure in collapsed state to determine if toggle is needed
-      const wasExpanded = isGenresExpanded;
-      if (wasExpanded) {
-        container.classList.remove('book-card__genres--expanded');
-      }
-      
-      const computedStyle = getComputedStyle(container);
-      const maxHeight = parseFloat(computedStyle.maxHeight);
-      
-      // Temporarily expand to measure full height
-      const originalMaxHeight = container.style.maxHeight;
-      container.style.maxHeight = 'none';
-      const fullHeight = container.scrollHeight;
-      container.style.maxHeight = originalMaxHeight;
-      
-      // Restore expanded state if it was expanded
-      if (wasExpanded) {
-        container.classList.add('book-card__genres--expanded');
-      }
-      
-      setNeedsExpansion(fullHeight > maxHeight);
-    };
-
-    checkOverflow();
+    // Estimate container width (account for padding: 8px * 2 = 16px)
+    // BookCard content area is flexible, estimate ~300-400px available width
+    const estimatedContainerWidth = 350; // Conservative estimate
     
-    // Recheck on window resize
-    window.addEventListener('resize', checkOverflow);
-    return (): void => {
-      window.removeEventListener('resize', checkOverflow);
-    };
-  }, [genres, isGenresExpanded]);
+    // Calculate approximate width for each genre pill
+    // Base pill styling: 8px padding * 2 + 1px border * 2 + text width
+    const basePillWidth = 18; // padding + borders
+    const avgCharWidth = 7; // approximate character width in 12px font
+    
+    let currentRowWidth = 0;
+    let rowCount = 1;
+    
+    for (const genre of genres) {
+      const pillWidth = basePillWidth + (genre.length * avgCharWidth);
+      
+      // Check if adding this pill would exceed row width
+      if (currentRowWidth + pillWidth + 4 > estimatedContainerWidth) { // +4 for gap
+        rowCount++;
+        currentRowWidth = pillWidth;
+      } else {
+        currentRowWidth += pillWidth + 4; // +4 for gap between pills
+      }
+    }
+    
+    // Show "Show More" if we need more than 2 rows
+    setNeedsExpansion(rowCount > 2);
+  }, [genres]);
   
   const handleEdit = (): void => {
     void navigate(`/books/${book.id}/edit`);
@@ -98,8 +93,7 @@ const BookCard: React.FC<BookCardProps> = React.memo(({ book, onDelete }) => {
             // Fallback to BookCover component on error
             const target = e.target as HTMLImageElement;
             target.style.display = 'none';
-            const fallback = target.nextElementSibling as HTMLElement;
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            const fallback = target.nextElementSibling as HTMLElement | null;
             if (fallback) {
               fallback.style.display = 'block';
             }
@@ -129,7 +123,6 @@ const BookCard: React.FC<BookCardProps> = React.memo(({ book, onDelete }) => {
         {genres.length > 0 && (
           <div className="book-card__genres-container">
             <div 
-              ref={genresContainerRef}
               className={`book-card__genres ${isGenresExpanded ? 'book-card__genres--expanded' : ''}`}
             >
               {genres.map((genre) => (
