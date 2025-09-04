@@ -1,28 +1,47 @@
-import React from 'react'
-import { useParams } from 'react-router-dom'
+import React from 'react';
+import { useParams } from 'react-router-dom';
+import { useBook } from '../hooks/useBooks';
+import BookForm from '../components/BookForm';
 
 const BookFormPage: React.FC = () => {
-  const { id } = useParams<{ id?: string }>()
-  const isEditing = Boolean(id)
+  const { id } = useParams<{ id?: string }>();
+  const isEditing = Boolean(id);
+  
+  const { data: book, isLoading, error } = useBook(id ?? '');
 
-  return (
-    <div>
-      <h2>{isEditing ? 'Edit Book' : 'Add New Book'}</h2>
-      <p>Book form will be implemented here. This is a placeholder component.</p>
-      <div className="card">
-        <h3>Coming Soon</h3>
-        <ul>
-          <li>Title and Author inputs</li>
-          <li>Genre selector with autocomplete</li>
-          <li>Star rating selector</li>
-          <li>Date picker for published date</li>
-          <li>Edition and ISBN fields</li>
-          <li>Form validation</li>
-          <li>OpenAPI-generated client integration</li>
-        </ul>
+  if (isEditing && isLoading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner">Loading book...</div>
       </div>
-    </div>
-  )
-}
+    );
+  }
+
+  if (isEditing && error) {
+    return (
+      <div className="error-container">
+        <h2>Error Loading Book</h2>
+        <p>Failed to load book for editing. Please try again.</p>
+        <a href="/" className="btn btn-primary">
+          Back to Books
+        </a>
+      </div>
+    );
+  }
+
+  if (isEditing && !book) {
+    return (
+      <div className="error-container">
+        <h2>Book Not Found</h2>
+        <p>The book you're trying to edit could not be found.</p>
+        <a href="/" className="btn btn-primary">
+          Back to Books
+        </a>
+      </div>
+    );
+  }
+
+  return <BookForm book={book} isEditing={isEditing} />;
+};
 
 export default BookFormPage

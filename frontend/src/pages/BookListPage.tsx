@@ -1,49 +1,79 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
 import { useBooks, useDeleteBook, BooksFilters } from '../hooks/useBooks';
 import BookCard from '../components/BookCard';
 import { Book } from '../generated/api';
 
 const BookListPage: React.FC = () => {
+  // Core state for filters
   const [filters, setFilters] = useState<BooksFilters>({
     page: 1,
     pageSize: 20,
     sortBy: 'createdAt',
-    sortDirection: 'desc'
+    sortDirection: 'desc',
+    rating: undefined,
+    genres: undefined,
+    search: undefined,
   });
+
+  // Use uncontrolled input with ref for search
+  const searchInputRef = useRef<HTMLInputElement>(null);
   
-  const [searchInput, setSearchInput] = useState('');
-  
+  // Query hooks
   const { data: books, isLoading, error, refetch } = useBooks(filters);
   const deleteBookMutation = useDeleteBook();
 
-  const handleSearch = (e: React.FormEvent): void => {
-    e.preventDefault();
-    setFilters(prev => ({ ...prev, search: searchInput.trim() || undefined }));
-  };
+  // Debounced search handler - industry standard pattern
+  const handleSearchChange = useDebouncedCallback(
+    (value: string) => {
+      setFilters(prev => ({
+        ...prev,
+        search: value.trim() || undefined,
+      }));
+    },
+    300 // 300ms debounce
+  );
 
-  const handleFilterChange = (newFilters: Partial<BooksFilters>): void => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
-  };
+  // Handle filter changes
+  const handleFilterChange = useCallback((updates: Partial<BooksFilters>) => {
+    setFilters(prev => ({ ...prev, ...updates }));
+  }, []);
 
-  const handleDeleteBook = async (book: Book): Promise<void> => {
-    try {
-      await deleteBookMutation.mutateAsync(book.id!);
-      // The mutation will automatically refetch the books list
-    } catch {
-      // console.error('Failed to delete book:', error);
-      alert('Failed to delete book. Please try again.');
+  // Handle delete book
+  const handleDeleteBook = useCallback(async (book: Book): Promise<void> => {
+    if (window.confirm(`Are you sure you want to delete "${book.title}"?`)) {
+      try {
+        await deleteBookMutation.mutateAsync(book.id!);
+      } catch {
+        alert('Failed to delete book. Please try again.');
+      }
     }
-  };
+  }, [deleteBookMutation]);
 
-  const clearFilters = (): void => {
+  // Clear all filters
+  const clearFilters = useCallback(() => {
     setFilters({
       page: 1,
       pageSize: 20,
       sortBy: 'createdAt',
-      sortDirection: 'desc'
+      sortDirection: 'desc',
+      rating: undefined,
+      genres: undefined,
+      search: undefined,
     });
-    setSearchInput('');
-  };
+    // Clear the search input
+    if (searchInputRef.current) {
+      searchInputRef.current.value = '';
+    }
+  }, []);
+
+  // Clear just the search
+  const clearSearch = useCallback(() => {
+    if (searchInputRef.current) {
+      searchInputRef.current.value = '';
+      setFilters(prev => ({ ...prev, search: undefined }));
+    }
+  }, []);
 
   if (isLoading) {
     return (
@@ -76,18 +106,25 @@ const BookListPage: React.FC = () => {
 
       {/* Search and Filter Section */}
       <div className="filters-section">
-        <form onSubmit={handleSearch} className="search-form">
+        <div className="search-form">
+          {/* UNCONTROLLED INPUT - The key to stability */}
           <input
+            ref={searchInputRef}
             type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search by title or author..."
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder="Search by title or author... (live search)"
             className="search-input"
           />
-          <button type="submit" className="btn btn-primary">
-            Search
-          </button>
-        </form>
+          {filters.search && (
+            <button
+              type="button"
+              onClick={clearSearch}
+              className="btn btn-secondary btn-sm clear-search"
+            >
+              Clear
+            </button>
+          )}
+        </div>
 
         <div className="filter-controls">
           <select
@@ -116,7 +153,7 @@ const BookListPage: React.FC = () => {
           </select>
 
           <select
-            value={filters.rating ?? ''}
+            value={filters.rating?.toString() ?? ''}
             onChange={(e) => handleFilterChange({ 
               rating: e.target.value ? parseInt(e.target.value) : undefined
             })}
@@ -152,14 +189,9 @@ const BookListPage: React.FC = () => {
           <h3>No books found</h3>
           <p>
             {filters.search 
-              ? "No books match your search criteria. Try adjusting your filters."
+              ? "No books match your search criteria. Try adjusting your search or filters."
               : "Your library is empty. Add your first book to get started!"}
           </p>
-          {filters.search && (
-            <button onClick={() => void clearFilters()} className="btn btn-primary">
-              Show All Books
-            </button>
-          )}
         </div>
       )}
 

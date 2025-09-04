@@ -177,7 +177,7 @@ public class GenreRepositoryTests : IDisposable
         result1.Should().NotBeNull();
         result2.Should().NotBeNull();
         result1.Name.Should().Be(result2.Name);
-        
+
         // Verify only one exists in database
         var genresInDb = await _context.Genres.Where(g => g.Name == "Duplicate Test").ToListAsync();
         genresInDb.Should().HaveCount(1);
@@ -202,7 +202,7 @@ public class GenreRepositoryTests : IDisposable
         // Verify new genres were saved to database
         var newGenre1 = await _context.Genres.FindAsync("New Genre 1");
         var newGenre2 = await _context.Genres.FindAsync("New Genre 2");
-        
+
         newGenre1.Should().NotBeNull();
         newGenre2.Should().NotBeNull();
     }
@@ -219,7 +219,7 @@ public class GenreRepositoryTests : IDisposable
         // Assert
         result.Should().HaveCount(3);
         result.Should().OnlyContain(g => g.IsSystemGenre);
-        
+
         // Verify no new genres were created (should still have 5 total)
         var totalGenres = await _context.Genres.CountAsync();
         totalGenres.Should().Be(5);

@@ -63,19 +63,19 @@ public class GenreRepository : IGenreRepository
     {
         var genres = new List<Genre>();
         var processedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        
+
         foreach (var genreName in genreNames)
         {
             var normalizedName = genreName.Trim();
-            
+
             // Skip duplicates (case-insensitive)
             if (!processedNames.Add(normalizedName))
             {
                 continue;
             }
-            
+
             var existing = await GetGenreByNameAsync(normalizedName, cancellationToken);
-            
+
             if (existing != null)
             {
                 genres.Add(existing);
@@ -88,7 +88,7 @@ public class GenreRepository : IGenreRepository
                     IsSystemGenre = false,
                     CreatedAt = DateTime.UtcNow
                 };
-                
+
                 var created = await CreateGenreAsync(newGenre, cancellationToken);
                 genres.Add(created);
             }

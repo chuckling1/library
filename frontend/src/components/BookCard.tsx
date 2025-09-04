@@ -2,13 +2,14 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Book } from '../generated/api';
 import { getBookGenres, formatDate, formatRating } from '../hooks/useBooks';
+import BookCover from './BookCover';
 
 interface BookCardProps {
   book: Book;
   onDelete: (book: Book) => Promise<void>;
 }
 
-const BookCard: React.FC<BookCardProps> = ({ book, onDelete }) => {
+const BookCard: React.FC<BookCardProps> = React.memo(({ book, onDelete }) => {
   const navigate = useNavigate();
   const genres = getBookGenres(book);
   
@@ -24,6 +25,9 @@ const BookCard: React.FC<BookCardProps> = ({ book, onDelete }) => {
   
   return (
     <div className="book-card">
+      <div className="book-card-cover">
+        <BookCover book={book} size="medium" />
+      </div>
       <div className="book-card-content">
         <div className="book-card-header">
           <h3 className="book-title">{book.title}</h3>
@@ -85,6 +89,6 @@ const BookCard: React.FC<BookCardProps> = ({ book, onDelete }) => {
       </div>
     </div>
   );
-};
+});
 
 export default BookCard;

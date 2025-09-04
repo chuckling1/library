@@ -3,6 +3,8 @@ using LibraryApi.Models;
 using LibraryApi.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Moq;
+using FluentAssertions;
 
 namespace LibraryApi.Tests.Repositories;
 
@@ -134,6 +136,101 @@ public class BookRepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task GetBooksAsync_WithLowercaseSearchTerm_ShouldReturnMatchingBooks()
+    {
+        // Act
+        var (books, totalCount) = await _repository.GetBooksAsync(searchTerm: "great");
+
+        // Assert
+        books.Should().HaveCount(1);
+        totalCount.Should().Be(1);
+        books.First().Title.Should().Be("The Great Gatsby");
+    }
+
+    [Fact]
+    public async Task GetBooksAsync_WithUppercaseSearchTerm_ShouldReturnMatchingBooks()
+    {
+        // Act
+        var (books, totalCount) = await _repository.GetBooksAsync(searchTerm: "GREAT");
+
+        // Assert
+        books.Should().HaveCount(1);
+        totalCount.Should().Be(1);
+        books.First().Title.Should().Be("The Great Gatsby");
+    }
+
+    [Fact]
+    public async Task GetBooksAsync_WithMixedCaseSearchTerm_ShouldReturnMatchingBooks()
+    {
+        // Act
+        var (books, totalCount) = await _repository.GetBooksAsync(searchTerm: "gReAt");
+
+        // Assert
+        books.Should().HaveCount(1);
+        totalCount.Should().Be(1);
+        books.First().Title.Should().Be("The Great Gatsby");
+    }
+
+    [Fact]
+    public async Task GetBooksAsync_WithCaseInsensitiveAuthorSearch_ShouldReturnMatchingBooks()
+    {
+        // Act
+        var (books, totalCount) = await _repository.GetBooksAsync(searchTerm: "stephen hawking");
+
+        // Assert
+        books.Should().HaveCount(1);
+        totalCount.Should().Be(1);
+        books.First().Author.Should().Be("Stephen Hawking");
+    }
+
+    [Fact]
+    public async Task GetBooksAsync_WithCaseInsensitiveAuthorSearchUppercase_ShouldReturnMatchingBooks()
+    {
+        // Act
+        var (books, totalCount) = await _repository.GetBooksAsync(searchTerm: "STEPHEN");
+
+        // Assert
+        books.Should().HaveCount(1);
+        totalCount.Should().Be(1);
+        books.First().Author.Should().Be("Stephen Hawking");
+    }
+
+    [Fact]
+    public async Task GetBooksAsync_WithPartialTitleSearch_ShouldReturnMatchingBooks()
+    {
+        // Act
+        var (books, totalCount) = await _repository.GetBooksAsync(searchTerm: "steve");
+
+        // Assert
+        books.Should().HaveCount(1);
+        totalCount.Should().Be(1);
+        books.First().Title.Should().Be("Steve Jobs");
+    }
+
+    [Fact]
+    public async Task GetBooksAsync_WithPartialAuthorSearch_ShouldReturnMatchingBooks()
+    {
+        // Act
+        var (books, totalCount) = await _repository.GetBooksAsync(searchTerm: "isaacson");
+
+        // Assert
+        books.Should().HaveCount(1);
+        totalCount.Should().Be(1);
+        books.First().Author.Should().Be("Walter Isaacson");
+    }
+
+    [Fact]
+    public async Task GetBooksAsync_WithCaseInsensitiveNonMatchingSearch_ShouldReturnNoResults()
+    {
+        // Act
+        var (books, totalCount) = await _repository.GetBooksAsync(searchTerm: "nonexistent");
+
+        // Assert
+        books.Should().BeEmpty();
+        totalCount.Should().Be(0);
+    }
+
+    [Fact]
     public async Task GetBooksAsync_WithPagination_ShouldReturnPagedResults()
     {
         // Act
@@ -257,7 +354,7 @@ public class BookRepositoryTests : IDisposable
         totalBooks.Should().Be(3);
         averageRating.Should().BeApproximately(4.33, 0.01);
         genreStats.Should().HaveCount(3);
-        
+
         var genreStatsList = genreStats.ToList();
         genreStatsList.Should().Contain(g => g.Genre == "Fiction" && g.Count == 1);
         genreStatsList.Should().Contain(g => g.Genre == "Science" && g.Count == 1);

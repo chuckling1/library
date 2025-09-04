@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased] - 2025-09-04
+
+### Fixed
+- **Case-Sensitive Search Issue**: Resolved critical search functionality problem where live search was case-sensitive
+  - **Root Cause**: BookRepository search queries used exact string matching (`b.Title.Contains(searchTerm)`)
+  - **Issue Impact**: Users typing lowercase searches (e.g., "harry", "po") received no results despite having matching books
+  - **Solution**: Updated BookRepository.cs:55-56 to use case-insensitive matching:
+    ```csharp
+    query = query.Where(b => b.Title.ToLower().Contains(searchTerm.ToLower()) || 
+                           b.Author.ToLower().Contains(searchTerm.ToLower()));
+    ```
+  - **Process Issue**: McAfee antivirus was locking LibraryApi.exe processes, preventing code updates from deploying
+  - **Process Fix**: Added automatic process cleanup to npm scripts:
+    ```json
+    "dev:backend": "powershell -Command \"taskkill /F /IM LibraryApi.exe 2>$null; exit 0\" && cd backend && dotnet run --project src/LibraryApi"
+    ```
+  - **Testing**: Added 8 comprehensive unit tests covering case-insensitive search scenarios (22 total tests now pass)
+  - **Verification**: Confirmed search works with "harry", "POTTER", "po", and mixed-case inputs
+
+### Enhanced
+- **Development Workflow**: Improved npm scripts to automatically kill locked backend processes before restart
+- **Test Coverage**: Added case-insensitive search test suite to prevent regression
+  - Tests for lowercase, uppercase, mixed-case, and partial matching
+  - Both title and author search functionality covered
+  - Non-matching search verification included
+
 ## [Unreleased] - 2025-01-03
 
 ### Fixed

@@ -63,12 +63,12 @@ public class LibraryDbContext : DbContext
         modelBuilder.Entity<BookGenre>(entity =>
         {
             entity.HasKey(bg => new { bg.BookId, bg.GenreName });
-            
+
             entity.HasOne(bg => bg.Book)
                   .WithMany(b => b.BookGenres)
                   .HasForeignKey(bg => bg.BookId)
                   .OnDelete(DeleteBehavior.Cascade);
-                  
+
             entity.HasOne(bg => bg.Genre)
                   .WithMany(g => g.BookGenres)
                   .HasForeignKey(bg => bg.GenreName)
@@ -108,7 +108,7 @@ public class LibraryDbContext : DbContext
                 entry.Entity.CreatedAt = DateTime.UtcNow;
                 entry.Entity.Id = Guid.NewGuid();
             }
-            
+
             entry.Entity.UpdatedAt = DateTime.UtcNow;
         }
 

@@ -46,6 +46,10 @@ export const useBooks = (filters: BooksFilters = {}): UseQueryResult<Book[], Err
       return response.data;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
+    gcTime: 1000 * 60 * 10, // 10 minutes (was cacheTime)
+    refetchOnWindowFocus: false, // Prevent refetch on window focus
+    refetchOnReconnect: false, // Prevent refetch on reconnect
+    placeholderData: (previousData) => previousData, // Keep previous data while fetching
   });
 };
 

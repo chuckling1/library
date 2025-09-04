@@ -52,7 +52,8 @@ public class BookRepository : IBookRepository
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            query = query.Where(b => b.Title.Contains(searchTerm) || b.Author.Contains(searchTerm));
+            query = query.Where(b => b.Title.ToLower().Contains(searchTerm.ToLower()) ||
+                                   b.Author.ToLower().Contains(searchTerm.ToLower()));
         }
 
         // Apply sorting
@@ -67,7 +68,7 @@ public class BookRepository : IBookRepository
         };
 
         var totalCount = await query.CountAsync(cancellationToken);
-        
+
         var books = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -91,7 +92,7 @@ public class BookRepository : IBookRepository
     {
         _context.Books.Add(book);
         await _context.SaveChangesAsync(cancellationToken);
-        
+
         // Reload with genres
         return await GetBookByIdAsync(book.Id, cancellationToken) ?? book;
     }
@@ -101,7 +102,7 @@ public class BookRepository : IBookRepository
     {
         _context.Books.Update(book);
         await _context.SaveChangesAsync(cancellationToken);
-        
+
         // Reload with genres
         return await GetBookByIdAsync(book.Id, cancellationToken) ?? book;
     }
@@ -129,7 +130,7 @@ public class BookRepository : IBookRepository
         var genreStats = await _context.BookGenres
             .Include(bg => bg.Book)
             .GroupBy(bg => bg.GenreName)
-            .Select(g => new 
+            .Select(g => new
             {
                 Genre = g.Key,
                 Count = g.Count(),

@@ -21,8 +21,8 @@ public class BookService : IBookService
     /// <param name="genreRepository">The genre repository.</param>
     /// <param name="logger">The logger.</param>
     public BookService(
-        IBookRepository bookRepository, 
-        IGenreRepository genreRepository, 
+        IBookRepository bookRepository,
+        IGenreRepository genreRepository,
         ILogger<BookService> logger)
     {
         _bookRepository = bookRepository;
