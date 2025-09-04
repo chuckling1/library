@@ -54,7 +54,37 @@
 }
 
 .main-content {
-  min-height: calc(100vh - 80px); // Adjust based on header height
+  min-height: calc(100vh - 120px); // Adjust based on header + footer height
+}
+
+// Footer
+.footer {
+  background: $bg-surface;
+  border-top: 1px solid $border-color;
+  padding: $spacing-md $spacing-xl;
+  margin-top: auto;
+  
+  .footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  .attribution {
+    margin: 0;
+    font-size: $font-size-xs;
+    color: $text-secondary;
+    
+    .attribution-link {
+      color: $accent-primary;
+      text-decoration: none;
+      font-weight: $font-weight-medium;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
 }
 
 // Loading states

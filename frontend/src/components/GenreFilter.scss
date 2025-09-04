@@ -1,0 +1,145 @@
+@import '../styles/variables';
+
+.genre-filter {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.genre-filter__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.genre-filter__label {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $text-primary;
+}
+
+.genre-filter__clear {
+  font-size: $font-size-xs;
+  color: $accent-primary;
+  background: none;
+  border: 1px solid $accent-primary;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $border-radius-sm;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: $font-weight-medium;
+
+  &:hover {
+    background-color: $accent-primary;
+    color: $bg-primary;
+  }
+
+  &:focus {
+    outline: 2px solid $accent-primary;
+    outline-offset: 2px;
+  }
+
+  &--hidden {
+    pointer-events: none;
+  }
+}
+
+.genre-filter__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+  max-height: calc(3 * (22px + #{$spacing-sm})); // Max height for 3 rows + padding
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+  padding: $spacing-sm;
+  
+  &--expanded {
+    max-height: none; // Remove height restriction when expanded
+  }
+}
+
+.genre-filter__toggle {
+  margin-top: $spacing-xs;
+  padding: $spacing-xs $spacing-sm;
+  background-color: $bg-primary;
+  border: 1px solid $border-color;
+  border-radius: $border-radius-sm;
+  color: $text-secondary;
+  font-size: $font-size-xs;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: center;
+
+  &:hover {
+    background-color: $border-color;
+    color: $text-primary;
+  }
+
+  &:focus {
+    outline: 2px solid $accent-primary;
+    outline-offset: 2px;
+  }
+}
+
+.genre-filter__pill {
+  font-size: $font-size-xs;
+  color: $text-secondary;
+  background-color: $bg-primary;
+  padding: $spacing-xs $spacing-sm;
+  border: 1px solid $border-color;
+  border-radius: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1.2;
+  height: 24px; // Fixed height to match BookCard pills
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0; // Prevent pills from shrinking
+
+  &:hover {
+    background-color: $border-color;
+    color: $text-primary;
+    transform: translateY(-1px);
+  }
+
+  &--active {
+    background-color: $accent-primary;
+    color: $bg-primary;
+    border-color: $accent-primary;
+    font-weight: $font-weight-medium;
+
+    &:hover {
+      background-color: $accent-hover;
+      border-color: $accent-hover;
+      color: $bg-primary;
+    }
+  }
+
+  &:focus {
+    outline: 2px solid $accent-primary;
+    outline-offset: 2px;
+  }
+}
+
+.genre-filter__empty {
+  font-size: $font-size-xs;
+  color: $text-secondary;
+  font-style: italic;
+  padding: $spacing-sm;
+  text-align: center;
+  border: 1px dashed $border-color;
+  border-radius: $border-radius-sm;
+}
+
+.genre-filter__description {
+  font-size: $font-size-xs;
+  color: $text-secondary;
+  font-style: italic;
+  padding: $spacing-xs;
+  background-color: rgba($accent-primary, 0.1);
+  border-radius: $border-radius-sm;
+  border-left: 3px solid $accent-primary;
+}

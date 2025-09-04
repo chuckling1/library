@@ -32,7 +32,7 @@ public class BooksController : ControllerBase
     /// Gets all books with optional filtering and pagination.
     /// </summary>
     /// <param name="genres">Optional list of genres to filter by.</param>
-    /// <param name="rating">Optional minimum rating to filter by.</param>
+    /// <param name="rating">Optional exact rating to filter by.</param>
     /// <param name="search">Optional search term for title/author.</param>
     /// <param name="sortBy">Optional field to sort by.</param>
     /// <param name="sortDirection">Optional sort direction (asc/desc).</param>

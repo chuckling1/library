@@ -13,7 +13,7 @@ public interface IBookService
     /// Gets all books with optional filtering, sorting, and pagination.
     /// </summary>
     /// <param name="genres">Optional list of genres to filter by.</param>
-    /// <param name="minRating">Optional minimum rating to filter by.</param>
+    /// <param name="rating">Optional exact rating to filter by.</param>
     /// <param name="searchTerm">Optional search term for title/author.</param>
     /// <param name="sortBy">Optional field to sort by.</param>
     /// <param name="sortDirection">Optional sort direction.</param>
@@ -23,7 +23,7 @@ public interface IBookService
     /// <returns>A list of books matching the criteria.</returns>
     Task<IEnumerable<Book>> GetBooksAsync(
         string[]? genres = null,
-        int? minRating = null,
+        int? rating = null,
         string? searchTerm = null,
         string? sortBy = null,
         string? sortDirection = null,

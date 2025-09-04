@@ -33,7 +33,7 @@ public class BookService : IBookService
     /// <inheritdoc/>
     public async Task<IEnumerable<Book>> GetBooksAsync(
         string[]? genres = null,
-        int? minRating = null,
+        int? rating = null,
         string? searchTerm = null,
         string? sortBy = null,
         string? sortDirection = null,
@@ -43,7 +43,7 @@ public class BookService : IBookService
     {
         var (books, _) = await _bookRepository.GetBooksAsync(
             genres,
-            minRating,
+            rating,
             searchTerm,
             sortBy,
             sortDirection,

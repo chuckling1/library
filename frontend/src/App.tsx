@@ -1,5 +1,6 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { GenreFilterProvider } from './contexts/GenreFilterContext'
 import Layout from './components/Layout'
 import BookListPage from './pages/BookListPage'
 import BookFormPage from './pages/BookFormPage'
@@ -8,17 +9,19 @@ import './App.scss'
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Navigate to="/books" replace />} />
-          <Route path="/books" element={<BookListPage />} />
-          <Route path="/books/new" element={<BookFormPage />} />
-          <Route path="/books/:id/edit" element={<BookFormPage />} />
-          <Route path="/stats" element={<StatsPage />} />
-        </Routes>
-      </Layout>
-    </Router>
+    <GenreFilterProvider>
+      <Router>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Navigate to="/books" replace />} />
+            <Route path="/books" element={<BookListPage />} />
+            <Route path="/books/new" element={<BookFormPage />} />
+            <Route path="/books/:id/edit" element={<BookFormPage />} />
+            <Route path="/stats" element={<StatsPage />} />
+          </Routes>
+        </Layout>
+      </Router>
+    </GenreFilterProvider>
   )
 }
 

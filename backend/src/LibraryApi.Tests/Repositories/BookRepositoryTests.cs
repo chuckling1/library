@@ -112,10 +112,10 @@ public class BookRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task GetBooksAsync_WithMinRatingFilter_ShouldReturnFilteredBooks()
+    public async Task GetBooksAsync_WithExactRatingFilter_ShouldReturnFilteredBooks()
     {
         // Act
-        var (books, totalCount) = await _repository.GetBooksAsync(minRating: 5);
+        var (books, totalCount) = await _repository.GetBooksAsync(rating: 5);
 
         // Assert
         books.Should().HaveCount(1);

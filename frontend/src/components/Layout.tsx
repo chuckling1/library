@@ -39,6 +39,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <main className="main-content">
         {children}
       </main>
+      <footer className="footer">
+        <div className="footer-content">
+          <p className="attribution">
+            Book data provided by{' '}
+            <a
+              href="https://openlibrary.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="attribution-link"
+            >
+              Open Library
+            </a>
+          </p>
+        </div>
+      </footer>
     </div>
   )
 }

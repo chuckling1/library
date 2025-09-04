@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Book, CreateBookRequest, UpdateBookRequest } from '../generated/api';
 import { useCreateBook, useUpdateBook } from '../hooks/useBooks';
 import { openLibraryService } from '../services/openLibraryService';
+import StarRating from './StarRating';
 import './BookForm.scss';
 // import BookCover from './BookCover'; // Not used yet
 
@@ -407,19 +408,11 @@ const BookForm: React.FC<BookFormProps> = ({ book, isEditing }) => {
             Rating <span className="required">*</span>
           </label>
           <div className="rating-input">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                type="button"
-                onClick={() => handleInputChange('rating', star)}
-                className={`star-button ${star <= formData.rating ? 'filled' : 'empty'}`}
-                disabled={isLoading}
-                aria-label={`Rate ${star} stars`}
-              >
-                ★
-              </button>
-            ))}
-            <span className="rating-text">({formData.rating}/5)</span>
+            <StarRating
+              rating={formData.rating}
+              onRatingChange={(newRating) => handleInputChange('rating', newRating)}
+              readOnly={isLoading}
+            />
           </div>
           {errors.rating && <span className="error-message">{errors.rating}</span>}
         </div>

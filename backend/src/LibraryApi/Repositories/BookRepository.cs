@@ -26,7 +26,7 @@ public class BookRepository : IBookRepository
     /// <inheritdoc/>
     public async Task<(IEnumerable<Book> Books, int TotalCount)> GetBooksAsync(
         IEnumerable<string>? genres = null,
-        int? minRating = null,
+        int? rating = null,
         string? searchTerm = null,
         string? sortBy = null,
         string? sortDirection = null,
@@ -45,9 +45,9 @@ public class BookRepository : IBookRepository
             query = query.Where(b => b.BookGenres.Any(bg => genres.Contains(bg.GenreName)));
         }
 
-        if (minRating.HasValue)
+        if (rating.HasValue)
         {
-            query = query.Where(b => b.Rating >= minRating.Value);
+            query = query.Where(b => b.Rating == rating.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(searchTerm))

@@ -1,183 +1,285 @@
 @import '../styles/variables';
 
+// Main container
 .book-list-page {
-  max-width: 1200px;
-  margin: 0 auto;
   padding: $spacing-lg;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
+// Header - Simplified
 .page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: $spacing-xl;
-  
+  margin-bottom: $spacing-lg;
+
   h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
     color: $text-primary;
-    font-size: $font-size-xl;
-    font-weight: $font-weight-bold;
     margin: 0;
   }
-  
-  .book-count {
-    color: $text-secondary;
-    font-size: $font-size-sm;
-  }
 }
 
-.filters-section {
-  background: $bg-surface;
-  border: 1px solid $border-color;
-  border-radius: $border-radius-md;
+// Filter Bar - Contains all filter controls (unified with results bar)
+.filter-bar {
+  background-color: $bg-surface;
   padding: $spacing-lg;
-  margin-bottom: $spacing-xl;
+  border-radius: $border-radius-lg $border-radius-lg 0 0; // Rounded corners only at top
+  border: 1px solid $border-color;
+  border-bottom: 1px solid $border-color; // Normal border thickness for dividing line
+  margin-bottom: 0; // No gap with results bar
   display: flex;
   flex-direction: column;
   gap: $spacing-md;
 }
 
-.search-form {
+// Row 1: Primary Search & Secondary Filters
+.filter-bar__row {
   display: flex;
-  gap: $spacing-sm;
+  flex-direction: row;
+  gap: $spacing-lg;
   align-items: center;
   
-  .search-input {
-    flex: 1;
-    background: transparent;
-    border: 1px solid $border-color;
-    border-radius: $border-radius-md;
-    padding: $spacing-sm $spacing-md;
-    color: $text-primary;
-    font-size: $font-size-sm;
-    font-family: $font-family-sans;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    
-    &:focus {
-      outline: none;
-      border-color: $accent-primary;
-      box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.1);
-    }
-    
-    &::placeholder {
-      color: $text-disabled;
-    }
-  }
-  
-  .clear-search {
-    flex-shrink: 0;
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: $spacing-md;
   }
 }
 
-.filter-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: $spacing-md;
-  align-items: center;
-  
-  select {
-    background: transparent;
-    border: 1px solid $border-color;
+// Search within filter bar
+.filter-bar__search {
+  position: relative;
+  flex-grow: 1;
+
+  .search-input {
+    width: 100%;
+    padding: $spacing-md;
+    padding-right: 2.5rem; // Space for clear button
+    font-size: $font-size-md;
+    border: 2px solid $border-color;
     border-radius: $border-radius-md;
-    padding: $spacing-sm $spacing-md;
+    background-color: $bg-primary;
     color: $text-primary;
-    font-size: $font-size-sm;
-    font-family: $font-family-sans;
-    min-width: 140px;
-    cursor: pointer;
     transition: border-color 0.2s ease;
-    
+
     &:focus {
       outline: none;
       border-color: $accent-primary;
+      box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
     }
-    
-    option {
-      background: $bg-surface;
+
+    &::placeholder {
+      color: $text-tertiary;
+    }
+  }
+
+  .search-clear {
+    position: absolute;
+    right: $spacing-xs;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: $text-secondary;
+    cursor: pointer;
+    padding: $spacing-xs;
+    border-radius: 50%;
+    font-size: $font-size-lg;
+    line-height: 1;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: $border-color;
       color: $text-primary;
     }
   }
 }
 
-.books-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: $spacing-lg;
-  margin-bottom: $spacing-xl;
+// Star rating filter section
+.filter-bar__rating {
+  // Styling handled by StarRatingFilter component
 }
 
-.loading-container,
-.error-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 200px;
-  text-align: center;
+// Row 2: Genre Tag Filter
+.filter-bar__genres {
+  width: 100%;
   
-  .loading-spinner {
-    color: $text-secondary;
-    font-size: $font-size-lg;
-  }
-  
-  h2 {
-    color: $text-primary;
-    margin-bottom: $spacing-sm;
-  }
-  
-  p {
-    color: $text-secondary;
-    margin-bottom: $spacing-lg;
-  }
+  // Internal styling handled by GenreFilter component
 }
 
-.empty-state {
-  text-align: center;
-  padding: $spacing-xxl;
-  
-  h3 {
-    color: $text-primary;
-    font-size: $font-size-lg;
-    margin-bottom: $spacing-sm;
-  }
-  
-  p {
-    color: $text-secondary;
-    max-width: 500px;
-    margin: 0 auto;
-  }
-}
-
-.mutation-loading {
-  position: fixed;
-  bottom: $spacing-lg;
-  right: $spacing-lg;
-  background: $bg-surface;
+// Results Bar - Shows count and sorting controls (unified with filter bar)
+.results-bar {
+  background-color: $bg-surface;
+  padding: $spacing-md $spacing-lg;
   border: 1px solid $border-color;
-  border-radius: $border-radius-md;
-  padding: $spacing-sm $spacing-md;
-  color: $text-secondary;
-  font-size: $font-size-sm;
-  box-shadow: $box-shadow-md;
+  border-top: none; // Connect with filter bar seamlessly
+  border-radius: 0 0 $border-radius-lg $border-radius-lg; // Rounded corners only at bottom
+  margin-bottom: $spacing-lg;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: $spacing-sm;
+    align-items: stretch;
+  }
 }
 
-// Responsive design
-@media (max-width: 768px) {
-  .filter-controls {
-    flex-direction: column;
-    align-items: stretch;
+.results-bar__count {
+  font-size: $font-size-md;
+  color: $text-primary;
+  font-weight: 500;
+
+  .results-bar__filtered {
+    color: $text-secondary;
+    font-style: italic;
+  }
+}
+
+.results-bar__sorting {
+  display: flex;
+  gap: $spacing-sm;
+  align-items: center;
+
+  select {
+    padding: $spacing-xs $spacing-sm;
+    border: 1px solid $border-color;
+    border-radius: $border-radius-sm;
+    background-color: $bg-primary;
+    color: $text-primary;
+    font-size: $font-size-sm;
+    cursor: pointer;
+
+    &:focus {
+      outline: none;
+      border-color: $accent-primary;
+    }
+  }
+
+  .sort-select {
+    min-width: 160px;
+  }
+
+  .direction-select {
+    min-width: 100px;
+  }
+
+  @media (max-width: 768px) {
+    justify-content: space-between;
     
     select {
+      flex: 1;
       min-width: auto;
     }
   }
-  
-  .books-grid {
+}
+
+// Books grid
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+  gap: $spacing-xl;
+  margin-bottom: $spacing-xl;
+
+  @media (max-width: 1024px) {
     grid-template-columns: 1fr;
+    gap: $spacing-lg;
   }
-  
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: $spacing-sm;
+}
+
+// Empty state
+.empty-state {
+  text-align: center;
+  padding: $spacing-xxl $spacing-lg;
+  background-color: $bg-surface;
+  border-radius: $border-radius-lg;
+  border: 2px dashed $border-color;
+
+  h3 {
+    font-size: $font-size-xl;
+    font-weight: 600;
+    color: $text-primary;
+    margin: 0 0 $spacing-md 0;
+  }
+
+  p {
+    font-size: $font-size-md;
+    color: $text-secondary;
+    margin: 0;
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+}
+
+// Loading and error states
+.loading-container, .error-container {
+  text-align: center;
+  padding: $spacing-xxl $spacing-lg;
+  max-width: 600px;
+  margin: 0 auto;
+
+  .loading-spinner {
+    font-size: $font-size-lg;
+    color: $text-secondary;
+    padding: $spacing-xl;
+  }
+
+  h2 {
+    color: $accent-error;
+    margin-bottom: $spacing-md;
+    font-size: $font-size-xl;
+  }
+
+  p {
+    color: $text-secondary;
+    margin-bottom: $spacing-lg;
+    font-size: $font-size-md;
+  }
+}
+
+// Mutation loading overlay
+.mutation-loading {
+  position: fixed;
+  top: $spacing-lg;
+  right: $spacing-lg;
+  background-color: $bg-surface;
+  color: $text-primary;
+  padding: $spacing-md $spacing-lg;
+  border-radius: $border-radius-md;
+  border: 1px solid $border-color;
+  box-shadow: $box-shadow-md;
+  z-index: 1000;
+  font-size: $font-size-sm;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .book-list-page {
+    padding: $spacing-md;
+  }
+
+  .page-header h2 {
+    font-size: 2rem;
+  }
+
+  .filter-bar {
+    padding: $spacing-md;
+  }
+
+  .results-bar {
+    padding: $spacing-sm $spacing-md;
   }
 }

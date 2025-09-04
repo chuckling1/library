@@ -11,7 +11,7 @@ public interface IBookRepository
     /// Gets all books with optional filtering and sorting.
     /// </summary>
     /// <param name="genres">Optional list of genres to filter by.</param>
-    /// <param name="minRating">Optional minimum rating to filter by.</param>
+    /// <param name="rating">Optional exact rating to filter by.</param>
     /// <param name="searchTerm">Optional search term for title/author.</param>
     /// <param name="sortBy">Optional field to sort by.</param>
     /// <param name="sortDirection">Optional sort direction.</param>
@@ -21,7 +21,7 @@ public interface IBookRepository
     /// <returns>A tuple containing the books and total count.</returns>
     Task<(IEnumerable<Book> Books, int TotalCount)> GetBooksAsync(
         IEnumerable<string>? genres = null,
-        int? minRating = null,
+        int? rating = null,
         string? searchTerm = null,
         string? sortBy = null,
         string? sortDirection = null,

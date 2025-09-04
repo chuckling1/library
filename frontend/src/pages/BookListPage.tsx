@@ -1,7 +1,10 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useMemo } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
-import { useBooks, useDeleteBook, BooksFilters } from '../hooks/useBooks';
+import { useBooks, useDeleteBook, BooksFilters, getBookGenres } from '../hooks/useBooks';
+import { useGenreFilter } from '../contexts/GenreFilterContext';
 import BookCard from '../components/BookCard';
+import StarRatingFilter from '../components/StarRatingFilter';
+import GenreFilter from '../components/GenreFilter';
 import { Book } from '../generated/api';
 import './BookListPage.scss';
 
@@ -20,11 +23,33 @@ const BookListPage: React.FC = () => {
   // Use uncontrolled input with ref for search
   const searchInputRef = useRef<HTMLInputElement>(null);
   
-  // Query hooks
-  const { data: books, isLoading, error, refetch } = useBooks(filters);
+  // Genre filter context
+  const { activeGenres } = useGenreFilter();
+  
+  // Query hooks - fetch all books first
+  const { data: allBooks, isLoading, error, refetch } = useBooks({
+    ...filters,
+    genres: undefined, // Remove server-side genre filtering
+  });
   const deleteBookMutation = useDeleteBook();
 
-  // Debounced search handler - industry standard pattern
+  // Client-side filtering for genre functionality
+  const filteredBooks = useMemo(() => {
+    if (!allBooks || activeGenres.length === 0) {
+      return allBooks ?? [];
+    }
+
+    return allBooks.filter(book => {
+      const bookGenres = getBookGenres(book);
+      return activeGenres.some(activeGenre => 
+        bookGenres.some(bookGenre => 
+          bookGenre.toLowerCase() === activeGenre.toLowerCase()
+        )
+      );
+    });
+  }, [allBooks, activeGenres]);
+
+  // Debounced search handler
   const handleSearchChange = useDebouncedCallback(
     (value: string) => {
       setFilters(prev => ({
@@ -32,12 +57,17 @@ const BookListPage: React.FC = () => {
         search: value.trim() || undefined,
       }));
     },
-    300 // 300ms debounce
+    300
   );
 
   // Handle filter changes
   const handleFilterChange = useCallback((updates: Partial<BooksFilters>) => {
     setFilters(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  // Handle rating filter
+  const handleRatingChange = useCallback((newRating: number) => {
+    setFilters(prev => ({ ...prev, rating: newRating === 0 ? undefined : newRating }));
   }, []);
 
   // Handle delete book
@@ -51,24 +81,7 @@ const BookListPage: React.FC = () => {
     }
   }, [deleteBookMutation]);
 
-  // Clear all filters
-  const clearFilters = useCallback(() => {
-    setFilters({
-      page: 1,
-      pageSize: 20,
-      sortBy: 'createdAt',
-      sortDirection: 'desc',
-      rating: undefined,
-      genres: undefined,
-      search: undefined,
-    });
-    // Clear the search input
-    if (searchInputRef.current) {
-      searchInputRef.current.value = '';
-    }
-  }, []);
-
-  // Clear just the search
+  // Clear search
   const clearSearch = useCallback(() => {
     if (searchInputRef.current) {
       searchInputRef.current.value = '';
@@ -96,38 +109,62 @@ const BookListPage: React.FC = () => {
     );
   }
 
+  const displayBooks = filteredBooks;
+  const hasActiveFilters = (filters.search ?? false) || (filters.rating ?? false) || activeGenres.length > 0;
+
   return (
     <div className="book-list-page">
       <div className="page-header">
         <h2>Book Collection</h2>
-        <div className="book-count">
-          {books?.length ?? 0} books found
+      </div>
+
+      {/* Filter Bar */}
+      <div className="filter-bar">
+        {/* Row 1: Primary Search & Secondary Filters */}
+        <div className="filter-bar__row">
+          <div className="filter-bar__search">
+            <input
+              ref={searchInputRef}
+              type="text"
+              onChange={(e) => handleSearchChange(e.target.value)}
+              placeholder="Search by title or author..."
+              className="search-input"
+            />
+            {filters.search && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="search-clear"
+              >
+                ×
+              </button>
+            )}
+          </div>
+
+          <div className="filter-bar__rating">
+            <StarRatingFilter
+              rating={filters.rating ?? 0}
+              onRatingChange={handleRatingChange}
+            />
+          </div>
+        </div>
+
+        {/* Row 2: Genre Tag Filter */}
+        <div className="filter-bar__genres">
+          <GenreFilter />
         </div>
       </div>
 
-      {/* Search and Filter Section */}
-      <div className="filters-section">
-        <div className="search-form">
-          {/* UNCONTROLLED INPUT - The key to stability */}
-          <input
-            ref={searchInputRef}
-            type="text"
-            onChange={(e) => handleSearchChange(e.target.value)}
-            placeholder="Search by title or author... (live search)"
-            className="search-input"
-          />
-          {filters.search && (
-            <button
-              type="button"
-              onClick={clearSearch}
-              className="btn-secondary clear-search"
-            >
-              Clear
-            </button>
+      {/* Results Bar */}
+      <div className="results-bar">
+        <div className="results-bar__count">
+          {displayBooks.length} book{displayBooks.length !== 1 ? 's' : ''} found
+          {hasActiveFilters && (
+            <span className="results-bar__filtered"> (filtered)</span>
           )}
         </div>
-
-        <div className="filter-controls">
+        
+        <div className="results-bar__sorting">
           <select
             value={filters.sortBy}
             onChange={(e) => handleFilterChange({ 
@@ -152,32 +189,13 @@ const BookListPage: React.FC = () => {
             <option value="asc">Ascending</option>
             <option value="desc">Descending</option>
           </select>
-
-          <select
-            value={filters.rating?.toString() ?? ''}
-            onChange={(e) => handleFilterChange({ 
-              rating: e.target.value ? parseInt(e.target.value) : undefined
-            })}
-            className="rating-filter"
-          >
-            <option value="">All Ratings</option>
-            <option value="5">5 Stars</option>
-            <option value="4">4+ Stars</option>
-            <option value="3">3+ Stars</option>
-            <option value="2">2+ Stars</option>
-            <option value="1">1+ Stars</option>
-          </select>
-
-          <button onClick={clearFilters} className="btn-secondary">
-            Clear Filters
-          </button>
         </div>
       </div>
 
       {/* Books Grid */}
-      {books && books.length > 0 ? (
+      {displayBooks.length > 0 ? (
         <div className="books-grid">
-          {books.map((book) => (
+          {displayBooks.map((book) => (
             <BookCard
               key={book.id}
               book={book}
@@ -189,8 +207,8 @@ const BookListPage: React.FC = () => {
         <div className="empty-state">
           <h3>No books found</h3>
           <p>
-            {filters.search 
-              ? "No books match your search criteria. Try adjusting your search or filters."
+            {hasActiveFilters 
+              ? "No books match your current filters. Try adjusting your search or filters."
               : "Your library is empty. Add your first book to get started!"}
           </p>
         </div>

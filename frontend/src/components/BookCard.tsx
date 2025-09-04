@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Book } from '../generated/api';
-import { getBookGenres, formatDate, formatRating } from '../hooks/useBooks';
+import { getBookGenres, formatDate } from '../hooks/useBooks';
+import { useGenreFilter } from '../contexts/GenreFilterContext';
+import StarRating from './StarRating';
 import BookCover from './BookCover';
 import EditIcon from '../images/edit_icon.svg';
 import DeleteIcon from '../images/delete_icon.svg';
@@ -15,7 +17,52 @@ interface BookCardProps {
 const BookCard: React.FC<BookCardProps> = React.memo(({ book, onDelete }) => {
   const navigate = useNavigate();
   const genres = getBookGenres(book);
-  const [showAllGenres, setShowAllGenres] = useState(false);
+  const { toggleGenre, isGenreActive } = useGenreFilter();
+  const [isGenresExpanded, setIsGenresExpanded] = useState<boolean>(false);
+  const [needsExpansion, setNeedsExpansion] = useState<boolean>(false);
+  const genresContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Detect overflow by measuring actual container height
+  useEffect(() => {
+    const checkOverflow = (): void => {
+      if (!genresContainerRef.current || genres.length === 0) {
+        setNeedsExpansion(false);
+        return;
+      }
+
+      const container = genresContainerRef.current;
+      
+      // Always measure in collapsed state to determine if toggle is needed
+      const wasExpanded = isGenresExpanded;
+      if (wasExpanded) {
+        container.classList.remove('book-card__genres--expanded');
+      }
+      
+      const computedStyle = getComputedStyle(container);
+      const maxHeight = parseFloat(computedStyle.maxHeight);
+      
+      // Temporarily expand to measure full height
+      const originalMaxHeight = container.style.maxHeight;
+      container.style.maxHeight = 'none';
+      const fullHeight = container.scrollHeight;
+      container.style.maxHeight = originalMaxHeight;
+      
+      // Restore expanded state if it was expanded
+      if (wasExpanded) {
+        container.classList.add('book-card__genres--expanded');
+      }
+      
+      setNeedsExpansion(fullHeight > maxHeight);
+    };
+
+    checkOverflow();
+    
+    // Recheck on window resize
+    window.addEventListener('resize', checkOverflow);
+    return (): void => {
+      window.removeEventListener('resize', checkOverflow);
+    };
+  }, [genres, isGenresExpanded]);
   
   const handleEdit = (): void => {
     void navigate(`/books/${book.id}/edit`);
@@ -27,16 +74,25 @@ const BookCard: React.FC<BookCardProps> = React.memo(({ book, onDelete }) => {
     }
   };
 
-  // Show first 4 genres by default, rest on expand
-  const maxVisibleGenres = 4;
-  const visibleGenres = showAllGenres ? genres : genres.slice(0, maxVisibleGenres);
-  const hiddenGenreCount = genres.length - maxVisibleGenres;
+  const handleGenreClick = (genre: string): void => {
+    toggleGenre(genre);
+  };
+
+  const handleToggleGenres = (): void => {
+    setIsGenresExpanded(prev => !prev);
+  };
+
+  // Get image URL (title or fallback to cover component)
+  const imageUrl = book.title 
+    ? `https://covers.openlibrary.org/b/title/${encodeURIComponent(book.title)}-M.jpg`
+    : '';
   
   return (
     <div className="book-card">
+      {/* Left Column - Fixed width cover */}
       <div className="book-card__cover">
         <img 
-          src={`https://covers.openlibrary.org/b/title/${encodeURIComponent(book.title)}-M.jpg`}
+          src={imageUrl}
           alt={`Cover of ${book.title}`}
           onError={(e) => {
             // Fallback to BookCover component on error
@@ -54,70 +110,72 @@ const BookCard: React.FC<BookCardProps> = React.memo(({ book, onDelete }) => {
         </div>
       </div>
       
+      {/* Right Column - Flex content */}
       <div className="book-card__content">
-        <div className="book-card__header">
-          <div className="book-card__title-section">
-            <h3 className="book-card__title">{book.title}</h3>
-            <p className="book-card__author">by {book.author}</p>
-          </div>
-          
-          <div className="book-card__actions">
-            <button
-              onClick={handleEdit}
-              className="btn-secondary"
-              aria-label={`Edit ${book.title}`}
-            >
-              <img src={EditIcon} alt="Edit" />
-            </button>
-            <button
-              onClick={() => void handleDelete()}
-              className="btn-destructive"
-              aria-label={`Delete ${book.title}`}
-            >
-              <img src={DeleteIcon} alt="Delete" />
-            </button>
+        {/* Primary Info - Title, Author, Rating */}
+        <div className="book-card__primary-info">
+          <h3 className="book-card__title">{book.title}</h3>
+          <p className="book-card__author">by {book.author}</p>
+          <div className="book-card__rating">
+            <StarRating
+              rating={book.rating ?? 0}
+              readOnly={true}
+              showLabel={false}
+            />
           </div>
         </div>
         
-        <div className="book-card__rating">
-          <span className="rating-stars">
-            {formatRating(book.rating ?? 0)}
-          </span>
-        </div>
-        
-        {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
-        {genres && genres.length > 0 && (
-          <div className="book-card__tags-container">
-            <div className="book-card__tags-list">
-              {visibleGenres.map((genre) => (
-                <span key={genre} className="book-card__tag">
+        {/* Genre Tags - Expandable container */}
+        {genres.length > 0 && (
+          <div className="book-card__genres-container">
+            <div 
+              ref={genresContainerRef}
+              className={`book-card__genres ${isGenresExpanded ? 'book-card__genres--expanded' : ''}`}
+            >
+              {genres.map((genre) => (
+                <button
+                  key={genre}
+                  className={`book-card__genre-pill ${isGenreActive(genre) ? 'book-card__genre-pill--active' : ''}`}
+                  onClick={() => handleGenreClick(genre)}
+                  aria-label={`${isGenreActive(genre) ? 'Remove' : 'Add'} ${genre} filter`}
+                >
                   {genre}
-                </span>
+                </button>
               ))}
-              {!showAllGenres && hiddenGenreCount > 0 && (
-                <button
-                  className="book-card__tag book-card__tag--more"
-                  onClick={() => setShowAllGenres(true)}
-                  aria-label={`Show ${hiddenGenreCount} more genres`}
-                >
-                  +{hiddenGenreCount}
-                </button>
-              )}
-              {showAllGenres && genres.length > maxVisibleGenres && (
-                <button
-                  className="book-card__tag book-card__tag--less"
-                  onClick={() => setShowAllGenres(false)}
-                  aria-label="Show fewer genres"
-                >
-                  Show less
-                </button>
-              )}
             </div>
+            {needsExpansion && (
+              <button 
+                className="book-card__genres-toggle"
+                onClick={handleToggleGenres}
+                aria-label={isGenresExpanded ? 'Show fewer genres' : 'Show more genres'}
+              >
+                {isGenresExpanded ? 'Show Less ▲' : 'Show More ▼'}
+              </button>
+            )}
           </div>
         )}
         
+        {/* Published Date - Pushed to bottom-right */}
         <div className="book-card__published-date">
           {formatDate(book.publishedDate)}
+        </div>
+
+        {/* Action Buttons - Positioned absolutely in top-right corner */}
+        <div className="book-card__actions">
+          <button
+            onClick={handleEdit}
+            className="btn-secondary"
+            aria-label={`Edit ${book.title}`}
+          >
+            <img src={EditIcon} alt="Edit" />
+          </button>
+          <button
+            onClick={() => void handleDelete()}
+            className="btn-destructive"
+            aria-label={`Delete ${book.title}`}
+          >
+            <img src={DeleteIcon} alt="Delete" />
+          </button>
         </div>
       </div>
     </div>

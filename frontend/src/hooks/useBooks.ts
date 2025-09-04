@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient, type UseMutationResult, type UseQueryResult } from '@tanstack/react-query';
-import { BooksApi, Book, CreateBookRequest, UpdateBookRequest, Configuration } from '../generated/api';
+import { BooksApi, Book, CreateBookRequest, UpdateBookRequest, Configuration, BookStatsResponse } from '../generated/api';
 
 // Create API instance with proper base URL configuration
 const configuration = new Configuration({
@@ -66,10 +66,10 @@ export const useBook = (id: string): UseQueryResult<Book, Error> => {
 };
 
 // Custom hook for fetching book statistics
-export const useBookStats = (): UseQueryResult<unknown, Error> => {
+export const useBookStats = (): UseQueryResult<BookStatsResponse, Error> => {
   return useQuery({
     queryKey: booksKeys.stats(),
-    queryFn: async () => {
+    queryFn: async (): Promise<BookStatsResponse> => {
       const response = await booksApi.apiBooksStatsGet();
       return response.data;
     },

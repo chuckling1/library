@@ -275,6 +275,23 @@ dotnet test                        # Must pass all tests
 
 **If any validation step fails, STOP and fix the issues before proceeding.**
 
+## 🚨 CRITICAL: Development Server Management
+
+**DO NOT START DEVELOPMENT SERVERS** - The user manages these manually and keeps them running persistently.
+
+**What NOT to do:**
+- ❌ `dotnet run --project src/LibraryApi` 
+- ❌ `npm run dev`
+- ❌ Any commands that start servers or keep processes running
+
+**Why:** Development servers are already running and files may be locked by existing instances. Starting additional servers can cause port conflicts and file locking issues.
+
+**What you CAN do:**
+- ✅ Build commands (`dotnet build`, `npm run build`)
+- ✅ Test commands (`dotnet test`, `npm test`)
+- ✅ Linting commands (`npm run lint`, `dotnet format`)
+- ✅ Code generation (`npm run generate-client`)
+
 ## Development Commands
 
 ### Backend (from backend/ directory)
@@ -283,8 +300,8 @@ dotnet test                        # Must pass all tests
 dotnet restore
 dotnet build
 
-# Run application (LibraryApi project)
-dotnet run --project src/LibraryApi
+# ❌ DO NOT RUN - User manages development server
+# dotnet run --project src/LibraryApi
 
 # Run tests with coverage
 dotnet test --collect:"XPlat Code Coverage"
@@ -294,8 +311,8 @@ dotnet ef migrations add <MigrationName> --project src/LibraryApi
 dotnet ef database update --project src/LibraryApi
 
 # Generate OpenAPI spec for frontend
-dotnet run --project src/LibraryApi --urls http://localhost:5000
-# Then access http://localhost:5000/swagger/v1/swagger.json
+# ❌ DO NOT RUN - Development server is already running
+# Access http://localhost:5000/swagger/v1/swagger.json directly
 ```
 
 ### Frontend (from frontend/ directory)
@@ -306,8 +323,8 @@ npm install
 # Generate TypeScript client from OpenAPI spec
 npm run generate-client
 
-# Development server
-npm run dev
+# ❌ DO NOT RUN - User manages development server
+# npm run dev
 
 # Build for production
 npm run build

@@ -1,23 +1,342 @@
-import React from 'react'
+import React, { useMemo, useState } from 'react';
+import { useBookStats, useBooks, formatRating } from '../hooks/useBooks';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
+} from 'recharts';
+import './StatsPage.scss';
 
 const StatsPage: React.FC = () => {
+  const { data: stats, isLoading, error, refetch } = useBookStats();
+  const { data: recentBooks } = useBooks({ sortBy: 'createdAt', sortDirection: 'desc', pageSize: 5 });
+  
+  const [chartType, setChartType] = useState<'bar' | 'pie'>('bar');
+
+  // Process genre data for charts with better presentation (top 12 for readability)
+  const chartData = useMemo(() => {
+    if (!stats?.genreDistribution) return [];
+    
+    // Sort by count descending and take top 12 for better chart readability
+    const sorted = [...stats.genreDistribution]
+      .filter(genre => genre.genre && genre.count && genre.count > 0)
+      .sort((a, b) => (b.count ?? 0) - (a.count ?? 0))
+      .slice(0, 12);
+
+    return sorted.map((genre, index) => ({
+      genre: genre.genre ?? 'Unknown',
+      count: genre.count ?? 0,
+      averageRating: genre.averageRating ?? 0,
+      // Color for pie chart
+      fill: CHART_COLORS[index % CHART_COLORS.length]
+    }));
+  }, [stats?.genreDistribution]);
+
+  // Process ALL genre data for the detailed table (no filtering)
+  const allGenreData = useMemo(() => {
+    if (!stats?.genreDistribution) return [];
+    
+    // Show ALL genres, sorted by count descending
+    return [...stats.genreDistribution]
+      .filter(genre => genre.genre && genre.count && genre.count > 0)
+      .sort((a, b) => (b.count ?? 0) - (a.count ?? 0))
+      .map(genre => ({
+        genre: genre.genre ?? 'Unknown',
+        count: genre.count ?? 0,
+        averageRating: genre.averageRating ?? 0
+      }));
+  }, [stats?.genreDistribution]);
+
+  // Rating distribution data
+  const ratingData = useMemo(() => {
+    if (!stats?.genreDistribution) return [];
+    
+    const ratingCounts = [1, 2, 3, 4, 5].map(rating => {
+      const count = stats.genreDistribution?.filter(g => 
+        Math.round(g.averageRating ?? 0) === rating
+      ).length ?? 0;
+      return { rating: `${rating} Star${rating !== 1 ? 's' : ''}`, count, fill: RATING_COLORS[rating - 1] };
+    });
+
+    return ratingCounts.filter(r => r.count > 0);
+  }, [stats?.genreDistribution]);
+
+  const handleRefresh = (): void => {
+    void refetch();
+  };
+
+  if (isLoading) {
+    return (
+      <div className="stats-page">
+        <div className="loading-container">
+          <div className="loading-spinner">Loading statistics...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="stats-page">
+        <div className="error-container">
+          <h2>Error Loading Statistics</h2>
+          <p>Failed to load library statistics. Please try again.</p>
+          <button onClick={handleRefresh} className="btn-primary">
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <div className="stats-page">
+        <div className="empty-state">
+          <h2>No Statistics Available</h2>
+          <p>No data available to generate statistics.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <h2>Library Statistics</h2>
-      <p>Statistics dashboard will be implemented here. This is a placeholder component.</p>
-      <div className="card">
-        <h3>Coming Soon</h3>
-        <ul>
-          <li>Total books counter</li>
-          <li>Average rating display</li>
-          <li>Genre distribution chart (Recharts)</li>
-          <li>Recently added books</li>
-          <li>Interactive chart with filtering</li>
-          <li>OpenAPI-generated client integration</li>
-        </ul>
+    <div className="stats-page">
+      <div className="page-header">
+        <div className="title-section">
+          <h2>Library Statistics</h2>
+          <p className="subtitle">Comprehensive overview of your book collection</p>
+        </div>
+        <div className="actions">
+          <button onClick={handleRefresh} className="btn-secondary refresh-btn">
+            🔄 Refresh
+          </button>
+        </div>
+      </div>
+
+      {/* Overview Cards */}
+      <div className="stats-overview">
+        <div className="stat-card">
+          <div className="stat-icon">📚</div>
+          <div className="stat-content">
+            <h3 className="stat-number">{stats.totalBooks ?? 0}</h3>
+            <p className="stat-label">Total Books</p>
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-icon">⭐</div>
+          <div className="stat-content">
+            <h3 className="stat-number">{(stats.averageRating ?? 0).toFixed(1)}</h3>
+            <p className="stat-label">Average Rating</p>
+            <p className="stat-detail">{formatRating(Math.round(stats.averageRating ?? 0))}</p>
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-icon">🏷️</div>
+          <div className="stat-content">
+            <h3 className="stat-number">{stats.genreDistribution?.length ?? 0}</h3>
+            <p className="stat-label">Unique Genres</p>
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-icon">📖</div>
+          <div className="stat-content">
+            <h3 className="stat-number">
+              {stats.genreDistribution?.find(g => 
+                g.count === Math.max(...(stats.genreDistribution?.map(x => x.count ?? 0) ?? []))
+              )?.genre ?? 'N/A'}
+            </h3>
+            <p className="stat-label">Top Genre</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Charts Section */}
+      <div className="charts-section">
+        {/* Genre Distribution Chart */}
+        <div className="chart-container">
+          <div className="chart-header">
+            <h3>Genre Distribution</h3>
+            <div className="chart-controls">
+              <button 
+                className={`chart-type-btn ${chartType === 'bar' ? 'active' : ''}`}
+                onClick={() => setChartType('bar')}
+              >
+                📊 Bar
+              </button>
+              <button 
+                className={`chart-type-btn ${chartType === 'pie' ? 'active' : ''}`}
+                onClick={() => setChartType('pie')}
+              >
+                🥧 Pie
+              </button>
+            </div>
+          </div>
+          
+          <div className="chart-content">
+            {chartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={400}>
+                {chartType === 'bar' ? (
+                  <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                      dataKey="genre" 
+                      angle={-45}
+                      textAnchor="end"
+                      height={100}
+                      interval={0}
+                      fontSize={12}
+                    />
+                    <YAxis />
+                    <Tooltip 
+                      formatter={(value: number) => [
+                        `${value} book${value !== 1 ? 's' : ''}`,
+                        'Count'
+                      ]}
+                      labelFormatter={(label: string) => `Genre: ${label}`}
+                    />
+                    <Bar dataKey="count" fill="#4f46e5" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                ) : (
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ genre, count, percent }) => 
+                        `${genre}: ${count} (${(percent * 100).toFixed(1)}%)`
+                      }
+                      outerRadius={120}
+                      fill="#8884d8"
+                      dataKey="count"
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: number) => [`${value} books`, 'Count']}
+                    />
+                  </PieChart>
+                )}
+              </ResponsiveContainer>
+            ) : (
+              <div className="chart-empty-state">
+                <p>No genre data available</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Rating Distribution Chart */}
+        <div className="chart-container">
+          <div className="chart-header">
+            <h3>Rating Distribution by Genre</h3>
+          </div>
+          <div className="chart-content">
+            {ratingData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={ratingData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="rating" />
+                  <YAxis />
+                  <Tooltip 
+                    formatter={(value: number) => [`${value} genre${value !== 1 ? 's' : ''}`, 'Count']}
+                  />
+                  <Bar dataKey="count" fill="#10b981" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="chart-empty-state">
+                <p>No rating data available</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Recently Added Books */}
+      {recentBooks && recentBooks.length > 0 && (
+        <div className="recent-books-section">
+          <h3>Recently Added Books</h3>
+          <div className="recent-books-grid">
+            {recentBooks.slice(0, 5).map((book) => (
+              <div key={book.id} className="recent-book-card">
+                <h4 className="book-title">{book.title}</h4>
+                <p className="book-author">{book.author}</p>
+                <div className="book-rating">
+                  {formatRating(book.rating ?? 0)} ({book.rating}/5)
+                </div>
+                <div className="book-genres">
+                  {book.bookGenres?.map((bg, index) => (
+                    <span key={index} className="genre-tag">
+                      {bg.genreName}
+                    </span>
+                  )) ?? <span className="no-genres">No genres</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Detailed Stats Table */}
+      <div className="detailed-stats-section">
+        <h3>Detailed Genre Breakdown</h3>
+        <div className="stats-table-container">
+          <table className="stats-table">
+            <thead>
+              <tr>
+                <th>Genre</th>
+                <th>Books</th>
+                <th>Avg Rating</th>
+                <th>Percentage</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allGenreData.map((genre, index) => (
+                <tr key={index}>
+                  <td className="genre-cell">{genre.genre}</td>
+                  <td className="count-cell">{genre.count}</td>
+                  <td className="rating-cell">
+                    {formatRating(Math.round(genre.averageRating))} ({genre.averageRating.toFixed(1)})
+                  </td>
+                  <td className="percentage-cell">
+                    {((genre.count / (stats.totalBooks ?? 1)) * 100).toFixed(1)}%
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default StatsPage
+// Color palettes for charts
+const CHART_COLORS = [
+  '#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+  '#ec4899', '#14b8a6', '#f97316', '#84cc16', '#6366f1', '#d946ef'
+];
+
+const RATING_COLORS = [
+  '#ef4444', // 1 star - red
+  '#f97316', // 2 stars - orange  
+  '#f59e0b', // 3 stars - yellow
+  '#84cc16', // 4 stars - light green
+  '#10b981'  // 5 stars - green
+];
+
+export default StatsPage;
