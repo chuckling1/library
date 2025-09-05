@@ -1,5 +1,8 @@
 import { useContext } from 'react';
-import { GenreFilterContext, GenreFilterContextType } from '../contexts/GenreFilterContextType';
+import {
+  GenreFilterContext,
+  GenreFilterContextType,
+} from '../contexts/GenreFilterContextType';
 
 export const useGenreFilter = (): GenreFilterContextType => {
   const context = useContext(GenreFilterContext);

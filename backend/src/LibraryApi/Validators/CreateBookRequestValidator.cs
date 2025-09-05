@@ -1,7 +1,11 @@
-using FluentValidation;
-using LibraryApi.Requests;
+// <copyright file="CreateBookRequestValidator.cs" company="Library API">
+// Copyright (c) Library API. All rights reserved.
+// </copyright>
 
 namespace LibraryApi.Validators;
+
+using FluentValidation;
+using LibraryApi.Requests;
 
 /// <summary>
 /// Validator for CreateBookRequest with comprehensive date validation.
@@ -13,25 +17,25 @@ public class CreateBookRequestValidator : AbstractValidator<CreateBookRequest>
     /// </summary>
     public CreateBookRequestValidator()
     {
-        RuleFor(x => x.Title)
+        this.RuleFor(x => x.Title)
             .NotEmpty()
             .WithMessage("Title is required")
             .MaximumLength(255)
             .WithMessage("Title cannot exceed 255 characters");
 
-        RuleFor(x => x.Author)
+        this.RuleFor(x => x.Author)
             .NotEmpty()
             .WithMessage("Author is required")
             .MaximumLength(255)
             .WithMessage("Author cannot exceed 255 characters");
 
-        RuleFor(x => x.Genres)
+        this.RuleFor(x => x.Genres)
             .NotEmpty()
             .WithMessage("At least one genre is required")
             .Must(genres => genres.Count > 0)
             .WithMessage("At least one genre is required");
 
-        RuleFor(x => x.PublishedDate)
+        this.RuleFor(x => x.PublishedDate)
             .NotEmpty()
             .WithMessage("Published date is required")
             .MaximumLength(50)
@@ -41,20 +45,20 @@ public class CreateBookRequestValidator : AbstractValidator<CreateBookRequest>
             .Must(BeValidDateRange)
             .WithMessage("Published date cannot be in the future");
 
-        RuleFor(x => x.Rating)
+        this.RuleFor(x => x.Rating)
             .InclusiveBetween(1, 5)
             .WithMessage("Rating must be between 1 and 5");
 
-        When(x => !string.IsNullOrEmpty(x.Edition), () =>
+        this.When(x => !string.IsNullOrEmpty(x.Edition), () =>
         {
-            RuleFor(x => x.Edition)
+            this.RuleFor(x => x.Edition)
                 .MaximumLength(100)
                 .WithMessage("Edition cannot exceed 100 characters");
         });
 
-        When(x => !string.IsNullOrEmpty(x.Isbn), () =>
+        this.When(x => !string.IsNullOrEmpty(x.Isbn), () =>
         {
-            RuleFor(x => x.Isbn)
+            this.RuleFor(x => x.Isbn)
                 .MaximumLength(20)
                 .WithMessage("ISBN cannot exceed 20 characters");
         });

@@ -7,7 +7,7 @@ import './BookFormPage.scss';
 const BookFormPage: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   const isEditing = Boolean(id);
-  
+
   const { data: book, isLoading, error } = useBook(id ?? '');
 
   if (isEditing && isLoading) {
@@ -49,4 +49,4 @@ const BookFormPage: React.FC = () => {
   );
 };
 
-export default BookFormPage
+export default BookFormPage;

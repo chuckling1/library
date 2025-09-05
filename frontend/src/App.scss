@@ -10,7 +10,7 @@
   border-bottom: 1px solid vars.$border-color;
   padding: 1rem vars.$spacing-xl;
   margin-bottom: 2rem;
-  
+
   .header-content {
     max-width: 1500px;
     margin: 0 auto;
@@ -29,16 +29,16 @@
     width: 50px;
     height: 50px;
     object-fit: contain;
-    
+
     // Enhanced transparency rendering
     background-color: transparent;
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
-    
+
     // Prevent rendering artifacts
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
-    
+
     // Improved anti-aliasing
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -94,23 +94,23 @@
   border-top: 1px solid vars.$border-color;
   padding: vars.$spacing-md vars.$spacing-xl;
   margin-top: auto;
-  
+
   .footer-content {
     max-width: 1200px;
     margin: 0 auto;
     text-align: center;
   }
-  
+
   .attribution {
     margin: 0;
     font-size: vars.$font-size-xs;
     color: vars.$text-secondary;
-    
+
     .attribution-link {
       color: vars.$accent-primary;
       text-decoration: none;
       font-weight: vars.$font-weight-medium;
-      
+
       &:hover {
         text-decoration: underline;
       }

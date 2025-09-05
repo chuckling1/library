@@ -1,24 +1,20 @@
 <Project>
   <PropertyGroup>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
     <WarningsNotAsErrors />
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Only suppress SA1636 copyright header format issue -->
+    <NoWarn>$(NoWarn);SA1636</NoWarn>
   </PropertyGroup>
   
-  <!-- Temporarily disabled StyleCop for development
   <ItemGroup>
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>analyzers</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-  -->
   
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <WarningLevel>0</WarningLevel>
-    <NoWarn>$(NoWarn);StyleCop</NoWarn>
-  </PropertyGroup>
   
 </Project>

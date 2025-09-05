@@ -15,7 +15,7 @@
   &:hover {
     box-shadow: vars.$box-shadow-md;
     border-color: vars.$accent-primary;
-    
+
     .book-card__actions {
       opacity: 1;
     }
@@ -43,7 +43,7 @@
     display: none;
     width: 100%;
     height: 100%;
-    
+
     &.show {
       display: block;
     }
@@ -82,49 +82,17 @@
   // Rating styling handled by StarRating component
 }
 
-// Genre Pills Container - Supports expandable functionality
+// Genre Pills Container
 .book-card__genres-container {
   margin-bottom: vars.$spacing-md;
   flex: 1; // Take available space but not more than needed
 }
 
 .book-card__genres {
-  $genres-row-count: 2;
   display: flex;
   flex-wrap: wrap;
   gap: vars.$spacing-xs;
-  max-height: calc(#{$genres-row-count} * (24px + #{vars.$spacing-sm})); // Max height based on row count + padding
-  overflow: hidden;
-  transition: max-height 0.3s ease-in-out;
   padding: vars.$spacing-sm;
-  
-  &--expanded {
-    max-height: none; // Remove height restriction when expanded
-  }
-}
-
-.book-card__genres-toggle {
-  margin-top: vars.$spacing-xs;
-  padding: vars.$spacing-xs vars.$spacing-sm;
-  background-color: vars.$bg-primary;
-  border: 1px solid vars.$border-color;
-  border-radius: vars.$border-radius-sm;
-  color: vars.$text-secondary;
-  font-size: vars.$font-size-xs;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  width: 100%;
-  text-align: center;
-
-  &:hover {
-    background-color: vars.$border-color;
-    color: vars.$text-primary;
-  }
-
-  &:focus {
-    outline: 2px solid vars.$accent-primary;
-    outline-offset: 2px;
-  }
 }
 
 // Interactive Genre Pills
@@ -200,17 +168,18 @@
     justify-content: center;
     border-radius: 50%;
     transition: all 0.2s ease;
-    
+
     // SVG icon styling
     img {
       width: 16px;
       height: 16px;
-      filter: brightness(0) saturate(100%) invert(89%) sepia(6%) saturate(126%) hue-rotate(200deg) brightness(92%) contrast(91%);
+      filter: brightness(0) saturate(100%) invert(89%) sepia(6%) saturate(126%)
+        hue-rotate(200deg) brightness(92%) contrast(91%);
     }
 
     &:hover {
       transform: scale(1.05);
-      
+
       img {
         filter: brightness(0) saturate(100%) invert(100%);
       }
@@ -242,9 +211,6 @@
     margin-top: vars.$spacing-sm;
   }
 
-  .book-card__genres {
-    max-height: none; // Allow full height on mobile
-  }
 
   .book-card__published-date {
     text-align: left;

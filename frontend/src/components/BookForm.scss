@@ -62,7 +62,9 @@
   background-color: vars.$bg-primary;
   border: 1px solid vars.$border-color;
   border-radius: vars.$border-radius-md;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 
   &::placeholder {
     color: vars.$text-tertiary;
@@ -82,7 +84,7 @@
 
   &.error {
     border-color: vars.$accent-error;
-    
+
     &:focus {
       border-color: vars.$accent-error;
       box-shadow: 0 0 0 3px rgba(vars.$accent-error, 0.1);
@@ -252,7 +254,9 @@
   font-size: vars.$font-size-lg;
   cursor: pointer;
   padding: 0;
-  transition: color 0.2s ease, transform 0.1s ease;
+  transition:
+    color 0.2s ease,
+    transform 0.1s ease;
 
   &.filled {
     color: vars.$accent-primary;
@@ -383,7 +387,8 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {

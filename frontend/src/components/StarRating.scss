@@ -9,7 +9,7 @@
   &--readonly {
     .star-button {
       cursor: default;
-      
+
       &:hover {
         transform: none;
       }
@@ -40,7 +40,9 @@
   font-size: vars.$font-size-lg;
   cursor: pointer;
   padding: 0;
-  transition: color 0.2s ease, transform 0.1s ease;
+  transition:
+    color 0.2s ease,
+    transform 0.1s ease;
   color: vars.$text-tertiary;
   line-height: 1;
 

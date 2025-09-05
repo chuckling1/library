@@ -1,17 +1,37 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { QueryClient, QueryClientProvider, type UseQueryResult, type UseMutationResult } from '@tanstack/react-query';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from '@testing-library/react';
+import {
+  QueryClient,
+  QueryClientProvider,
+  type UseQueryResult,
+  type UseMutationResult,
+} from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { ReactNode } from 'react';
 import BookListPage from './BookListPage';
 import type { Book } from '../generated/api';
+import type { PaginatedResponse } from '../types/PaginatedResponse';
 import * as useBooks from '../hooks/useBooks';
 import { GenreFilterProvider } from '../contexts/GenreFilterContext';
+import { createMockPaginatedResponse } from '../test-utils/mockPaginatedResponse';
 
 vi.mock('../hooks/useBooks');
 const mockUseBooks = vi.mocked(useBooks.useBooks);
 const mockUseDeleteBook = vi.mocked(useBooks.useDeleteBook);
+
+// Mock BookCover to prevent async state updates in tests
+vi.mock('../components/BookCover', () => ({
+  default: ({ book }: { book: Book }): React.JSX.Element => (
+    <div data-testid="book-cover">Cover for {book.title}</div>
+  ),
+}));
 
 const createMockBook = (overrides: Partial<Book> = {}): Book => ({
   id: '123',
@@ -23,9 +43,7 @@ const createMockBook = (overrides: Partial<Book> = {}): Book => ({
   isbn: '978-0123456789',
   createdAt: '2023-06-01T00:00:00.000Z',
   updatedAt: '2023-06-01T00:00:00.000Z',
-  bookGenres: [
-    { bookId: '123', genreName: 'Fiction' }
-  ],
+  bookGenres: [{ bookId: '123', genreName: 'Fiction' }],
   ...overrides,
 });
 
@@ -40,19 +58,19 @@ const createWrapper = () => {
       },
     },
   });
-  
+
   return ({ children }: { children: ReactNode }): React.JSX.Element => (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <GenreFilterProvider>
-          {children}
-        </GenreFilterProvider>
+        <GenreFilterProvider>{children}</GenreFilterProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );
 };
 
-const createMockUseMutationResult = function<TData, TError, TVariables>(overrides: Partial<UseMutationResult<TData, TError, TVariables>> = {}): UseMutationResult<TData, TError, TVariables> {
+const createMockUseMutationResult = function <TData, TError, TVariables>(
+  overrides: Partial<UseMutationResult<TData, TError, TVariables>> = {}
+): UseMutationResult<TData, TError, TVariables> {
   return {
     mutateAsync: vi.fn(),
     isPending: false,
@@ -70,12 +88,12 @@ const createMockUseMutationResult = function<TData, TError, TVariables>(override
     failureReason: null,
     submittedAt: 0,
     isPaused: false,
-    ...overrides
+    ...overrides,
   } as unknown as UseMutationResult<TData, TError, TVariables>;
 };
 
 // Create specific mock functions for different query states to ensure type safety
-const createLoadingQuery = function<TData>(): UseQueryResult<TData, Error> {
+const createLoadingQuery = function <TData>(): UseQueryResult<TData, Error> {
   return {
     data: undefined,
     isLoading: true,
@@ -106,7 +124,9 @@ const createLoadingQuery = function<TData>(): UseQueryResult<TData, Error> {
   } as unknown as UseQueryResult<TData, Error>;
 };
 
-const createSuccessQuery = function<TData>(data: TData): UseQueryResult<TData, Error> {
+const createSuccessQuery = function <TData>(
+  data: TData
+): UseQueryResult<TData, Error> {
   return {
     data,
     isLoading: false,
@@ -137,11 +157,14 @@ const createSuccessQuery = function<TData>(data: TData): UseQueryResult<TData, E
   } as unknown as UseQueryResult<TData, Error>;
 };
 
-const createErrorQuery = function<TData>(error: Error, refetch = vi.fn()): UseQueryResult<TData, Error> {
+const createErrorQuery = function <TData>(
+  error: Error,
+  refetch = vi.fn()
+): UseQueryResult<TData, Error> {
   // Create a rejected promise that's already caught to prevent unhandled rejections
   const rejectedPromise = Promise.reject(error);
   rejectedPromise.catch(() => {}); // Catch to prevent unhandled rejection
-  
+
   return {
     data: undefined,
     isLoading: false,
@@ -178,12 +201,12 @@ describe('BookListPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseDeleteBook.mockReturnValue(mockDeleteMutation);
-    // Set default mock implementation that returns empty books
-    mockUseBooks.mockImplementation(() => createSuccessQuery([]));
+    // Set default mock implementation that returns empty paginated response
+    mockUseBooks.mockImplementation(() => createSuccessQuery(createMockPaginatedResponse([])));
   });
 
   it('renders loading state', () => {
-    mockUseBooks.mockReturnValue(createLoadingQuery<Book[]>());
+    mockUseBooks.mockReturnValue(createLoadingQuery<PaginatedResponse<Book>>());
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
@@ -192,13 +215,17 @@ describe('BookListPage', () => {
 
   it('renders error state', () => {
     const mockRefetch = vi.fn();
-    mockUseBooks.mockReturnValue(createErrorQuery<Book[]>(new Error('Failed to fetch'), mockRefetch));
+    mockUseBooks.mockReturnValue(
+      createErrorQuery<PaginatedResponse<Book>>(new Error('Failed to fetch'), mockRefetch)
+    );
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
     expect(screen.getByText('Error Loading Books')).toBeInTheDocument();
-    expect(screen.getByText('Failed to load books. Please try again.')).toBeInTheDocument();
-    
+    expect(
+      screen.getByText('Failed to load books. Please try again.')
+    ).toBeInTheDocument();
+
     const retryButton = screen.getByText('Retry');
     fireEvent.click(retryButton);
     expect(mockRefetch).toHaveBeenCalled();
@@ -210,33 +237,39 @@ describe('BookListPage', () => {
       createMockBook({ id: '2', title: 'Book 2' }),
     ];
 
-    mockUseBooks.mockReturnValue(createSuccessQuery(mockBooks));
+    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse(mockBooks)));
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
     expect(screen.getByText('Book Collection')).toBeInTheDocument();
-    expect(screen.getByText('2 books found')).toBeInTheDocument();
+    expect(screen.getByText('Showing 1-2 of 2 books')).toBeInTheDocument();
     expect(screen.getByText('Book 1')).toBeInTheDocument();
     expect(screen.getByText('Book 2')).toBeInTheDocument();
   });
 
   it('renders empty state when no books found', () => {
-    mockUseBooks.mockReturnValue(createSuccessQuery([]));
+    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse([])));
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
     expect(screen.getByText('No books found')).toBeInTheDocument();
-    expect(screen.getByText('Your library is empty. Add your first book to get started!')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Your library is empty. Add your first book to get started!'
+      )
+    ).toBeInTheDocument();
   });
 
   it('handles live search functionality with debouncing', async () => {
     const mockBooks = [createMockBook()];
-    
-    mockUseBooks.mockReturnValue(createSuccessQuery(mockBooks));
+
+    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse(mockBooks)));
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
-    const searchInput = screen.getByPlaceholderText('Search by title or author...');
+    const searchInput = screen.getByPlaceholderText(
+      'Search by title or author...'
+    );
 
     // Type in search input
     fireEvent.change(searchInput, { target: { value: 'test query' } });
@@ -250,14 +283,14 @@ describe('BookListPage', () => {
     await waitFor(() => {
       expect(mockUseBooks).toHaveBeenCalledWith(
         expect.objectContaining({
-          search: 'test query'
+          search: 'test query',
         })
       );
     });
   });
 
   it('handles sort by selection', () => {
-    mockUseBooks.mockReturnValue(createSuccessQuery([createMockBook()]));
+    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse([createMockBook()])));
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
@@ -266,13 +299,13 @@ describe('BookListPage', () => {
 
     expect(mockUseBooks).toHaveBeenCalledWith(
       expect.objectContaining({
-        sortBy: 'title'
+        sortBy: 'title',
       })
     );
   });
 
   it('handles sort direction selection', () => {
-    mockUseBooks.mockReturnValue(createSuccessQuery([createMockBook()]));
+    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse([createMockBook()])));
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
@@ -282,76 +315,84 @@ describe('BookListPage', () => {
 
     expect(mockUseBooks).toHaveBeenCalledWith(
       expect.objectContaining({
-        sortDirection: 'desc'
+        sortDirection: 'desc',
       })
     );
   });
 
   it('handles rating filter selection', () => {
-    mockUseBooks.mockReturnValue(createSuccessQuery([createMockBook()]));
+    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse([createMockBook()])));
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
     // Click on the 4-star rating button in the filter (not the readonly one in BookCard)
     const ratingFilter = document.querySelector('.star-rating--interactive');
-    const fourStarButton = ratingFilter?.querySelector('button[aria-label="4 stars"]') as HTMLElement;
+    const fourStarButton = ratingFilter?.querySelector(
+      'button[aria-label="4 stars"]'
+    ) as HTMLElement;
     expect(fourStarButton).toBeTruthy();
     fireEvent.click(fourStarButton);
 
     expect(mockUseBooks).toHaveBeenCalledWith(
       expect.objectContaining({
-        rating: 4
+        rating: 4,
       })
     );
   });
 
   it('clears filters when clear button is clicked', () => {
-    mockUseBooks.mockReturnValue(createSuccessQuery([createMockBook()]));
+    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse([createMockBook()])));
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
-    const searchInput = screen.getByPlaceholderText('Search by title or author...');
+    const searchInput = screen.getByPlaceholderText(
+      'Search by title or author...'
+    );
     fireEvent.change(searchInput, { target: { value: 'test' } });
 
     // Wait for the search to take effect (debounced)
-    // Note: This test assumes there's a clear search functionality, but the actual 
+    // Note: This test assumes there's a clear search functionality, but the actual
     // implementation may not have a global "Clear Filters" button
     // Instead it might have individual clear buttons for different filters
-    
+
     // For now, just verify that the component renders correctly with filters
     expect(searchInput).toHaveValue('test');
   });
 
   it('shows clear search button when search has value and filters have search', () => {
     // Mock with search filter to show clear button
-    mockUseBooks.mockImplementation((filters) => {
+    mockUseBooks.mockImplementation(filters => {
       if (filters?.search) {
-        return createSuccessQuery([createMockBook()]);
+        return createSuccessQuery(createMockPaginatedResponse([createMockBook()]));
       }
-      return createSuccessQuery([]);
+      return createSuccessQuery(createMockPaginatedResponse([]));
     });
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
-    const searchInput = screen.getByPlaceholderText('Search by title or author...');
-    
+    const searchInput = screen.getByPlaceholderText(
+      'Search by title or author...'
+    );
+
     // Initially no clear button
     expect(screen.queryByText('Clear')).not.toBeInTheDocument();
-    
+
     // After typing and having search in filters, the clear button should appear
     // This test simulates the component re-rendering with search in filters
     fireEvent.change(searchInput, { target: { value: 'test' } });
-    
+
     // Note: The clear button visibility depends on filters.search, not just input value
     // In our implementation, it shows when filters.search has a value
   });
 
   it('clears only search when search clear button is clicked', async () => {
-    mockUseBooks.mockReturnValue(createSuccessQuery([createMockBook()]));
+    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse([createMockBook()])));
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
-    const searchInput = screen.getByPlaceholderText('Search by title or author...');
+    const searchInput = screen.getByPlaceholderText(
+      'Search by title or author...'
+    );
     fireEvent.change(searchInput, { target: { value: 'test search' } });
 
     // Wait for debounce
@@ -367,12 +408,14 @@ describe('BookListPage', () => {
   it('handles book deletion successfully', async () => {
     const mockBooks = [createMockBook()];
     const mockMutateAsync = vi.fn().mockResolvedValue(undefined);
-    
-    mockUseBooks.mockReturnValue(createSuccessQuery(mockBooks));
 
-    mockUseDeleteBook.mockReturnValue(createMockUseMutationResult({
-      mutateAsync: mockMutateAsync
-    }));
+    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse(mockBooks)));
+
+    mockUseDeleteBook.mockReturnValue(
+      createMockUseMutationResult({
+        mutateAsync: mockMutateAsync,
+      })
+    );
 
     // Mock window.confirm
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
@@ -391,13 +434,17 @@ describe('BookListPage', () => {
 
   it('handles book deletion failure', async () => {
     const mockBooks = [createMockBook()];
-    const mockMutateAsync = vi.fn().mockRejectedValue(new Error('Delete failed'));
-    
-    mockUseBooks.mockReturnValue(createSuccessQuery(mockBooks));
+    const mockMutateAsync = vi
+      .fn()
+      .mockRejectedValue(new Error('Delete failed'));
 
-    mockUseDeleteBook.mockReturnValue(createMockUseMutationResult({
-      mutateAsync: mockMutateAsync
-    }));
+    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse(mockBooks)));
+
+    mockUseDeleteBook.mockReturnValue(
+      createMockUseMutationResult({
+        mutateAsync: mockMutateAsync,
+      })
+    );
 
     // Mock window.confirm and alert
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
@@ -409,7 +456,9 @@ describe('BookListPage', () => {
     fireEvent.click(deleteButton);
 
     await waitFor(() => {
-      expect(alertSpy).toHaveBeenCalledWith('Failed to delete book. Please try again.');
+      expect(alertSpy).toHaveBeenCalledWith(
+        'Failed to delete book. Please try again.'
+      );
     });
 
     confirmSpy.mockRestore();
@@ -417,11 +466,13 @@ describe('BookListPage', () => {
   });
 
   it('shows loading indicator during deletion', () => {
-    mockUseBooks.mockReturnValue(createSuccessQuery([createMockBook()]));
+    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse([createMockBook()])));
 
-    mockUseDeleteBook.mockReturnValue(createMockUseMutationResult({
-      isPending: true
-    }));
+    mockUseDeleteBook.mockReturnValue(
+      createMockUseMutationResult({
+        isPending: true,
+      })
+    );
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
@@ -430,16 +481,18 @@ describe('BookListPage', () => {
 
   it('shows empty state with search filters', async () => {
     // Mock to return empty results when there's a search filter
-    mockUseBooks.mockImplementation((filters) => {
+    mockUseBooks.mockImplementation(filters => {
       if (filters?.search) {
-        return createSuccessQuery([]);
+        return createSuccessQuery(createMockPaginatedResponse([]));
       }
-      return createSuccessQuery([createMockBook()]);
+      return createSuccessQuery(createMockPaginatedResponse([createMockBook()]));
     });
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
-    const searchInput = screen.getByPlaceholderText('Search by title or author...');
+    const searchInput = screen.getByPlaceholderText(
+      'Search by title or author...'
+    );
     fireEvent.change(searchInput, { target: { value: 'nonexistent' } });
 
     // Wait for debounce
@@ -448,18 +501,26 @@ describe('BookListPage', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: 'No books found' })).toBeInTheDocument();
-      expect(screen.getByText('No books match your current filters. Try adjusting your search or filters.')).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', { name: 'No books found' })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'No books match your current filters. Try adjusting your search or filters.'
+        )
+      ).toBeInTheDocument();
     });
   });
 
   it('trims whitespace from search input', async () => {
     const mockBooks = [createMockBook()];
-    mockUseBooks.mockImplementation(() => createSuccessQuery(mockBooks));
+    mockUseBooks.mockImplementation(() => createSuccessQuery(createMockPaginatedResponse(mockBooks)));
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
-    const searchInput = screen.getByPlaceholderText('Search by title or author...');
+    const searchInput = screen.getByPlaceholderText(
+      'Search by title or author...'
+    );
     fireEvent.change(searchInput, { target: { value: '  test  ' } });
 
     // Wait for debounce
@@ -470,7 +531,7 @@ describe('BookListPage', () => {
     await waitFor(() => {
       expect(mockUseBooks).toHaveBeenCalledWith(
         expect.objectContaining({
-          search: 'test'
+          search: 'test',
         })
       );
     });
@@ -478,11 +539,13 @@ describe('BookListPage', () => {
 
   it('clears search when input is empty', async () => {
     const mockBooks = [createMockBook()];
-    mockUseBooks.mockImplementation(() => createSuccessQuery(mockBooks));
+    mockUseBooks.mockImplementation(() => createSuccessQuery(createMockPaginatedResponse(mockBooks)));
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
-    const searchInput = screen.getByPlaceholderText('Search by title or author...');
+    const searchInput = screen.getByPlaceholderText(
+      'Search by title or author...'
+    );
     fireEvent.change(searchInput, { target: { value: '   ' } });
 
     // Wait for debounce
@@ -493,19 +556,21 @@ describe('BookListPage', () => {
     await waitFor(() => {
       expect(mockUseBooks).toHaveBeenCalledWith(
         expect.objectContaining({
-          search: undefined
+          search: undefined,
         })
       );
     });
   });
 
   it('maintains input value during typing before debounce', async () => {
-    mockUseBooks.mockReturnValue(createSuccessQuery([createMockBook()]));
+    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse([createMockBook()])));
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
-    const searchInput = screen.getByPlaceholderText('Search by title or author...');
-    
+    const searchInput = screen.getByPlaceholderText(
+      'Search by title or author...'
+    );
+
     // Type rapidly
     fireEvent.change(searchInput, { target: { value: 'h' } });
     fireEvent.change(searchInput, { target: { value: 'ha' } });
@@ -524,7 +589,7 @@ describe('BookListPage', () => {
     await waitFor(() => {
       expect(mockUseBooks).toHaveBeenCalledWith(
         expect.objectContaining({
-          search: 'harry'
+          search: 'harry',
         })
       );
     });

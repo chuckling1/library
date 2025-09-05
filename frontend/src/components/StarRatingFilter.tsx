@@ -9,7 +9,7 @@ interface StarRatingFilterProps {
 
 const StarRatingFilter: React.FC<StarRatingFilterProps> = ({
   rating,
-  onRatingChange
+  onRatingChange,
 }) => {
   const handleRatingChange = (newRating: number): void => {
     // If clicking the same rating, clear the filter (set to 0)
@@ -31,13 +31,8 @@ const StarRatingFilter: React.FC<StarRatingFilterProps> = ({
 
   return (
     <div className="star-rating-filter">
-      <label className="star-rating-filter__label">
-        Rating
-      </label>
-      <div 
-        className="star-rating-filter__controls"
-        title={getTooltipText()}
-      >
+      <label className="star-rating-filter__label">Rating</label>
+      <div className="star-rating-filter__controls" title={getTooltipText()}>
         <StarRating
           rating={rating}
           onRatingChange={handleRatingChange}

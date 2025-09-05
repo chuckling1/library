@@ -1,43 +1,48 @@
-using LibraryApi.Models;
-using LibraryApi.Repositories;
+// <copyright file="GenreService.cs" company="Library API">
+// Copyright (c) Library API. All rights reserved.
+// </copyright>
 
-namespace LibraryApi.Services;
-
-/// <summary>
-/// Service implementation for genre business logic.
-/// </summary>
-public class GenreService : IGenreService
+namespace LibraryApi.Services
 {
-    private readonly IGenreRepository _genreRepository;
-    private readonly ILogger<GenreService> _logger;
+    using LibraryApi.Models;
+    using LibraryApi.Repositories;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="GenreService"/> class.
+    /// Service implementation for genre business logic.
     /// </summary>
-    /// <param name="genreRepository">The genre repository.</param>
-    /// <param name="logger">The logger.</param>
-    public GenreService(IGenreRepository genreRepository, ILogger<GenreService> logger)
+    public class GenreService : IGenreService
     {
-        _genreRepository = genreRepository;
-        _logger = logger;
-    }
+        private readonly IGenreRepository genreRepository;
+        private readonly ILogger<GenreService> logger;
 
-    /// <inheritdoc/>
-    public async Task<IEnumerable<Genre>> GetGenresAsync(string? searchTerm = null, CancellationToken cancellationToken = default)
-    {
-        return await _genreRepository.GetGenresAsync(searchTerm, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public async Task<Genre> CreateGenreAsync(string name, CancellationToken cancellationToken = default)
-    {
-        var genre = new Genre
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GenreService"/> class.
+        /// </summary>
+        /// <param name="genreRepository">The genre repository.</param>
+        /// <param name="logger">The logger.</param>
+        public GenreService(IGenreRepository genreRepository, ILogger<GenreService> logger)
         {
-            Name = name.Trim(),
-            IsSystemGenre = false,
-            CreatedAt = DateTime.UtcNow
-        };
+            this.genreRepository = genreRepository;
+            this.logger = logger;
+        }
 
-        return await _genreRepository.CreateGenreAsync(genre, cancellationToken);
+        /// <inheritdoc/>
+        public async Task<IEnumerable<Genre>> GetGenresAsync(string? searchTerm = null, CancellationToken cancellationToken = default)
+        {
+            return await this.genreRepository.GetGenresAsync(searchTerm, cancellationToken);
+        }
+
+        /// <inheritdoc/>
+        public async Task<Genre> CreateGenreAsync(string name, CancellationToken cancellationToken = default)
+        {
+            var genre = new Genre
+            {
+                Name = name.Trim(),
+                IsSystemGenre = false,
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            return await this.genreRepository.CreateGenreAsync(genre, cancellationToken);
+        }
     }
 }

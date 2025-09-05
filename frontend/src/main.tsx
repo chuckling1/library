@@ -1,8 +1,8 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import App from './App.tsx'
-import './index.scss'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import App from './App.tsx';
+import './index.scss';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -11,11 +11,11 @@ const queryClient = new QueryClient({
       gcTime: 1000 * 60 * 10, // 10 minutes
     },
   },
-})
+});
 
-const rootElement = document.getElementById('root')
+const rootElement = document.getElementById('root');
 if (!rootElement) {
-  throw new Error('Root element not found')
+  throw new Error('Root element not found');
 }
 
 ReactDOM.createRoot(rootElement).render(
@@ -23,5 +23,5 @@ ReactDOM.createRoot(rootElement).render(
     <QueryClientProvider client={queryClient}>
       <App />
     </QueryClientProvider>
-  </React.StrictMode>,
-)
+  </React.StrictMode>
+);

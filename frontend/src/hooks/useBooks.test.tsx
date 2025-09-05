@@ -3,7 +3,11 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { ReactNode } from 'react';
-import type { Book, CreateBookRequest, UpdateBookRequest } from '../generated/api';
+import type {
+  Book,
+  CreateBookRequest,
+  UpdateBookRequest,
+} from '../generated/api';
 import {
   useBooks,
   useBook,
@@ -14,11 +18,18 @@ import {
   getBookGenres,
   formatDate,
   formatRating,
-  type BooksFilters
+  type BooksFilters,
 } from './useBooks';
 
 // Use vi.hoisted to create mocks that are hoisted to the top
-const { mockApiBooksGet, mockApiBooksIdDelete, mockApiBooksIdGet, mockApiBooksIdPut, mockApiBooksPost, mockApiBooksStatsGet } = vi.hoisted(() => {
+const {
+  mockApiBooksGet,
+  mockApiBooksIdDelete,
+  mockApiBooksIdGet,
+  mockApiBooksIdPut,
+  mockApiBooksPost,
+  mockApiBooksStatsGet,
+} = vi.hoisted(() => {
   const mocks = {
     mockApiBooksGet: vi.fn(),
     mockApiBooksIdDelete: vi.fn(),
@@ -41,7 +52,7 @@ vi.mock('../generated/api', () => {
       apiBooksPost: mockApiBooksPost,
       apiBooksStatsGet: mockApiBooksStatsGet,
     })),
-    Configuration: vi.fn()
+    Configuration: vi.fn(),
   };
 });
 
@@ -57,7 +68,7 @@ const createMockBook = (overrides: Partial<Book> = {}): Book => ({
   updatedAt: '2023-06-01T00:00:00.000Z',
   bookGenres: [
     { bookId: '123', genreName: 'Fiction' },
-    { bookId: '123', genreName: 'Mystery' }
+    { bookId: '123', genreName: 'Mystery' },
   ],
   ...overrides,
 });
@@ -73,7 +84,7 @@ const createWrapper = () => {
       },
     },
   });
-  
+
   return ({ children }: { children: ReactNode }): React.JSX.Element => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
@@ -86,7 +97,10 @@ describe('useBooks hook', () => {
 
   describe('useBooks', () => {
     it('fetches books with default filters', async () => {
-      const mockBooks = [createMockBook(), createMockBook({ id: '456', title: 'Another Book' })];
+      const mockBooks = [
+        createMockBook(),
+        createMockBook({ id: '456', title: 'Another Book' }),
+      ];
       mockApiBooksGet.mockResolvedValue({ data: mockBooks });
 
       const { result } = renderHook(() => useBooks(), {
@@ -104,7 +118,7 @@ describe('useBooks hook', () => {
         undefined, // sortBy
         undefined, // sortDirection
         undefined, // page
-        undefined  // pageSize
+        undefined // pageSize
       );
       expect(result.current.data).toEqual(mockBooks);
     });
@@ -117,9 +131,9 @@ describe('useBooks hook', () => {
         sortBy: 'title',
         sortDirection: 'asc',
         page: 2,
-        pageSize: 10
+        pageSize: 10,
       };
-      
+
       mockApiBooksGet.mockResolvedValue({ data: [] });
 
       renderHook(() => useBooks(filters), {
@@ -129,12 +143,12 @@ describe('useBooks hook', () => {
       await waitFor(() => {
         expect(mockApiBooksGet).toHaveBeenCalledWith(
           ['Fiction'], // genres
-          4,           // rating
-          'test',      // search
-          'title',     // sortBy
-          'asc',       // sortDirection
-          2,           // page
-          10           // pageSize
+          4, // rating
+          'test', // search
+          'title', // sortBy
+          'asc', // sortDirection
+          2, // page
+          10 // pageSize
         );
       });
     });
@@ -190,10 +204,10 @@ describe('useBooks hook', () => {
         title: 'New Book',
         author: 'New Author',
         publishedDate: '2023-01-01T00:00:00.000Z',
-        genres: ['Fiction']
+        genres: ['Fiction'],
       };
       const createdBook = createMockBook(createRequest);
-      
+
       mockApiBooksPost.mockResolvedValue({ data: createdBook });
 
       const { result } = renderHook(() => useCreateBook(), {
@@ -214,11 +228,11 @@ describe('useBooks hook', () => {
           title: 'Updated Book',
           author: 'Updated Author',
           publishedDate: '2023-01-01T00:00:00.000Z',
-          genres: ['Fiction']
-        } as UpdateBookRequest
+          genres: ['Fiction'],
+        } as UpdateBookRequest,
       };
       const updatedBook = createMockBook({ id: '123', title: 'Updated Book' });
-      
+
       mockApiBooksIdPut.mockResolvedValue({ data: updatedBook });
 
       const { result } = renderHook(() => useUpdateBook(), {
@@ -227,7 +241,10 @@ describe('useBooks hook', () => {
 
       await result.current.mutateAsync(updateData);
 
-      expect(mockApiBooksIdPut).toHaveBeenCalledWith('123', updateData.bookData);
+      expect(mockApiBooksIdPut).toHaveBeenCalledWith(
+        '123',
+        updateData.bookData
+      );
     });
   });
 
@@ -251,21 +268,21 @@ describe('Helper functions', () => {
     it('extracts genre names from book genres', () => {
       const book = createMockBook();
       const genres = getBookGenres(book);
-      
+
       expect(genres).toEqual(['Fiction', 'Mystery']);
     });
 
     it('returns empty array when bookGenres is null', () => {
       const book = createMockBook({ bookGenres: null });
       const genres = getBookGenres(book);
-      
+
       expect(genres).toEqual([]);
     });
 
     it('returns empty array when bookGenres is undefined', () => {
       const book = createMockBook({ bookGenres: undefined });
       const genres = getBookGenres(book);
-      
+
       expect(genres).toEqual([]);
     });
 
@@ -273,11 +290,11 @@ describe('Helper functions', () => {
       const book = createMockBook({
         bookGenres: [
           { bookId: '123', genreName: 'Fiction' },
-          { bookId: '123', genreName: null }
-        ]
+          { bookId: '123', genreName: null },
+        ],
       });
       const genres = getBookGenres(book);
-      
+
       expect(genres).toEqual(['Fiction', '']);
     });
   });
@@ -285,12 +302,12 @@ describe('Helper functions', () => {
   describe('formatDate', () => {
     it('formats ISO date string to locale date', () => {
       const formatted = formatDate('2023-12-25T10:30:00.000Z');
-      expect(formatted).toBe('12/25/2023');
+      expect(formatted).toBe('December 25, 2023');
     });
 
     it('formats different date correctly', () => {
-      const formatted = formatDate('2023-01-01T00:00:00.000Z');
-      expect(formatted).toBe('12/31/2022');
+      const formatted = formatDate('2023-01-01T12:00:00.000Z');
+      expect(formatted).toBe('January 1, 2023');
     });
   });
 

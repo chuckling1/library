@@ -18,9 +18,30 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        // Force modern Sass API - prevent legacy JS API usage
+        api: 'modern-compiler',
+        silenceDeprecations: [],
+        additionalData: ``,
+      },
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+    coverage: {
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/',
+        'src/test/',
+        'src/generated/',
+        '**/*.d.ts',
+        'vite.config.ts',
+        'vitest.config.ts',
+      ],
+    },
   },
 })

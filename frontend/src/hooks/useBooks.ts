@@ -1,9 +1,24 @@
-import { useQuery, useMutation, useQueryClient, type UseMutationResult, type UseQueryResult } from '@tanstack/react-query';
-import { BooksApi, Book, CreateBookRequest, UpdateBookRequest, Configuration, BookStatsResponse } from '../generated/api';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  type UseMutationResult,
+  type UseQueryResult,
+} from '@tanstack/react-query';
+import {
+  BooksApi,
+  Book,
+  CreateBookRequest,
+  UpdateBookRequest,
+  Configuration,
+  BookStatsResponse,
+} from '../generated/api';
+import type { PaginatedResponse } from '../types/PaginatedResponse';
+import { formatIso8601ForDisplay } from '../utils/dateUtils';
 
 // Create API instance with proper base URL configuration
 const configuration = new Configuration({
-  basePath: 'http://localhost:5000'
+  basePath: 'http://localhost:5000',
 });
 const booksApi = new BooksApi(configuration);
 
@@ -11,7 +26,8 @@ const booksApi = new BooksApi(configuration);
 export const booksKeys = {
   all: ['books'] as const,
   lists: () => [...booksKeys.all, 'list'] as const,
-  list: (filters: Record<string, unknown>) => [...booksKeys.lists(), filters] as const,
+  list: (filters: Record<string, unknown>) =>
+    [...booksKeys.lists(), filters] as const,
   details: () => [...booksKeys.all, 'detail'] as const,
   detail: (id: string) => [...booksKeys.details(), id] as const,
   stats: () => [...booksKeys.all, 'stats'] as const,
@@ -29,11 +45,13 @@ export interface BooksFilters {
   [key: string]: unknown;
 }
 
-// Custom hook for fetching books with filters
-export const useBooks = (filters: BooksFilters = {}): UseQueryResult<Book[], Error> => {
+// Custom hook for fetching books with filters (returns paginated response)
+export const useBooks = (
+  filters: BooksFilters = {}
+): UseQueryResult<PaginatedResponse<Book>, Error> => {
   return useQuery({
     queryKey: booksKeys.list(filters),
-    queryFn: async (): Promise<Book[]> => {
+    queryFn: async (): Promise<PaginatedResponse<Book>> => {
       const response = await booksApi.apiBooksGet(
         filters.genres,
         filters.rating,
@@ -43,14 +61,14 @@ export const useBooks = (filters: BooksFilters = {}): UseQueryResult<Book[], Err
         filters.page,
         filters.pageSize
       );
-      
-      return response.data;
+
+      return response.data as unknown as PaginatedResponse<Book>;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 10, // 10 minutes (was cacheTime)
     refetchOnWindowFocus: false, // Prevent refetch on window focus
     refetchOnReconnect: false, // Prevent refetch on reconnect
-    placeholderData: (previousData) => previousData, // Keep previous data while fetching
+    placeholderData: previousData => previousData, // Keep previous data while fetching
   });
 };
 
@@ -79,9 +97,13 @@ export const useBookStats = (): UseQueryResult<BookStatsResponse, Error> => {
 };
 
 // Custom hook for creating a book
-export const useCreateBook = (): UseMutationResult<Book, Error, CreateBookRequest> => {
+export const useCreateBook = (): UseMutationResult<
+  Book,
+  Error,
+  CreateBookRequest
+> => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (bookData: CreateBookRequest): Promise<Book> => {
       const response = await booksApi.apiBooksPost(bookData);
@@ -96,18 +118,30 @@ export const useCreateBook = (): UseMutationResult<Book, Error, CreateBookReques
 };
 
 // Custom hook for updating a book
-export const useUpdateBook = (): UseMutationResult<Book, Error, { id: string; bookData: UpdateBookRequest }> => {
+export const useUpdateBook = (): UseMutationResult<
+  Book,
+  Error,
+  { id: string; bookData: UpdateBookRequest }
+> => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async ({ id, bookData }: { id: string; bookData: UpdateBookRequest }): Promise<Book> => {
+    mutationFn: async ({
+      id,
+      bookData,
+    }: {
+      id: string;
+      bookData: UpdateBookRequest;
+    }): Promise<Book> => {
       const response = await booksApi.apiBooksIdPut(id, bookData);
       return response.data;
     },
-    onSuccess: (updatedBook) => {
+    onSuccess: updatedBook => {
       // Invalidate and refetch books queries
       void queryClient.invalidateQueries({ queryKey: booksKeys.lists() });
-      void queryClient.invalidateQueries({ queryKey: booksKeys.detail(updatedBook.id!) });
+      void queryClient.invalidateQueries({
+        queryKey: booksKeys.detail(updatedBook.id!),
+      });
       void queryClient.invalidateQueries({ queryKey: booksKeys.stats() });
     },
   });
@@ -116,7 +150,7 @@ export const useUpdateBook = (): UseMutationResult<Book, Error, { id: string; bo
 // Custom hook for deleting a book
 export const useDeleteBook = (): UseMutationResult<void, Error, string> => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (id: string): Promise<void> => {
       await booksApi.apiBooksIdDelete(id);
@@ -134,43 +168,10 @@ export const getBookGenres = (book: Book): string[] => {
   return book.bookGenres?.map(bg => bg.genreName ?? '') ?? [];
 };
 
-// Helper function to format date
+// Helper function to format date - now handles ISO 8601 format properly
 export const formatDate = (dateString: string): string => {
-  if (!dateString) return 'Unknown';
-  
-  // If the date is just a year (4 digits), return it as-is
-  if (/^\d{4}$/.test(dateString.trim())) {
-    return dateString.trim();
-  }
-  
-  // If the date is year-month (YYYY-MM), format it nicely
-  if (/^\d{4}-\d{2}$/.test(dateString.trim())) {
-    const parts = dateString.trim().split('-');
-    const year = parts[0];
-    const month = parts[1];
-    if (year && month) {
-      const monthNames = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-      ];
-      const monthIndex = parseInt(month, 10) - 1;
-      if (monthIndex >= 0 && monthIndex < monthNames.length) {
-        return `${monthNames[monthIndex]} ${year}`;
-      }
-    }
-  }
-  
-  // For full dates, try to parse and format normally
-  try {
-    const date = new Date(dateString);
-    // Check if the date is valid
-    if (isNaN(date.getTime())) {
-      return dateString; // Return original string if invalid
-    }
-    return date.toLocaleDateString('en-US');
-  } catch {
-    return dateString; // Return original string if parsing fails
-  }
+  // Use the new ISO 8601 utility for consistent formatting
+  return formatIso8601ForDisplay(dateString, { year: 'numeric', month: 'long', day: 'numeric' });
 };
 
 // Helper function to format rating stars

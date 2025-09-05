@@ -1,16 +1,20 @@
+// <copyright file="BookRepository.cs" company="Library API">
+// Copyright (c) Library API. All rights reserved.
+// </copyright>
+
+namespace LibraryApi.Repositories;
+
 using LibraryApi.Data;
 using LibraryApi.Models;
 using Microsoft.EntityFrameworkCore;
-
-namespace LibraryApi.Repositories;
 
 /// <summary>
 /// Repository implementation for book operations.
 /// </summary>
 public class BookRepository : IBookRepository
 {
-    private readonly LibraryDbContext _context;
-    private readonly ILogger<BookRepository> _logger;
+    private readonly LibraryDbContext context;
+    private readonly ILogger<BookRepository> logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BookRepository"/> class.
@@ -19,8 +23,8 @@ public class BookRepository : IBookRepository
     /// <param name="logger">The logger.</param>
     public BookRepository(LibraryDbContext context, ILogger<BookRepository> logger)
     {
-        _context = context;
-        _logger = logger;
+        this.context = context;
+        this.logger = logger;
     }
 
     /// <inheritdoc/>
@@ -34,7 +38,7 @@ public class BookRepository : IBookRepository
         int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
-        var query = _context.Books
+        var query = this.context.Books
             .Include(b => b.BookGenres)
             .ThenInclude(bg => bg.Genre)
             .AsNoTracking();
@@ -64,7 +68,7 @@ public class BookRepository : IBookRepository
             "publisheddate" => sortDirection == "desc" ? query.OrderByDescending(b => b.PublishedDate) : query.OrderBy(b => b.PublishedDate),
             "rating" => sortDirection == "desc" ? query.OrderByDescending(b => b.Rating) : query.OrderBy(b => b.Rating),
             "createdat" => sortDirection == "desc" ? query.OrderByDescending(b => b.CreatedAt) : query.OrderBy(b => b.CreatedAt),
-            _ => query.OrderBy(b => b.Title) // Default sort by title
+            _ => query.OrderBy(b => b.Title), // Default sort by title
         };
 
         var totalCount = await query.CountAsync(cancellationToken);
@@ -80,7 +84,7 @@ public class BookRepository : IBookRepository
     /// <inheritdoc/>
     public async Task<Book?> GetBookByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _context.Books
+        return await this.context.Books
             .Include(b => b.BookGenres)
             .ThenInclude(bg => bg.Genre)
             .AsNoTracking()
@@ -95,7 +99,7 @@ public class BookRepository : IBookRepository
     /// <returns>The book if found, with tracking enabled for updates.</returns>
     public async Task<Book?> GetBookForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _context.Books
+        return await this.context.Books
             .Include(b => b.BookGenres)
             .ThenInclude(bg => bg.Genre)
             .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
@@ -104,51 +108,51 @@ public class BookRepository : IBookRepository
     /// <inheritdoc/>
     public async Task<Book> CreateBookAsync(Book book, CancellationToken cancellationToken = default)
     {
-        _context.Books.Add(book);
-        await _context.SaveChangesAsync(cancellationToken);
+        this.context.Books.Add(book);
+        await this.context.SaveChangesAsync(cancellationToken);
 
         // Reload with genres
-        return await GetBookByIdAsync(book.Id, cancellationToken) ?? book;
+        return await this.GetBookByIdAsync(book.Id, cancellationToken) ?? book;
     }
 
     /// <inheritdoc/>
     public async Task<Book> UpdateBookAsync(Book book, CancellationToken cancellationToken = default)
     {
-        _context.Books.Update(book);
-        await _context.SaveChangesAsync(cancellationToken);
+        this.context.Books.Update(book);
+        await this.context.SaveChangesAsync(cancellationToken);
 
         // Reload with genres
-        return await GetBookByIdAsync(book.Id, cancellationToken) ?? book;
+        return await this.GetBookByIdAsync(book.Id, cancellationToken) ?? book;
     }
 
     /// <inheritdoc/>
     public async Task<bool> DeleteBookAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var book = await _context.Books.FindAsync(new object[] { id }, cancellationToken);
+        var book = await this.context.Books.FindAsync(new object[] { id }, cancellationToken);
         if (book == null)
         {
             return false;
         }
 
-        _context.Books.Remove(book);
-        await _context.SaveChangesAsync(cancellationToken);
+        this.context.Books.Remove(book);
+        await this.context.SaveChangesAsync(cancellationToken);
         return true;
     }
 
     /// <inheritdoc/>
     public async Task<(int TotalBooks, double AverageRating, IEnumerable<(string Genre, int Count, double AverageRating)> GenreStats)> GetBooksStatsAsync(CancellationToken cancellationToken = default)
     {
-        var totalBooks = await _context.Books.CountAsync(cancellationToken);
-        var averageRating = await _context.Books.AverageAsync(b => (double)b.Rating, cancellationToken);
+        var totalBooks = await this.context.Books.CountAsync(cancellationToken);
+        var averageRating = await this.context.Books.AverageAsync(b => (double)b.Rating, cancellationToken);
 
-        var genreStats = await _context.BookGenres
+        var genreStats = await this.context.BookGenres
             .Include(bg => bg.Book)
             .GroupBy(bg => bg.GenreName)
             .Select(g => new
             {
                 Genre = g.Key,
                 Count = g.Count(),
-                AverageRating = g.Average(bg => (double)bg.Book.Rating)
+                AverageRating = g.Average(bg => (double)bg.Book.Rating),
             })
             .AsNoTracking()
             .ToListAsync(cancellationToken);
@@ -161,7 +165,7 @@ public class BookRepository : IBookRepository
     /// <inheritdoc/>
     public async Task<IEnumerable<Book>> GetRecentBooksAsync(int count = 5, CancellationToken cancellationToken = default)
     {
-        return await _context.Books
+        return await this.context.Books
             .Include(b => b.BookGenres)
             .ThenInclude(bg => bg.Genre)
             .OrderByDescending(b => b.CreatedAt)

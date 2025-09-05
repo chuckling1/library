@@ -14,7 +14,7 @@ const StarRating: React.FC<StarRatingProps> = ({
   onRatingChange,
   readOnly = false,
   maxRating = 5,
-  showLabel = true
+  showLabel = true,
 }) => {
   const handleStarClick = (starValue: number): void => {
     if (!readOnly && onRatingChange) {
@@ -22,26 +22,35 @@ const StarRating: React.FC<StarRatingProps> = ({
     }
   };
 
-  const handleKeyPress = (event: React.KeyboardEvent, starValue: number): void => {
-    if (!readOnly && onRatingChange && (event.key === 'Enter' || event.key === ' ')) {
+  const handleKeyPress = (
+    event: React.KeyboardEvent,
+    starValue: number
+  ): void => {
+    if (
+      !readOnly &&
+      onRatingChange &&
+      (event.key === 'Enter' || event.key === ' ')
+    ) {
       event.preventDefault();
       onRatingChange(starValue);
     }
   };
 
   return (
-    <div className={`star-rating ${readOnly ? 'star-rating--readonly' : 'star-rating--interactive'}`}>
+    <div
+      className={`star-rating ${readOnly ? 'star-rating--readonly' : 'star-rating--interactive'}`}
+    >
       {Array.from({ length: maxRating }, (_, index) => {
         const starValue = index + 1;
         const isFilled = starValue <= rating;
-        
+
         return (
           <button
             key={index}
             type="button"
             className={`star-button ${isFilled ? 'filled' : 'empty'}`}
             onClick={() => handleStarClick(starValue)}
-            onKeyPress={(e) => handleKeyPress(e, starValue)}
+            onKeyPress={e => handleKeyPress(e, starValue)}
             disabled={readOnly}
             tabIndex={readOnly ? -1 : 0}
             aria-label={`${starValue} star${starValue !== 1 ? 's' : ''}`}

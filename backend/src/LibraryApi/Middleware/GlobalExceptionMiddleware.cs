@@ -1,15 +1,19 @@
-using System.Net;
-using System.Text.Json;
+// <copyright file="GlobalExceptionMiddleware.cs" company="Library API">
+// Copyright (c) Library API. All rights reserved.
+// </copyright>
 
 namespace LibraryApi.Middleware;
+
+using System.Net;
+using System.Text.Json;
 
 /// <summary>
 /// Middleware for handling unhandled exceptions globally.
 /// </summary>
 public class GlobalExceptionMiddleware
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<GlobalExceptionMiddleware> _logger;
+    private readonly RequestDelegate next;
+    private readonly ILogger<GlobalExceptionMiddleware> logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GlobalExceptionMiddleware"/> class.
@@ -18,8 +22,8 @@ public class GlobalExceptionMiddleware
     /// <param name="logger">The logger.</param>
     public GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger)
     {
-        _next = next;
-        _logger = logger;
+        this.next = next;
+        this.logger = logger;
     }
 
     /// <summary>
@@ -31,11 +35,11 @@ public class GlobalExceptionMiddleware
     {
         try
         {
-            await _next(context);
+            await this.next(context);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An unhandled exception occurred");
+            this.logger.LogError(ex, "An unhandled exception occurred");
             await HandleExceptionAsync(context, ex);
         }
     }
@@ -51,8 +55,8 @@ public class GlobalExceptionMiddleware
             {
                 message = "An error occurred while processing your request.",
                 timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
-                traceId = context.TraceIdentifier
-            }
+                traceId = context.TraceIdentifier,
+            },
         };
 
         context.Response.StatusCode = exception switch
@@ -60,12 +64,12 @@ public class GlobalExceptionMiddleware
             ArgumentException => (int)HttpStatusCode.BadRequest,
             KeyNotFoundException => (int)HttpStatusCode.NotFound,
             UnauthorizedAccessException => (int)HttpStatusCode.Unauthorized,
-            _ => (int)HttpStatusCode.InternalServerError
+            _ => (int)HttpStatusCode.InternalServerError,
         };
 
         var jsonResponse = JsonSerializer.Serialize(response, new JsonSerializerOptions
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         });
 
         await context.Response.WriteAsync(jsonResponse);

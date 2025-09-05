@@ -5,11 +5,11 @@ import { vi } from 'vitest';
 class MockCanvas {
   width = 0;
   height = 0;
-  
+
   getContext(): MockCanvasRenderingContext2D {
     return new MockCanvasRenderingContext2D();
   }
-  
+
   toDataURL(): string {
     return 'data:image/png;base64,mock-canvas-data';
   }

@@ -1,11 +1,16 @@
 import React, { useState, ReactNode } from 'react';
-import { GenreFilterContext, GenreFilterContextType } from './GenreFilterContextType';
+import {
+  GenreFilterContext,
+  GenreFilterContextType,
+} from './GenreFilterContextType';
 
 interface GenreFilterProviderProps {
   children: ReactNode;
 }
 
-export const GenreFilterProvider: React.FC<GenreFilterProviderProps> = ({ children }) => {
+export const GenreFilterProvider: React.FC<GenreFilterProviderProps> = ({
+  children,
+}) => {
   const [activeGenres, setActiveGenres] = useState<string[]>([]);
 
   const toggleGenre = (genre: string): void => {
@@ -31,7 +36,7 @@ export const GenreFilterProvider: React.FC<GenreFilterProviderProps> = ({ childr
     activeGenres,
     toggleGenre,
     clearGenres,
-    isGenreActive
+    isGenreActive,
   };
 
   return (

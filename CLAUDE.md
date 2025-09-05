@@ -51,6 +51,288 @@ Full-stack book library application with C# .NET Core Web API backend and React 
 - Vitest (latest) for testing
 - Modern state management solutions
 
+## 🚨 CRITICAL: Zero Tolerance Policy - ALL WARNINGS ARE ERRORS
+
+**MANDATORY REQUIREMENT**: This project enforces a ZERO TOLERANCE policy for warnings and deprecated code:
+
+- ✅ **ALL warnings must be treated as errors**
+- ✅ **NO deprecated code patterns allowed**
+- ✅ **NO silencing or ignoring warnings**
+- ✅ **NO temporary workarounds for deprecations**
+
+**If ANY warning appears during development, STOP immediately and fix the root cause.**
+
+## 🚨 CRITICAL: Automated Formatting & Code Generation
+
+**ALWAYS generate code that matches existing formatting standards to avoid linting cycles:**
+
+### Backend C# Code Generation Rules
+**MANDATORY: Follow these exact patterns when generating C# code:**
+
+```csharp
+// ✅ ALWAYS use 4-space indentation (not tabs)
+public class BooksController : ControllerBase
+{
+    private readonly IBookService bookService;
+    
+    // ✅ ALWAYS include comprehensive XML documentation
+    /// <summary>
+    /// Gets all books with optional filtering.
+    /// </summary>
+    /// <param name="search">Optional search term.</param>
+    /// <returns>List of books.</returns>
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Book>>> GetBooks(
+        [FromQuery] string? search = null)
+    {
+        // ✅ ALWAYS use 'this.' prefix for member access
+        var books = await this.bookService.GetBooksAsync(search);
+        return this.Ok(books);
+    }
+}
+```
+
+**StyleCop Compliance Checklist:**
+- ✅ 4-space indentation (never tabs)
+- ✅ `this.` prefix on ALL member access
+- ✅ XML documentation on public members
+- ✅ Using directives inside namespace
+- ✅ Consistent bracket placement (opening bracket on new line for methods)
+- ✅ Private fields use camelCase (not underscore prefix)
+
+### Frontend TypeScript Code Generation Rules
+**MANDATORY: Follow these exact patterns when generating React/TypeScript code:**
+
+```typescript
+// ✅ ALWAYS use 2-space indentation, single quotes, semicolons
+import React, { useState } from 'react';
+import { Book } from '../generated/api';
+
+interface BookListProps {
+  books: Book[];
+  onBookSelect: (book: Book) => void;
+}
+
+// ✅ ALWAYS include explicit return types
+export const BookList: React.FC<BookListProps> = ({ 
+  books, 
+  onBookSelect 
+}): JSX.Element => {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const handleClick = (book: Book): void => {
+    setSelectedId(book.id);
+    onBookSelect(book);
+  };
+
+  return (
+    <div className="book-list">
+      {books.map((book) => (
+        <div key={book.id} onClick={() => handleClick(book)}>
+          {book.title}
+        </div>
+      ))}
+    </div>
+  );
+};
+```
+
+**Prettier/ESLint Compliance Checklist:**
+- ✅ 2-space indentation (never tabs or 4-space)
+- ✅ Single quotes for strings
+- ✅ Semicolons at end of statements
+- ✅ Explicit function return types (`: JSX.Element`, `: void`, etc.)
+- ✅ Arrow functions with explicit parentheses: `(book) =>` not `book =>`
+- ✅ Interface definitions for all props and state
+- ✅ No `any` or `unknown` types
+
+### Modern Sass/SCSS Standards
+**CRITICAL: Use modern Sass API to avoid deprecation warnings:**
+
+```scss
+// ✅ GOOD - Modern Sass patterns
+$primary-color: #007bff;
+$font-stack: 'Helvetica Neue', Arial, sans-serif;
+
+.component {
+  color: $primary-color;
+  font-family: $font-stack;
+  
+  &:hover {
+    opacity: 0.8;
+  }
+  
+  @media (max-width: 768px) {
+    display: block;
+  }
+}
+
+// ✅ GOOD - Use @use instead of @import for modern module system
+@use 'sass:color';
+@use 'variables' as vars;
+
+.theme-dark {
+  background: color.adjust(vars.$primary-color, $lightness: -20%);
+}
+```
+
+**Modern Sass Configuration Requirements:**
+- ✅ Use `sass-embedded` package (not legacy `sass`)
+- ✅ Avoid legacy JavaScript API patterns
+- ✅ Use `@use` instead of `@import` for modular imports
+- ✅ Use modern Sass built-in modules (`sass:color`, `sass:math`, etc.)
+
+## 🚨 CRITICAL: Deprecated Code Avoidance
+
+**NEVER use these deprecated patterns - they will cause build failures:**
+
+### Backend C# Deprecated Patterns
+```csharp
+// ❌ FORBIDDEN - Deprecated .NET patterns
+public void ConfigureServices(IServiceCollection services)
+{
+    // This method is deprecated in .NET 6+
+}
+
+// ❌ FORBIDDEN - Legacy async patterns  
+public void DoWork()
+{
+    var result = SomeAsyncMethod().Result; // Blocks thread
+    SomeAsyncMethod().Wait(); // Blocks thread
+}
+
+// ❌ FORBIDDEN - Deprecated Entity Framework patterns
+context.Database.EnsureCreated(); // Use migrations instead
+var users = context.Users.Load(); // Use async methods
+
+// ✅ REQUIRED - Modern patterns only
+public static void Main(string[] args)
+{
+    var builder = WebApplication.CreateBuilder(args); // Modern .NET 6+ pattern
+}
+
+public async Task DoWorkAsync(CancellationToken cancellationToken = default)
+{
+    var result = await SomeAsyncMethod(cancellationToken); // Non-blocking
+}
+
+// Use EF migrations and async patterns
+await context.Database.MigrateAsync(cancellationToken);
+var users = await context.Users.ToListAsync(cancellationToken);
+```
+
+### Frontend React/TypeScript Deprecated Patterns
+```typescript
+// ❌ FORBIDDEN - Deprecated React patterns
+import React, { Component } from 'react';
+class MyComponent extends Component { } // Use function components
+
+// ❌ FORBIDDEN - Legacy hooks and lifecycle  
+componentDidMount() { } // Use useEffect
+componentWillUnmount() { } // Use useEffect cleanup
+
+// ❌ FORBIDDEN - Deprecated TypeScript patterns
+interface Props {
+  onClick: React.MouseEventHandler; // Too generic
+}
+
+// ❌ FORBIDDEN - Legacy Sass imports
+@import 'variables'; // Use @use instead
+
+// ✅ REQUIRED - Modern patterns only
+const MyComponent: React.FC<Props> = ({ onClick }): JSX.Element => {
+  useEffect(() => {
+    // Setup
+    return () => {
+      // Cleanup
+    };
+  }, []);
+  
+  return <div onClick={onClick} />;
+};
+
+// Modern TypeScript typing
+interface Props {
+  onClick: (event: React.MouseEvent<HTMLDivElement>) => void;
+}
+
+// Modern Sass imports
+@use 'variables' as vars;
+```
+
+### Build Tool Deprecated Patterns
+```typescript
+// ❌ FORBIDDEN - Legacy Vite/Build configurations
+// vite.config.ts - Don't use deprecated options
+export default defineConfig({
+  css: {
+    preprocessorOptions: {
+      scss: {
+        silenceDeprecations: ['legacy-js-api'], // NEVER silence warnings
+      },
+    },
+  },
+});
+
+// ✅ REQUIRED - Modern build configurations
+export default defineConfig({
+  css: {
+    preprocessorOptions: {
+      scss: {
+        // Use sass-embedded automatically with modern API
+        additionalData: ``,
+      },
+    },
+  },
+});
+```
+
+### Package Management Deprecated Patterns
+```json
+// ❌ FORBIDDEN - Deprecated packages
+{
+  "dependencies": {
+    "sass": "^1.x.x", // Use sass-embedded instead
+    "node-sass": "^6.x.x", // Deprecated - use sass-embedded
+    "@types/node": "^14.x.x" // Use latest LTS versions only
+  }
+}
+
+// ✅ REQUIRED - Modern packages only
+{
+  "dependencies": {
+    "sass-embedded": "^1.92.0", // Modern Sass API
+    "@types/node": "^22.x.x" // Latest LTS
+  }
+}
+```
+
+```typescript
+// ✅ GOOD - Vite configuration for modern Sass
+// vite.config.ts
+export default defineConfig({
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: ``, // Modern configuration without legacy API
+      },
+    },
+  },
+});
+```
+
+### Quick Formatting Commands
+**CRITICAL: Run these after generating any code to ensure compliance:**
+
+```bash
+# Auto-fix all formatting issues (run from project root)
+npm run format
+
+# Verify no issues remain
+npm run format:backend   # C# formatting check
+npm run format:frontend  # TypeScript/React formatting check
+```
+
 ## 🚨 CRITICAL: Code Quality & Linting Standards
 
 ### TypeScript Standards
@@ -257,23 +539,49 @@ The project enforces strict linting rules:
 
 **ALL linting errors must be fixed before code can be merged. Zero tolerance policy.**
 
-### Validation Workflow
-**CRITICAL: ALWAYS run full validation after making changes:**
+### ZERO-WARNING Validation Workflow
+**CRITICAL: ALWAYS run full validation after making changes - ALL WARNINGS ARE ERRORS:**
 
 ```bash
-# Frontend validation (run from frontend/ directory)
-npm run lint          # Must pass with zero warnings/errors
-npm run type-check     # Must pass TypeScript compilation  
-npm run build         # Must build successfully
-npm run test          # Must pass all tests
+# STEP 1: Auto-fix formatting first (run from project root)
+npm run format  # Fixes both backend C# and frontend TypeScript formatting
 
-# Backend validation (run from backend/ directory)  
+# STEP 2: Frontend validation with ZERO-WARNING enforcement
+cd frontend
+npm run lint          # Must pass with ZERO warnings/errors (--max-warnings 0)
+npm run type-check     # Must pass TypeScript compilation with ZERO warnings
+npm run build         # Must build successfully with ZERO warnings
+npm run test          # Must pass all tests with ZERO warnings
+
+# STEP 3: Backend validation with ZERO-WARNING enforcement  
+cd ../backend
 dotnet format --verify-no-changes  # Must pass formatting check
-dotnet build                       # Must compile successfully
-dotnet test                        # Must pass all tests
+dotnet build --warningsaserrors    # Treat warnings as errors - ZERO warnings allowed
+dotnet test                        # Must pass all tests with ZERO warnings
 ```
 
-**If any validation step fails, STOP and fix the issues before proceeding.**
+**MANDATORY VALIDATION RULES:**
+- ✅ **ZERO warnings allowed** - Any warning = immediate failure
+- ✅ **NO deprecation warnings** - Update code to modern patterns
+- ✅ **NO silencing or ignoring** - Fix root cause, never suppress
+- ✅ **ALL steps must pass** - If any step fails, STOP and fix immediately
+
+### Warning Detection and Response Protocol
+
+**If ANY warning appears during validation:**
+
+1. **STOP immediately** - Do not proceed with any other work
+2. **Identify root cause** - Never silence or ignore the warning
+3. **Update to modern patterns** - Replace deprecated code with current standards
+4. **Re-run full validation** - Ensure zero warnings achieved
+5. **Document the change** - Update CHANGELOG.md with fix details
+
+**Common Warning Categories and Required Actions:**
+- **Deprecation warnings**: Update to latest API patterns immediately
+- **TypeScript warnings**: Add explicit types, fix unsafe patterns
+- **ESLint warnings**: Fix code quality issues, don't disable rules
+- **Sass warnings**: Use modern Sass API and module system
+- **Build warnings**: Update dependencies, fix configuration issues
 
 ## 🚨 CRITICAL: Development Server Management
 
@@ -480,45 +788,51 @@ frontend/
 
 ### Backend Validation Script
 ```powershell
-# Run complete backend validation pipeline (PowerShell)
-.\backend\validate.ps1
+# Run complete backend validation pipeline with ZERO-WARNING enforcement
+.\backend\validate.ps1 -WarningsAsErrors
 
 # Options:
-.\backend\validate.ps1 -SkipTests      # Skip test execution (development only)
-.\backend\validate.ps1 -Verbose        # Show detailed output
+.\backend\validate.ps1 -WarningsAsErrors -Verbose  # Show detailed output with zero tolerance
+# Note: -SkipTests option removed - ALL validation steps are mandatory
 ```
 
-**Script performs:**
-1. **Lint & Build** - StyleCop + compilation (parallel where possible)
-2. **Unit Tests & Coverage** - 80% minimum requirement
-3. **Performance Analysis** - Static code analysis for async patterns, blocking calls
-4. **Security Analysis** - Scans for hardcoded secrets, SQL injection risks
+**Script performs with ZERO-WARNING enforcement:**
+1. **Lint & Build** - StyleCop + compilation with `--warningsaserrors` flag
+2. **Unit Tests & Coverage** - 80% minimum requirement with zero test warnings
+3. **Performance Analysis** - Static code analysis with zero warnings allowed
+4. **Security Analysis** - Scans with immediate failure on any security warnings
+
+**CRITICAL: NO -SkipTests option available - all validation steps are mandatory**
 
 ### Frontend Validation Script
 ```bash
-# Run complete frontend validation pipeline (Node.js)
-node frontend/validate.js
+# Run complete frontend validation pipeline with ZERO-WARNING enforcement
+node frontend/validate.js --warnings-as-errors
 
 # Options:
-node frontend/validate.js --skip-tests  # Skip test execution (development only)  
-node frontend/validate.js --verbose     # Show detailed output
+node frontend/validate.js --warnings-as-errors --verbose  # Show detailed output with zero tolerance
+# Note: --skip-tests option removed - ALL validation steps are mandatory
 ```
 
-**Script performs:**
-1. **Lint & Type Check** - ESLint + TypeScript strict (parallel execution)
-2. **Build** - Production build with bundle analysis
-3. **Unit Tests & Coverage** - 80% minimum requirement
-4. **Performance Analysis** - Bundle size, React patterns
-5. **Security Analysis** - Scans for hardcoded secrets, XSS risks, information disclosure
+**Script performs with ZERO-WARNING enforcement:**
+1. **Lint & Type Check** - ESLint with `--max-warnings 0` + TypeScript strict mode
+2. **Build** - Production build with zero warnings allowed
+3. **Unit Tests & Coverage** - 80% minimum requirement with zero test warnings
+4. **Performance Analysis** - Bundle size analysis with warning thresholds
+5. **Security Analysis** - Immediate failure on any security warnings or vulnerabilities
+
+**CRITICAL: NO --skip-tests option available - all validation steps are mandatory**
 
 ## Validation Gate Rules
 
-### Non-Negotiable Requirements
-1. **Zero Tolerance**: Any failure in validation gates = STOP development
-2. **Fix Before Proceed**: All issues must be resolved before advancing
-3. **Document Failures**: Log what failed and how it was resolved in CHANGELOG.md
-4. **Re-run Full Suite**: After fixes, re-run entire validation sequence
-5. **Approval Required**: Get explicit approval before proceeding to next phase
+### Non-Negotiable Requirements - ZERO WARNING POLICY
+1. **ZERO TOLERANCE**: Any failure OR WARNING in validation gates = STOP development immediately
+2. **NO WARNINGS ALLOWED**: All warnings must be treated as errors and fixed immediately
+3. **NO SILENCING**: Never ignore, silence, or suppress warnings - fix the root cause
+4. **Fix Before Proceed**: All issues AND warnings must be resolved before advancing
+5. **Document Failures**: Log what failed/warned and how it was resolved in CHANGELOG.md
+6. **Re-run Full Suite**: After fixes, re-run entire validation sequence with zero warnings
+7. **Approval Required**: Get explicit approval that ZERO warnings policy is met
 
 ### Performance Evaluation Criteria
 **Backend Performance:**

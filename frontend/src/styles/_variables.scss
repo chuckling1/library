@@ -6,29 +6,28 @@
 // -------------------------------------
 // Backgrounds
 $bg-primary: #111827;
-$bg-secondary: #1C2332;
-$bg-surface: #1F2937;
+$bg-secondary: #1c2332;
+$bg-surface: #1f2937;
 
 // Borders
 $border-color: #374151;
 
 // Text
-$text-primary: #F9FAFB;
-$text-secondary: #9CA3AF;
-$text-tertiary: #6B7280;
-$text-disabled: #4B5563;
+$text-primary: #f9fafb;
+$text-secondary: #9ca3af;
+$text-tertiary: #6b7280;
+$text-disabled: #4b5563;
 
 // Accent (Primary Interaction Color)
-$accent-primary: #14B8A6; // Teal
-$accent-hover: #0D9488;
+$accent-primary: #14b8a6; // Teal
+$accent-hover: #0d9488;
 
 // Semantic Colors
-$accent-error: #F43F5E; // Rose
-$semantic-danger: #F43F5E; // Rose
-$semantic-danger-hover: #E11D48;
+$accent-error: #f43f5e; // Rose
+$semantic-danger: #f43f5e; // Rose
+$semantic-danger-hover: #e11d48;
 // $semantic-success: #22C55E; // Green (for future use)
 // $semantic-warning: #F59E0B; // Amber (for future use)
-
 
 // 2. TYPOGRAPHY
 // -------------------------------------
@@ -50,7 +49,6 @@ $font-weight-regular: 400;
 $font-weight-medium: 500;
 $font-weight-bold: 700;
 
-
 // 3. SPACING
 // -------------------------------------
 // 8pt Grid System
@@ -61,11 +59,12 @@ $spacing-lg: 24px;
 $spacing-xl: 32px;
 $spacing-xxl: 48px;
 
-
 // 4. BORDERS & SHADOWS
 // -------------------------------------
 $border-radius-sm: 4px;
 $border-radius-md: 6px;
 $border-radius-lg: 8px;
 $box-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-$box-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$box-shadow-md:
+  0 4px 6px -1px rgba(0, 0, 0, 0.1),
+  0 2px 4px -1px rgba(0, 0, 0, 0.06);

@@ -1,3 +1,4 @@
+import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -14,6 +15,13 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
+// Mock BookCover to prevent async state updates in tests
+vi.mock('./BookCover', () => ({
+  default: ({ book }: { book: Book }): React.JSX.Element => (
+    <div data-testid="book-cover">Cover for {book.title}</div>
+  ),
+}));
+
 const createMockBook = (overrides: Partial<Book> = {}): Book => ({
   id: '123',
   title: 'Test Book',
@@ -26,7 +34,7 @@ const createMockBook = (overrides: Partial<Book> = {}): Book => ({
   updatedAt: '2023-06-01T00:00:00.000Z',
   bookGenres: [
     { bookId: '123', genreName: 'Fiction' },
-    { bookId: '123', genreName: 'Mystery' }
+    { bookId: '123', genreName: 'Mystery' },
   ],
   ...overrides,
 });
@@ -40,10 +48,13 @@ const createMockBookWithManyGenres = (): Book => ({
     { bookId: '123', genreName: 'Adventure' },
     { bookId: '123', genreName: 'Horror' },
     { bookId: '123', genreName: 'Romance' },
-  ]
+  ],
 });
 
-const renderBookCard = (book: Book, onDelete = vi.fn()): ReturnType<typeof render> => {
+const renderBookCard = (
+  book: Book,
+  onDelete = vi.fn()
+): ReturnType<typeof render> => {
   return render(
     <BrowserRouter>
       <GenreFilterProvider>
@@ -66,7 +77,7 @@ describe('BookCard', () => {
     expect(screen.getByText('by Test Author')).toBeInTheDocument();
     // Check for star rating component instead of combined string
     expect(screen.getByRole('button', { name: '4 stars' })).toBeInTheDocument();
-    expect(screen.getByText('12/31/2022')).toBeInTheDocument();
+    expect(screen.getByText('December 31, 2022')).toBeInTheDocument();
   });
 
   it('renders genres correctly', () => {
@@ -112,7 +123,7 @@ describe('BookCard', () => {
     expect(screen.getByText('Adventure')).toBeInTheDocument();
     expect(screen.getByText('Horror')).toBeInTheDocument();
     expect(screen.getByText('Romance')).toBeInTheDocument();
-    
+
     // Should show "Show More ▼" button for expansion toggle if needed
     // Note: The overflow detection happens in useEffect, so the button may not appear in tests
     // without proper DOM measurement setup
@@ -160,25 +171,27 @@ describe('BookCard', () => {
   it('shows confirmation dialog when delete button is clicked', () => {
     const book = createMockBook();
     const onDelete = vi.fn();
-    
+
     // Mock window.confirm
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
-    
+
     renderBookCard(book, onDelete);
 
     const deleteButton = screen.getByLabelText('Delete Test Book');
     fireEvent.click(deleteButton);
 
-    expect(confirmSpy).toHaveBeenCalledWith('Are you sure you want to delete "Test Book"?');
+    expect(confirmSpy).toHaveBeenCalledWith(
+      'Are you sure you want to delete "Test Book"?'
+    );
     confirmSpy.mockRestore();
   });
 
   it('calls onDelete when confirmation is accepted', async () => {
     const book = createMockBook();
     const onDelete = vi.fn().mockResolvedValue(undefined);
-    
+
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
-    
+
     renderBookCard(book, onDelete);
 
     const deleteButton = screen.getByLabelText('Delete Test Book');
@@ -187,16 +200,16 @@ describe('BookCard', () => {
     await waitFor(() => {
       expect(onDelete).toHaveBeenCalledWith(book);
     });
-    
+
     confirmSpy.mockRestore();
   });
 
   it('does not call onDelete when confirmation is cancelled', () => {
     const book = createMockBook();
     const onDelete = vi.fn();
-    
+
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
-    
+
     renderBookCard(book, onDelete);
 
     const deleteButton = screen.getByLabelText('Delete Test Book');
@@ -222,8 +235,12 @@ describe('BookCard', () => {
     expect(container.querySelector('.book-card__title')).toBeInTheDocument();
     expect(container.querySelector('.book-card__author')).toBeInTheDocument();
     expect(container.querySelector('.book-card__rating')).toBeInTheDocument();
-    expect(container.querySelector('.book-card__genres-container')).toBeInTheDocument();
-    expect(container.querySelector('.book-card__published-date')).toBeInTheDocument();
+    expect(
+      container.querySelector('.book-card__genres-container')
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector('.book-card__published-date')
+    ).toBeInTheDocument();
     expect(container.querySelector('.book-card__actions')).toBeInTheDocument();
   });
 
@@ -239,11 +256,11 @@ describe('BookCard', () => {
 
   it('formats dates correctly', () => {
     const book = createMockBook({
-      publishedDate: '2023-12-25T00:00:00.000Z',
+      publishedDate: '2023-12-25T12:00:00.000Z',
     });
     renderBookCard(book);
 
-    expect(screen.getByText('12/24/2023')).toBeInTheDocument();
+    expect(screen.getByText('December 25, 2023')).toBeInTheDocument();
   });
 
   it('displays action buttons in header', () => {
@@ -262,7 +279,9 @@ describe('BookCard', () => {
 
     expect(screen.getByText('Test Book')).toBeInTheDocument();
     // Verify no genre container is rendered when there are no genres
-    const genresContainer = document.querySelector('.book-card__genres-container');
+    const genresContainer = document.querySelector(
+      '.book-card__genres-container'
+    );
     expect(genresContainer).not.toBeInTheDocument();
   });
 
@@ -271,8 +290,8 @@ describe('BookCard', () => {
       bookGenres: [
         { bookId: '123', genreName: 'Fiction' },
         { bookId: '123', genreName: null },
-        { bookId: '123', genreName: 'Mystery' }
-      ]
+        { bookId: '123', genreName: 'Mystery' },
+      ],
     });
     renderBookCard(book);
 

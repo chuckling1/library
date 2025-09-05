@@ -36,7 +36,10 @@ class OpenLibraryService {
   /**
    * Search for books using the OpenLibrary Search API
    */
-  async searchBooks(query: string, limit = 10): Promise<OpenLibrarySearchResponse> {
+  async searchBooks(
+    query: string,
+    limit = 10
+  ): Promise<OpenLibrarySearchResponse> {
     const params = new URLSearchParams({
       q: query,
       limit: limit.toString(),
@@ -48,7 +51,7 @@ class OpenLibraryService {
       if (!response.ok) {
         throw new Error(`OpenLibrary search failed: ${response.statusText}`);
       }
-      return await response.json() as OpenLibrarySearchResponse;
+      return (await response.json()) as OpenLibrarySearchResponse;
     } catch (error) {
       logger.error('OpenLibrary search error:', error);
       return { docs: [], numFound: 0, start: 0 };
@@ -96,7 +99,10 @@ class OpenLibraryService {
   async checkCoverExists(url: string): Promise<boolean> {
     try {
       const response = await fetch(url, { method: 'HEAD' });
-      return response.ok && response.headers.get('content-type')?.startsWith('image/') === true;
+      return (
+        response.ok &&
+        response.headers.get('content-type')?.startsWith('image/') === true
+      );
     } catch {
       return false;
     }
@@ -144,7 +150,10 @@ class OpenLibraryService {
    * Step 2: Filter publish_date array to only entries containing the target year
    * Simple and efficient substring matching (as suggested)
    */
-  private filterDatesByYear(publishDates: string[], targetYear: string): string[] {
+  private filterDatesByYear(
+    publishDates: string[],
+    targetYear: string
+  ): string[] {
     return publishDates.filter(date => date.includes(targetYear));
   }
 
@@ -153,8 +162,8 @@ class OpenLibraryService {
    */
   private findLongestDate(dateStrings: string[]): string {
     if (dateStrings.length === 0) return '';
-    
-    return dateStrings.reduce((longest, current) => 
+
+    return dateStrings.reduce((longest, current) =>
       current.length > longest.length ? current : longest
     );
   }
@@ -164,12 +173,12 @@ class OpenLibraryService {
    */
   private parseDate(dateStr: string): string | null {
     if (!dateStr || dateStr.trim() === '') return null;
-    
+
     const trimmed = dateStr.trim();
-    
+
     // Try to parse with JavaScript Date to validate
     let testDate: Date;
-    
+
     try {
       // Handle various formats
       if (/^\d{4}$/.test(trimmed)) {
@@ -186,22 +195,21 @@ class OpenLibraryService {
         // Try to parse as-is: "Apr 07, 1981", "May 20, 2015"
         testDate = new Date(trimmed);
       }
-      
+
       // Validate the parsed date
       if (isNaN(testDate.getTime())) {
         return null;
       }
-      
+
       // Validate year is reasonable
       const year = testDate.getFullYear();
       const currentYear = new Date().getFullYear();
       if (year < 1400 || year > currentYear + 5) {
         return null;
       }
-      
+
       // Return original format if valid (this is the key difference!)
       return trimmed;
-      
     } catch {
       return null;
     }
@@ -214,7 +222,10 @@ class OpenLibraryService {
    * 3. Find longest/most detailed date
    * 4. Parse and validate
    */
-  private extractBestPublishDate(olBook: { first_publish_year?: number; publish_date?: string[] }): string | undefined {
+  private extractBestPublishDate(olBook: {
+    first_publish_year?: number;
+    publish_date?: string[];
+  }): string | undefined {
     // Step 1: Get first_publish_year
     if (!olBook.first_publish_year) {
       // Fallback: try first date in array if no first_publish_year
@@ -224,28 +235,31 @@ class OpenLibraryService {
       }
       return undefined;
     }
-    
+
     const targetYear = olBook.first_publish_year.toString();
-    
+
     // Step 2: Filter publish_date array by year
     if (!olBook.publish_date || olBook.publish_date.length === 0) {
       // No publish_date array, just return the year
       return targetYear;
     }
-    
-    const filteredDates = this.filterDatesByYear(olBook.publish_date, targetYear);
-    
+
+    const filteredDates = this.filterDatesByYear(
+      olBook.publish_date,
+      targetYear
+    );
+
     if (filteredDates.length === 0) {
       // No dates match the target year, fallback to first_publish_year
       return targetYear;
     }
-    
+
     // Step 3: Find longest/most detailed date
     const longestDate = this.findLongestDate(filteredDates);
-    
+
     // Step 4: Parse and validate
     const parsedDate = this.parseDate(longestDate);
-    
+
     // Return parsed date if valid, otherwise fallback to year
     return parsedDate ?? targetYear;
   }
@@ -262,16 +276,18 @@ class OpenLibraryService {
     subjects?: string[];
   } {
     const isbn = olBook.isbn?.[0];
-    
+
     // Use the smart 4-step algorithm to extract the best publish date
     const publishDate = this.extractBestPublishDate(olBook);
-    
+
     return {
       title: olBook.title,
       author: olBook.author_name?.[0] ?? 'Unknown Author',
       isbn,
       publishedDate: publishDate,
-      coverUrl: olBook.cover_i ? this.getCoverUrlsByCoverId(olBook.cover_i).medium : undefined,
+      coverUrl: olBook.cover_i
+        ? this.getCoverUrlsByCoverId(olBook.cover_i).medium
+        : undefined,
       subjects: olBook.subject?.slice(0, 5), // Limit to first 5 subjects as genres
     };
   }
@@ -279,14 +295,19 @@ class OpenLibraryService {
   /**
    * Search for book suggestions based on title and author
    */
-  async getBookSuggestions(title: string, author?: string): Promise<Array<{
-    title: string;
-    author: string;
-    isbn?: string;
-    publishedDate?: string;
-    coverUrl?: string;
-    subjects?: string[];
-  }>> {
+  async getBookSuggestions(
+    title: string,
+    author?: string
+  ): Promise<
+    Array<{
+      title: string;
+      author: string;
+      isbn?: string;
+      publishedDate?: string;
+      coverUrl?: string;
+      subjects?: string[];
+    }>
+  > {
     let query = title;
     if (author) {
       query += ` author:${author}`;

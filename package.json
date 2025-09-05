@@ -16,9 +16,12 @@
     "test:frontend": "cd frontend && npm run test",
     "lint": "npm run lint:frontend",
     "lint:frontend": "cd frontend && npm run lint",
+    "format": "npm run format:backend && npm run format:frontend",
+    "format:backend": "cd backend && dotnet format --include-generated --verbosity minimal",
+    "format:frontend": "cd frontend && npm run format:all",
     "validate": "npm run validate:backend && npm run validate:frontend",
-    "validate:backend": "cd backend && .\\validate.ps1",
-    "validate:frontend": "cd frontend && node validate.js",
+    "validate:backend": "cd backend && .\\validate.ps1 -WarningsAsErrors",
+    "validate:frontend": "cd frontend && npm run type-check && npm run lint && npm run build && npm run test",
     "generate-client": "cd frontend && npm run generate-client"
   },
   "devDependencies": {

@@ -10,7 +10,7 @@ npm run setup
 ```
 
 The setup script will:
-- ✅ Check for Node.js 18+ and .NET 9+ SDK (8+ minimum)
+- ✅ Check for Node.js 22+ and .NET 9+ SDK (8+ minimum)
 - 📦 Provide installation guidance if dependencies are missing  
 - 🔧 Install all project dependencies automatically
 - 🏗️ Build both backend and frontend projects
@@ -33,8 +33,13 @@ If you don't have the required dependencies, the setup script will guide you thr
 **Windows:**
 ```bash
 # Using winget (Windows Package Manager)
-winget install Microsoft.dotnet
-winget install OpenJS.NodeJS
+# Check for latest available versions first:
+winget search Microsoft.DotNet.SDK
+winget search OpenJS.NodeJS
+
+# Install latest versions:
+winget install Microsoft.DotNet.SDK.9
+winget install OpenJS.NodeJS.LTS
 
 # Then run setup again
 npm run setup

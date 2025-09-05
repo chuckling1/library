@@ -1,29 +1,34 @@
-using LibraryApi.Responses;
+// <copyright file="StatsService.cs" company="Library API">
+// Copyright (c) Library API. All rights reserved.
+// </copyright>
 
-namespace LibraryApi.Services;
-
-/// <summary>
-/// Service implementation for statistics business logic.
-/// </summary>
-public class StatsService : IStatsService
+namespace LibraryApi.Services
 {
-    private readonly IBookService _bookService;
-    private readonly ILogger<StatsService> _logger;
+    using LibraryApi.Responses;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StatsService"/> class.
+    /// Service implementation for statistics business logic.
     /// </summary>
-    /// <param name="bookService">The book service.</param>
-    /// <param name="logger">The logger.</param>
-    public StatsService(IBookService bookService, ILogger<StatsService> logger)
+    public class StatsService : IStatsService
     {
-        _bookService = bookService;
-        _logger = logger;
-    }
+        private readonly IBookService bookService;
+        private readonly ILogger<StatsService> logger;
 
-    /// <inheritdoc/>
-    public async Task<BookStatsResponse> GetBookStatsAsync(CancellationToken cancellationToken = default)
-    {
-        return await _bookService.GetBookStatsAsync(cancellationToken);
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StatsService"/> class.
+        /// </summary>
+        /// <param name="bookService">The book service.</param>
+        /// <param name="logger">The logger.</param>
+        public StatsService(IBookService bookService, ILogger<StatsService> logger)
+        {
+            this.bookService = bookService;
+            this.logger = logger;
+        }
+
+        /// <inheritdoc/>
+        public async Task<BookStatsResponse> GetBookStatsAsync(CancellationToken cancellationToken = default)
+        {
+            return await this.bookService.GetBookStatsAsync(cancellationToken);
+        }
     }
 }

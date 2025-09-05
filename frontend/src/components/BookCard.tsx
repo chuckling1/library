@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Book } from '../generated/api';
 import { getBookGenres, formatDate } from '../hooks/useBooks';
@@ -21,44 +21,7 @@ const BookCard: React.FC<BookCardProps> = React.memo(({ book, onDelete }) => {
     return Array.isArray(bookGenres) ? bookGenres : [];
   }, [book]);
   const { toggleGenre, isGenreActive } = useGenreFilter();
-  const [isGenresExpanded, setIsGenresExpanded] = useState<boolean>(false);
-  const [needsExpansion, setNeedsExpansion] = useState<boolean>(false);
-  
-  // Calculate if genres will overflow 2 rows based on text length
-  useEffect(() => {
-    if (genres.length === 0) {
-      setNeedsExpansion(false);
-      return;
-    }
 
-    // Estimate container width (account for padding: 8px * 2 = 16px)
-    // BookCard content area is flexible, estimate ~300-400px available width
-    const estimatedContainerWidth = 350; // Conservative estimate
-    
-    // Calculate approximate width for each genre pill
-    // Base pill styling: 8px padding * 2 + 1px border * 2 + text width
-    const basePillWidth = 18; // padding + borders
-    const avgCharWidth = 7; // approximate character width in 12px font
-    
-    let currentRowWidth = 0;
-    let rowCount = 1;
-    
-    for (const genre of genres) {
-      const pillWidth = basePillWidth + (genre.length * avgCharWidth);
-      
-      // Check if adding this pill would exceed row width
-      if (currentRowWidth + pillWidth + 4 > estimatedContainerWidth) { // +4 for gap
-        rowCount++;
-        currentRowWidth = pillWidth;
-      } else {
-        currentRowWidth += pillWidth + 4; // +4 for gap between pills
-      }
-    }
-    
-    // Show "Show More" if we need more than 2 rows
-    setNeedsExpansion(rowCount > 2);
-  }, [genres]);
-  
   const handleEdit = (): void => {
     void navigate(`/books/${book.id}/edit`);
   };
@@ -73,23 +36,20 @@ const BookCard: React.FC<BookCardProps> = React.memo(({ book, onDelete }) => {
     toggleGenre(genre);
   };
 
-  const handleToggleGenres = (): void => {
-    setIsGenresExpanded(prev => !prev);
-  };
 
   // Get image URL (title or fallback to cover component)
-  const imageUrl = book.title 
+  const imageUrl = book.title
     ? `https://covers.openlibrary.org/b/title/${encodeURIComponent(book.title)}-M.jpg`
     : '';
-  
+
   return (
     <div className="book-card">
       {/* Left Column - Fixed width cover */}
       <div className="book-card__cover">
-        <img 
+        <img
           src={imageUrl}
           alt={`Cover of ${book.title}`}
-          onError={(e) => {
+          onError={e => {
             // Fallback to BookCover component on error
             const target = e.target as HTMLImageElement;
             target.style.display = 'none';
@@ -103,7 +63,7 @@ const BookCard: React.FC<BookCardProps> = React.memo(({ book, onDelete }) => {
           <BookCover book={book} size="medium" />
         </div>
       </div>
-      
+
       {/* Right Column - Flex content */}
       <div className="book-card__content">
         {/* Primary Info - Title, Author, Rating */}
@@ -118,14 +78,12 @@ const BookCard: React.FC<BookCardProps> = React.memo(({ book, onDelete }) => {
             />
           </div>
         </div>
-        
-        {/* Genre Tags - Expandable container */}
+
+        {/* Genre Tags */}
         {genres.length > 0 && (
           <div className="book-card__genres-container">
-            <div 
-              className={`book-card__genres ${isGenresExpanded ? 'book-card__genres--expanded' : ''}`}
-            >
-              {genres.map((genre) => (
+            <div className="book-card__genres">
+              {genres.map(genre => (
                 <button
                   key={genre}
                   className={`book-card__genre-pill ${isGenreActive(genre) ? 'book-card__genre-pill--active' : ''}`}
@@ -136,18 +94,9 @@ const BookCard: React.FC<BookCardProps> = React.memo(({ book, onDelete }) => {
                 </button>
               ))}
             </div>
-            {needsExpansion && (
-              <button 
-                className="book-card__genres-toggle"
-                onClick={handleToggleGenres}
-                aria-label={isGenresExpanded ? 'Show fewer genres' : 'Show more genres'}
-              >
-                {isGenresExpanded ? 'Show Less ▲' : 'Show More ▼'}
-              </button>
-            )}
           </div>
         )}
-        
+
         {/* Published Date - Pushed to bottom-right */}
         <div className="book-card__published-date">
           {formatDate(book.publishedDate)}

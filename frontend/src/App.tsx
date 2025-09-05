@@ -1,11 +1,16 @@
-import React from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { GenreFilterProvider } from './contexts/GenreFilterContext'
-import Layout from './components/Layout'
-import BookListPage from './pages/BookListPage'
-import BookFormPage from './pages/BookFormPage'
-import StatsPage from './pages/StatsPage'
-import './App.scss'
+import React from 'react';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom';
+import { GenreFilterProvider } from './contexts/GenreFilterContext';
+import Layout from './components/Layout';
+import BookListPage from './pages/BookListPage';
+import BookFormPage from './pages/BookFormPage';
+import StatsPage from './pages/StatsPage';
+import './App.scss';
 
 const App: React.FC = () => {
   return (
@@ -22,7 +27,7 @@ const App: React.FC = () => {
         </Layout>
       </Router>
     </GenreFilterProvider>
-  )
-}
+  );
+};
 
-export default App
+export default App;

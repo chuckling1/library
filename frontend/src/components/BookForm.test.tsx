@@ -11,11 +11,17 @@ const mockUpdateBookMutateAsync = vi.fn();
 
 // Mock the hooks and services
 vi.mock('../hooks/useBooks', () => ({
-  useCreateBook: (): { mutateAsync: typeof mockCreateBookMutateAsync; isPending: boolean } => ({
+  useCreateBook: (): {
+    mutateAsync: typeof mockCreateBookMutateAsync;
+    isPending: boolean;
+  } => ({
     mutateAsync: mockCreateBookMutateAsync,
     isPending: false,
   }),
-  useUpdateBook: (): { mutateAsync: typeof mockUpdateBookMutateAsync; isPending: boolean } => ({
+  useUpdateBook: (): {
+    mutateAsync: typeof mockUpdateBookMutateAsync;
+    isPending: boolean;
+  } => ({
     mutateAsync: mockUpdateBookMutateAsync,
     isPending: false,
   }),
@@ -34,7 +40,9 @@ vi.mock('../utils/logger', () => ({
 }));
 
 // Test wrapper component
-const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }): React.ReactElement => {
+const TestWrapper: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}): React.ReactElement => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -45,9 +53,7 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }): Rea
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        {children}
-      </BrowserRouter>
+      <BrowserRouter>{children}</BrowserRouter>
     </QueryClientProvider>
   );
 };
@@ -66,15 +72,23 @@ describe('BookForm - Date Validation', () => {
     );
 
     // Act - Fill all required fields except published date
-    fireEvent.change(screen.getByLabelText(/title/i), { target: { value: 'Test Book' } });
-    fireEvent.change(screen.getByLabelText(/author/i), { target: { value: 'Test Author' } });
-    fireEvent.change(screen.getByLabelText(/genres/i), { target: { value: 'Fiction' } });
+    fireEvent.change(screen.getByLabelText(/title/i), {
+      target: { value: 'Test Book' },
+    });
+    fireEvent.change(screen.getByLabelText(/author/i), {
+      target: { value: 'Test Author' },
+    });
+    fireEvent.change(screen.getByLabelText(/genres/i), {
+      target: { value: 'Fiction' },
+    });
     fireEvent.click(screen.getByText('Add Genre'));
     fireEvent.click(screen.getByText(/add book/i));
 
     // Assert
     await waitFor(() => {
-      expect(screen.getByText('Published date is required')).toBeInTheDocument();
+      expect(
+        screen.getByText('Published date is required')
+      ).toBeInTheDocument();
     });
   });
 
@@ -87,11 +101,17 @@ describe('BookForm - Date Validation', () => {
     );
 
     // Act - Fill form with invalid date
-    fireEvent.change(screen.getByLabelText(/title/i), { target: { value: 'Test Book' } });
-    fireEvent.change(screen.getByLabelText(/author/i), { target: { value: 'Test Author' } });
-    fireEvent.change(screen.getByLabelText(/genres/i), { target: { value: 'Fiction' } });
+    fireEvent.change(screen.getByLabelText(/title/i), {
+      target: { value: 'Test Book' },
+    });
+    fireEvent.change(screen.getByLabelText(/author/i), {
+      target: { value: 'Test Author' },
+    });
+    fireEvent.change(screen.getByLabelText(/genres/i), {
+      target: { value: 'Fiction' },
+    });
     fireEvent.click(screen.getByText('Add Genre'));
-    
+
     // Set an invalid date value directly
     const dateInput = screen.getByLabelText(/published date/i);
     Object.defineProperty(dateInput, 'value', {
@@ -103,7 +123,9 @@ describe('BookForm - Date Validation', () => {
 
     // Assert
     await waitFor(() => {
-      expect(screen.getByText('Published date must be a valid date')).toBeInTheDocument();
+      expect(
+        screen.getByText('Published date must be a valid date')
+      ).toBeInTheDocument();
     });
   });
 
@@ -115,21 +137,30 @@ describe('BookForm - Date Validation', () => {
       </TestWrapper>
     );
 
-    // Act - Fill form with future date
-    const futureDate = new Date();
-    futureDate.setDate(futureDate.getDate() + 1);
-    const futureDateString = futureDate.toISOString().split('T')[0];
+    // Act - Fill form with future date (use a fixed future date to avoid timezone issues)
+    const futureDateString = '2025-12-31'; // Fixed future date that will always be in the future
 
-    fireEvent.change(screen.getByLabelText(/title/i), { target: { value: 'Test Book' } });
-    fireEvent.change(screen.getByLabelText(/author/i), { target: { value: 'Test Author' } });
-    fireEvent.change(screen.getByLabelText(/genres/i), { target: { value: 'Fiction' } });
+    fireEvent.change(screen.getByLabelText(/title/i), {
+      target: { value: 'Test Book' },
+    });
+    fireEvent.change(screen.getByLabelText(/author/i), {
+      target: { value: 'Test Author' },
+    });
+    fireEvent.change(screen.getByLabelText(/genres/i), {
+      target: { value: 'Fiction' },
+    });
     fireEvent.click(screen.getByText('Add Genre'));
-    fireEvent.change(screen.getByLabelText(/published date/i), { target: { value: futureDateString } });
+
+    fireEvent.change(screen.getByLabelText(/published date/i), {
+      target: { value: futureDateString },
+    });
     fireEvent.click(screen.getByText(/add book/i));
 
     // Assert
     await waitFor(() => {
-      expect(screen.getByText('Published date cannot be in the future')).toBeInTheDocument();
+      expect(
+        screen.getByText('Published date cannot be in the future')
+      ).toBeInTheDocument();
     });
   });
 
@@ -146,22 +177,36 @@ describe('BookForm - Date Validation', () => {
     // Act - Fill form with valid past date
     const pastDate = '2023-01-01';
 
-    fireEvent.change(screen.getByLabelText(/title/i), { target: { value: 'Test Book' } });
-    fireEvent.change(screen.getByLabelText(/author/i), { target: { value: 'Test Author' } });
-    fireEvent.change(screen.getByLabelText(/genres/i), { target: { value: 'Fiction' } });
+    fireEvent.change(screen.getByLabelText(/title/i), {
+      target: { value: 'Test Book' },
+    });
+    fireEvent.change(screen.getByLabelText(/author/i), {
+      target: { value: 'Test Author' },
+    });
+    fireEvent.change(screen.getByLabelText(/genres/i), {
+      target: { value: 'Fiction' },
+    });
     fireEvent.click(screen.getByText('Add Genre'));
-    fireEvent.change(screen.getByLabelText(/published date/i), { target: { value: pastDate } });
+    fireEvent.change(screen.getByLabelText(/published date/i), {
+      target: { value: pastDate },
+    });
     fireEvent.click(screen.getByText(/add book/i));
 
     // Assert - Form should submit without date validation errors
     await waitFor(() => {
       expect(mockCreateBookMutateAsync).toHaveBeenCalled();
     });
-    
+
     // Should not show date validation errors
-    expect(screen.queryByText('Published date is required')).not.toBeInTheDocument();
-    expect(screen.queryByText('Published date must be a valid date')).not.toBeInTheDocument();
-    expect(screen.queryByText('Published date cannot be in the future')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Published date is required')
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Published date must be a valid date')
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Published date cannot be in the future')
+    ).not.toBeInTheDocument();
   });
 
   it('should accept today as a valid date', async (): Promise<void> => {
@@ -177,20 +222,30 @@ describe('BookForm - Date Validation', () => {
     // Act - Fill form with today's date
     const today = new Date().toISOString().split('T')[0];
 
-    fireEvent.change(screen.getByLabelText(/title/i), { target: { value: 'Test Book' } });
-    fireEvent.change(screen.getByLabelText(/author/i), { target: { value: 'Test Author' } });
-    fireEvent.change(screen.getByLabelText(/genres/i), { target: { value: 'Fiction' } });
+    fireEvent.change(screen.getByLabelText(/title/i), {
+      target: { value: 'Test Book' },
+    });
+    fireEvent.change(screen.getByLabelText(/author/i), {
+      target: { value: 'Test Author' },
+    });
+    fireEvent.change(screen.getByLabelText(/genres/i), {
+      target: { value: 'Fiction' },
+    });
     fireEvent.click(screen.getByText('Add Genre'));
-    fireEvent.change(screen.getByLabelText(/published date/i), { target: { value: today } });
+    fireEvent.change(screen.getByLabelText(/published date/i), {
+      target: { value: today },
+    });
     fireEvent.click(screen.getByText(/add book/i));
 
     // Assert - Form should submit without date validation errors
     await waitFor(() => {
       expect(mockCreateBookMutateAsync).toHaveBeenCalled();
     });
-    
+
     // Should not show date validation errors
-    expect(screen.queryByText('Published date cannot be in the future')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Published date cannot be in the future')
+    ).not.toBeInTheDocument();
   });
 
   it('should clear date error when user fixes invalid date', async (): Promise<void> => {
@@ -202,28 +257,41 @@ describe('BookForm - Date Validation', () => {
     );
 
     // Act - First, trigger validation error with future date
-    const futureDate = new Date();
-    futureDate.setDate(futureDate.getDate() + 1);
-    const futureDateString = futureDate.toISOString().split('T')[0];
+    const futureDateString = '2025-12-31'; // Fixed future date that will always be in the future
 
-    fireEvent.change(screen.getByLabelText(/title/i), { target: { value: 'Test Book' } });
-    fireEvent.change(screen.getByLabelText(/author/i), { target: { value: 'Test Author' } });
-    fireEvent.change(screen.getByLabelText(/genres/i), { target: { value: 'Fiction' } });
+    fireEvent.change(screen.getByLabelText(/title/i), {
+      target: { value: 'Test Book' },
+    });
+    fireEvent.change(screen.getByLabelText(/author/i), {
+      target: { value: 'Test Author' },
+    });
+    fireEvent.change(screen.getByLabelText(/genres/i), {
+      target: { value: 'Fiction' },
+    });
     fireEvent.click(screen.getByText('Add Genre'));
-    fireEvent.change(screen.getByLabelText(/published date/i), { target: { value: futureDateString } });
+
+    fireEvent.change(screen.getByLabelText(/published date/i), {
+      target: { value: futureDateString },
+    });
     fireEvent.click(screen.getByText(/add book/i));
 
     // Verify error appears
     await waitFor(() => {
-      expect(screen.getByText('Published date cannot be in the future')).toBeInTheDocument();
+      expect(
+        screen.getByText('Published date cannot be in the future')
+      ).toBeInTheDocument();
     });
 
     // Then fix the date with a valid past date
-    fireEvent.change(screen.getByLabelText(/published date/i), { target: { value: '2023-01-01' } });
+    fireEvent.change(screen.getByLabelText(/published date/i), {
+      target: { value: '2023-01-01' },
+    });
 
     // Assert - Error should be cleared
     await waitFor(() => {
-      expect(screen.queryByText('Published date cannot be in the future')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Published date cannot be in the future')
+      ).not.toBeInTheDocument();
     });
   });
 });

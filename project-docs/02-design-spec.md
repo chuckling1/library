@@ -693,11 +693,52 @@ npm run setup
 ```
 
 **Setup Script Requirements:**
-1. Prerequisites validation (.NET 8+, Node.js 18+)
+1. Prerequisites validation (.NET 9+, Node.js 22+)
 2. Backend setup (restore, migrations, build)
 3. Frontend setup (install, generate-client, build)
 4. Database seeding with demonstration data
 5. Environment configuration and validation
 6. Smoke tests and next-step instructions
 
-This design specification provides comprehensive guidance for implementing the Book Library application with professional-grade user experience and technical architecture.
+### Containerization & CI/CD Pipeline Requirements
+
+**Docker Containerization:**
+- **Multi-stage Dockerfile** for production builds
+- **Development docker-compose.yml** for local development with services
+- **Production docker-compose.yml** with optimized images and networking
+- **Volume mounting** for database persistence and development hot-reload
+- **Environment variable management** for different deployment targets
+
+**GitHub Actions Pipeline:**
+```yaml
+# Workflow triggers: Pull requests, main branch pushes, manual dispatch
+name: CI/CD Pipeline
+on:
+  pull_request: [opened, synchronize]
+  push: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    # Parallel job matrix: [backend-tests, frontend-tests, integration-tests]
+    # Caching strategy: NuGet packages, npm modules, Docker layers
+    # Test reporting: Coverage reports, test summaries, artifact storage
+    
+  build:
+    # Multi-platform builds: linux/amd64, linux/arm64
+    # Image optimization: Layer caching, multi-stage builds
+    # Security scanning: Vulnerability assessment, dependency checks
+    
+  deploy:
+    # Environment-based deployment: staging, production
+    # Blue-green deployment strategy for zero-downtime
+    # Rollback capability and health check validation
+```
+
+**Container Architecture:**
+- **Application containers**: Separate frontend and backend services
+- **Database container**: PostgreSQL with initialization scripts
+- **Reverse proxy**: Nginx for routing and SSL termination
+- **Monitoring**: Health check endpoints and logging aggregation
+
+This design specification provides comprehensive guidance for implementing the Book Library application with professional-grade user experience, technical architecture, and deployment infrastructure.

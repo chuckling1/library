@@ -9,6 +9,12 @@
     <WarningsNotAsErrors />
   </PropertyGroup>
 
+  <!-- Exclude auto-generated migration files from StyleCop analysis -->
+  <ItemGroup>
+    <Compile Remove="Migrations\**\*.cs" />
+    <None Include="Migrations\**\*.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.8" />

@@ -47,7 +47,7 @@
   flex-direction: row;
   gap: vars.$spacing-lg;
   align-items: center;
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
     gap: vars.$spacing-md;
@@ -111,7 +111,7 @@
 // Row 2: Genre Tag Filter
 .filter-bar__genres {
   width: 100%;
-  
+
   // Internal styling handled by GenreFilter component
 }
 
@@ -175,7 +175,7 @@
 
   @media (max-width: 768px) {
     justify-content: space-between;
-    
+
     select {
       flex: 1;
       min-width: auto;
@@ -223,7 +223,8 @@
 }
 
 // Loading and error states
-.loading-container, .error-container {
+.loading-container,
+.error-container {
   text-align: center;
   padding: vars.$spacing-xxl vars.$spacing-lg;
   max-width: 600px;
@@ -245,6 +246,145 @@
     color: vars.$text-secondary;
     margin-bottom: vars.$spacing-lg;
     font-size: vars.$font-size-md;
+  }
+}
+
+// Pagination container
+.pagination-container {
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-md;
+  margin-top: vars.$spacing-xl;
+  padding: vars.$spacing-lg;
+  background-color: vars.$bg-surface;
+  border-radius: vars.$border-radius-lg;
+  border: 1px solid vars.$border-color;
+
+  @media (max-width: 768px) {
+    padding: vars.$spacing-md;
+    gap: vars.$spacing-sm;
+  }
+}
+
+// Pagination info section
+.pagination-info {
+  display: flex;
+  justify-content: center;
+
+  .pagination-count {
+    font-size: vars.$font-size-sm;
+    color: vars.$text-secondary;
+    font-weight: 500;
+  }
+}
+
+// Pagination controls
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: vars.$spacing-lg;
+
+  @media (max-width: 768px) {
+    gap: vars.$spacing-md;
+  }
+}
+
+// Pagination buttons
+.pagination-btn {
+  padding: vars.$spacing-sm vars.$spacing-md;
+  border: 1px solid vars.$border-color;
+  border-radius: vars.$border-radius-md;
+  background-color: vars.$bg-primary;
+  color: vars.$text-primary;
+  font-size: vars.$font-size-sm;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: vars.$spacing-xs;
+  min-width: 100px;
+  justify-content: center;
+
+  &:hover:not(.pagination-btn--disabled) {
+    background-color: vars.$accent-primary;
+    color: white;
+    border-color: vars.$accent-primary;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: vars.$accent-primary;
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+  }
+
+  &--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: vars.$bg-secondary;
+    color: vars.$text-tertiary;
+    border-color: vars.$border-color;
+
+    &:hover {
+      background-color: vars.$bg-secondary;
+      color: vars.$text-tertiary;
+      border-color: vars.$border-color;
+      box-shadow: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: vars.$spacing-xs vars.$spacing-sm;
+    font-size: vars.$font-size-xs;
+    min-width: 80px;
+  }
+}
+
+// Page number buttons
+.pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: vars.$spacing-xs;
+
+  .pagination-page {
+    min-width: 40px;
+    height: 40px;
+    border: 1px solid vars.$border-color;
+    background: vars.$bg-primary;
+    color: vars.$text-primary;
+    border-radius: vars.$border-radius-sm;
+    font-weight: vars.$font-weight-regular;
+    font-size: vars.$font-size-sm;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background: vars.$bg-surface;
+      border-color: vars.$accent-primary;
+    }
+
+    &--current {
+      background: vars.$accent-primary;
+      color: white;
+      border-color: vars.$accent-primary;
+      font-weight: vars.$font-weight-medium;
+
+      &:hover {
+        background: vars.$accent-primary;
+        border-color: vars.$accent-primary;
+      }
+    }
+
+    @media (max-width: 768px) {
+      min-width: 36px;
+      height: 36px;
+      font-size: vars.$font-size-xs;
+    }
   }
 }
 

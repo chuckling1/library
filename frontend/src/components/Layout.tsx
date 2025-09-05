@@ -1,17 +1,17 @@
-import React from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import logo from '../images/logo.png'
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import logo from '../images/logo.png';
 
 interface LayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const location = useLocation()
-  
+  const location = useLocation();
+
   const isActive = (path: string): boolean => {
-    return location.pathname === path
-  }
+    return location.pathname === path;
+  };
 
   return (
     <div className="app">
@@ -22,25 +22,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <h1>My Book Library</h1>
           </div>
           <nav className="nav">
-            <Link 
-              to="/books" 
-              className={isActive('/books') ? 'active' : ''}
-            >
+            <Link to="/books" className={isActive('/books') ? 'active' : ''}>
               Books
             </Link>
-            <Link 
-              to="/stats" 
-              className={isActive('/stats') ? 'active' : ''}
-            >
+            <Link to="/stats" className={isActive('/stats') ? 'active' : ''}>
               Statistics
             </Link>
           </nav>
           <div className="header-spacer"></div>
         </div>
       </header>
-      <main className="main-content">
-        {children}
-      </main>
+      <main className="main-content">{children}</main>
       <footer className="footer">
         <div className="footer-content">
           <p className="attribution">
@@ -57,7 +49,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
       </footer>
     </div>
-  )
-}
+  );
+};
 
-export default Layout
+export default Layout;

@@ -101,6 +101,20 @@ AI Persona: Varies by task (e.g., Security Specialist for JWT).
 
 User Prompt: "We are now tackling a bonus feature. Adopt the persona of a [Relevant Persona]. Outline the steps and then provide the code to implement [Bonus Feature]."
 
+Phase 7: Containerization & CI/CD (Production Readiness)
+Goal: Prepare application for production deployment with containerization and automated CI/CD pipeline.
+
+AI Persona: DevOps Engineer / Platform Architect
+
+User Prompt: "We are now in the containerization and CI/CD phase. Adopt the persona of a DevOps Engineer. Create Docker configurations, GitHub Actions workflows, and deployment automation for production-ready infrastructure."
+
+Tasks:
+1. Create multi-stage Dockerfiles for frontend and backend
+2. Create docker-compose configurations for development and production
+3. Implement GitHub Actions CI/CD pipeline with automated testing and deployment
+4. Add health checks and monitoring endpoints
+5. Configure environment variable management and secrets handling
+
 Part 2: Foundational System Prompt
 This section contains the full text of the initial system prompt (00-foundational-prompt.md).
 

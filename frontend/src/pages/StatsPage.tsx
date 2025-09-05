@@ -2,33 +2,37 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBookStats, useBooks, formatRating } from '../hooks/useBooks';
 import { useGenreFilter } from '../hooks/useGenreFilter';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   PieChart,
   Pie,
-  Cell
+  Cell,
 } from 'recharts';
 import './StatsPage.scss';
 
 const StatsPage: React.FC = () => {
   const { data: stats, isLoading, error } = useBookStats();
-  const { data: recentBooks } = useBooks({ sortBy: 'createdAt', sortDirection: 'desc', pageSize: 5 });
+  const { data: recentBooks } = useBooks({
+    sortBy: 'createdAt',
+    sortDirection: 'desc',
+    pageSize: 5,
+  });
   const navigate = useNavigate();
   const { clearGenres, toggleGenre } = useGenreFilter();
-  
+
   const [chartType, setChartType] = useState<'bar' | 'pie'>('bar');
   const [ratingChartType, setRatingChartType] = useState<'bar' | 'pie'>('bar');
 
   // Process genre data for charts with better presentation (top 12 for readability)
   const chartData = useMemo(() => {
     if (!stats?.genreDistribution) return [];
-    
+
     // Sort by count descending and take top 12 for better chart readability
     const sorted = [...stats.genreDistribution]
       .filter(genre => genre.genre && genre.count && genre.count > 0)
@@ -40,14 +44,14 @@ const StatsPage: React.FC = () => {
       count: genre.count ?? 0,
       averageRating: genre.averageRating ?? 0,
       // Color for pie chart
-      fill: CHART_COLORS[index % CHART_COLORS.length]
+      fill: CHART_COLORS[index % CHART_COLORS.length],
     }));
   }, [stats?.genreDistribution]);
 
   // Process ALL genre data for the detailed table (no filtering)
   const allGenreData = useMemo(() => {
     if (!stats?.genreDistribution) return [];
-    
+
     // Show ALL genres, sorted by count descending
     return [...stats.genreDistribution]
       .filter(genre => genre.genre && genre.count && genre.count > 0)
@@ -55,19 +59,24 @@ const StatsPage: React.FC = () => {
       .map(genre => ({
         genre: genre.genre ?? 'Unknown',
         count: genre.count ?? 0,
-        averageRating: genre.averageRating ?? 0
+        averageRating: genre.averageRating ?? 0,
       }));
   }, [stats?.genreDistribution]);
 
   // Rating distribution data
   const ratingData = useMemo(() => {
     if (!stats?.genreDistribution) return [];
-    
+
     const ratingCounts = [1, 2, 3, 4, 5].map(rating => {
-      const count = stats.genreDistribution?.filter(g => 
-        Math.round(g.averageRating ?? 0) === rating
-      ).length ?? 0;
-      return { rating: `${rating} Star${rating !== 1 ? 's' : ''}`, count, fill: RATING_COLORS[rating - 1] };
+      const count =
+        stats.genreDistribution?.filter(
+          g => Math.round(g.averageRating ?? 0) === rating
+        ).length ?? 0;
+      return {
+        rating: `${rating} Star${rating !== 1 ? 's' : ''}`,
+        count,
+        fill: RATING_COLORS[rating - 1],
+      };
     });
 
     return ratingCounts.filter(r => r.count > 0);
@@ -101,7 +110,10 @@ const StatsPage: React.FC = () => {
       <div className="stats-page">
         <div className="error-container">
           <h2>Error Loading Statistics</h2>
-          <p>Failed to load library statistics. Please refresh the page to try again.</p>
+          <p>
+            Failed to load library statistics. Please refresh the page to try
+            again.
+          </p>
         </div>
       </div>
     );
@@ -123,7 +135,10 @@ const StatsPage: React.FC = () => {
       <div className="page-header">
         <div className="title-section">
           <h2>Library Statistics</h2>
-          <p className="subtitle">Comprehensive overview of your book collection • Click charts to filter books</p>
+          <p className="subtitle">
+            Comprehensive overview of your book collection • Click charts to
+            filter books
+          </p>
         </div>
       </div>
 
@@ -140,16 +155,22 @@ const StatsPage: React.FC = () => {
         <div className="stat-card">
           <div className="stat-icon">⭐</div>
           <div className="stat-content">
-            <h3 className="stat-number">{(stats.averageRating ?? 0).toFixed(1)}</h3>
+            <h3 className="stat-number">
+              {(stats.averageRating ?? 0).toFixed(1)}
+            </h3>
             <p className="stat-label">Average Rating</p>
-            <p className="stat-detail">{formatRating(Math.round(stats.averageRating ?? 0))}</p>
+            <p className="stat-detail">
+              {formatRating(Math.round(stats.averageRating ?? 0))}
+            </p>
           </div>
         </div>
 
         <div className="stat-card">
           <div className="stat-icon">🏷️</div>
           <div className="stat-content">
-            <h3 className="stat-number">{stats.genreDistribution?.length ?? 0}</h3>
+            <h3 className="stat-number">
+              {stats.genreDistribution?.length ?? 0}
+            </h3>
             <p className="stat-label">Unique Genres</p>
           </div>
         </div>
@@ -158,8 +179,12 @@ const StatsPage: React.FC = () => {
           <div className="stat-icon">📖</div>
           <div className="stat-content">
             <h3 className="stat-number">
-              {stats.genreDistribution?.find(g => 
-                g.count === Math.max(...(stats.genreDistribution?.map(x => x.count ?? 0) ?? []))
+              {stats.genreDistribution?.find(
+                g =>
+                  g.count ===
+                  Math.max(
+                    ...(stats.genreDistribution?.map(x => x.count ?? 0) ?? [])
+                  )
               )?.genre ?? 'N/A'}
             </h3>
             <p className="stat-label">Top Genre</p>
@@ -174,13 +199,13 @@ const StatsPage: React.FC = () => {
           <div className="chart-header">
             <h3>Genre Distribution</h3>
             <div className="chart-controls">
-              <button 
+              <button
                 className={`chart-type-btn ${chartType === 'bar' ? 'active' : ''}`}
                 onClick={() => setChartType('bar')}
               >
                 📊 Bar
               </button>
-              <button 
+              <button
                 className={`chart-type-btn ${chartType === 'pie' ? 'active' : ''}`}
                 onClick={() => setChartType('pie')}
               >
@@ -188,15 +213,18 @@ const StatsPage: React.FC = () => {
               </button>
             </div>
           </div>
-          
+
           <div className="chart-content">
             {chartData.length > 0 ? (
               <ResponsiveContainer width="100%" height={400}>
                 {chartType === 'bar' ? (
-                  <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                  <BarChart
+                    data={chartData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="genre" 
+                    <XAxis
+                      dataKey="genre"
                       angle={-45}
                       textAnchor="end"
                       height={100}
@@ -204,16 +232,18 @@ const StatsPage: React.FC = () => {
                       fontSize={12}
                     />
                     <YAxis />
-                    <Tooltip 
+                    <Tooltip
                       formatter={(value: number) => [
                         `${value} book${value !== 1 ? 's' : ''}`,
-                        'Count'
+                        'Count',
                       ]}
-                      labelFormatter={(label: string) => `Genre: ${label} (click to filter books)`}
+                      labelFormatter={(label: string) =>
+                        `Genre: ${label} (click to filter books)`
+                      }
                     />
-                    <Bar 
-                      dataKey="count" 
-                      fill="#4f46e5" 
+                    <Bar
+                      dataKey="count"
+                      fill="#4f46e5"
                       radius={[4, 4, 0, 0]}
                       onClick={(data: { genre?: string }) => {
                         if (data.genre) {
@@ -230,7 +260,7 @@ const StatsPage: React.FC = () => {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ genre, count, percent }) => 
+                      label={({ genre, count, percent }) =>
                         `${genre}: ${count} (${(percent * 100).toFixed(1)}%)`
                       }
                       outerRadius={120}
@@ -248,10 +278,10 @@ const StatsPage: React.FC = () => {
                         <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
                     </Pie>
-                    <Tooltip 
+                    <Tooltip
                       formatter={(value: number) => [
-                        `${value} books (click to filter)`, 
-                        'Count'
+                        `${value} books (click to filter)`,
+                        'Count',
                       ]}
                     />
                   </PieChart>
@@ -270,13 +300,13 @@ const StatsPage: React.FC = () => {
           <div className="chart-header">
             <h3>Rating Distribution by Genre</h3>
             <div className="chart-controls">
-              <button 
+              <button
                 className={`chart-type-btn ${ratingChartType === 'bar' ? 'active' : ''}`}
                 onClick={() => setRatingChartType('bar')}
               >
                 📊 Bar
               </button>
-              <button 
+              <button
                 className={`chart-type-btn ${ratingChartType === 'pie' ? 'active' : ''}`}
                 onClick={() => setRatingChartType('pie')}
               >
@@ -288,16 +318,22 @@ const StatsPage: React.FC = () => {
             {ratingData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 {ratingChartType === 'bar' ? (
-                  <BarChart data={ratingData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <BarChart
+                    data={ratingData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="rating" />
                     <YAxis />
-                    <Tooltip 
-                      formatter={(value: number) => [`${value} genre${value !== 1 ? 's' : ''} (click to filter books)`, 'Count']}
+                    <Tooltip
+                      formatter={(value: number) => [
+                        `${value} genre${value !== 1 ? 's' : ''} (click to filter books)`,
+                        'Count',
+                      ]}
                     />
-                    <Bar 
-                      dataKey="count" 
-                      fill="#10b981" 
+                    <Bar
+                      dataKey="count"
+                      fill="#10b981"
                       radius={[4, 4, 0, 0]}
                       onClick={(data: { rating?: string }) => {
                         const ratingString = data.rating;
@@ -318,7 +354,7 @@ const StatsPage: React.FC = () => {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ rating, count, percent }) => 
+                      label={({ rating, count, percent }) =>
                         `${rating}: ${count} (${(percent * 100).toFixed(1)}%)`
                       }
                       outerRadius={100}
@@ -339,8 +375,11 @@ const StatsPage: React.FC = () => {
                         <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
                     </Pie>
-                    <Tooltip 
-                      formatter={(value: number) => [`${value} genres (click to filter books)`, 'Count']}
+                    <Tooltip
+                      formatter={(value: number) => [
+                        `${value} genres (click to filter books)`,
+                        'Count',
+                      ]}
                     />
                   </PieChart>
                 )}
@@ -355,11 +394,11 @@ const StatsPage: React.FC = () => {
       </div>
 
       {/* Recently Added Books */}
-      {recentBooks && recentBooks.length > 0 && (
+      {recentBooks?.items && recentBooks.items.length > 0 && (
         <div className="recent-books-section">
           <h3>Recently Added Books</h3>
           <div className="recent-books-grid">
-            {recentBooks.slice(0, 5).map((book) => (
+            {recentBooks.items.slice(0, 5).map((book) => (
               <div key={book.id} className="recent-book-card">
                 <h4 className="book-title">{book.title}</h4>
                 <p className="book-author">{book.author}</p>
@@ -367,7 +406,7 @@ const StatsPage: React.FC = () => {
                   {formatRating(book.rating ?? 0)} ({book.rating}/5)
                 </div>
                 <div className="book-genres">
-                  {book.bookGenres?.map((bg, index) => (
+                  {book.bookGenres?.map((bg, index: number) => (
                     <span key={index} className="genre-tag">
                       {bg.genreName}
                     </span>
@@ -394,8 +433,8 @@ const StatsPage: React.FC = () => {
             </thead>
             <tbody>
               {allGenreData.map((genre, index) => (
-                <tr 
-                  key={index} 
+                <tr
+                  key={index}
                   onClick={() => handleGenreClick(genre.genre)}
                   style={{ cursor: 'pointer' }}
                   title="Click to filter books by this genre"
@@ -403,10 +442,12 @@ const StatsPage: React.FC = () => {
                   <td className="genre-cell">{genre.genre}</td>
                   <td className="count-cell">{genre.count}</td>
                   <td className="rating-cell">
-                    {formatRating(Math.round(genre.averageRating))} ({genre.averageRating.toFixed(1)})
+                    {formatRating(Math.round(genre.averageRating))} (
+                    {genre.averageRating.toFixed(1)})
                   </td>
                   <td className="percentage-cell">
-                    {((genre.count / (stats.totalBooks ?? 1)) * 100).toFixed(1)}%
+                    {((genre.count / (stats.totalBooks ?? 1)) * 100).toFixed(1)}
+                    %
                   </td>
                 </tr>
               ))}
@@ -420,16 +461,26 @@ const StatsPage: React.FC = () => {
 
 // Color palettes for charts
 const CHART_COLORS = [
-  '#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
-  '#ec4899', '#14b8a6', '#f97316', '#84cc16', '#6366f1', '#d946ef'
+  '#4f46e5',
+  '#06b6d4',
+  '#10b981',
+  '#f59e0b',
+  '#ef4444',
+  '#8b5cf6',
+  '#ec4899',
+  '#14b8a6',
+  '#f97316',
+  '#84cc16',
+  '#6366f1',
+  '#d946ef',
 ];
 
 const RATING_COLORS = [
   '#ef4444', // 1 star - red
-  '#f97316', // 2 stars - orange  
+  '#f97316', // 2 stars - orange
   '#f59e0b', // 3 stars - yellow
   '#84cc16', // 4 stars - light green
-  '#10b981'  // 5 stars - green
+  '#10b981', // 5 stars - green
 ];
 
 export default StatsPage;

@@ -1,7 +1,11 @@
-using LibraryApi.Models;
-using Microsoft.EntityFrameworkCore;
+// <copyright file="LibraryDbContext.cs" company="Library API">
+// Copyright (c) Library API. All rights reserved.
+// </copyright>
 
 namespace LibraryApi.Data;
+
+using LibraryApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 /// <summary>
 /// Database context for the Library API.
@@ -31,6 +35,38 @@ public class LibraryDbContext : DbContext
     /// Gets or sets the book genres junction table DbSet.
     /// </summary>
     public DbSet<BookGenre> BookGenres { get; set; } = null!;
+
+    /// <summary>
+    /// Saves changes to the database with automatic timestamp updates.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The number of entities written to the database.</returns>
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var entries = this.ChangeTracker.Entries<Book>()
+            .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
+
+        foreach (var entry in entries)
+        {
+            if (entry.State == EntityState.Added)
+            {
+                entry.Entity.CreatedAt = DateTime.UtcNow;
+                entry.Entity.Id = Guid.NewGuid();
+            }
+
+            entry.Entity.UpdatedAt = DateTime.UtcNow;
+        }
+
+        var genreEntries = this.ChangeTracker.Entries<Genre>()
+            .Where(e => e.State == EntityState.Added);
+
+        foreach (var entry in genreEntries)
+        {
+            entry.Entity.CreatedAt = DateTime.UtcNow;
+        }
+
+        return await base.SaveChangesAsync(cancellationToken);
+    }
 
     /// <summary>
     /// Configures the model relationships and constraints.
@@ -87,39 +123,6 @@ public class LibraryDbContext : DbContext
             new Genre { Name = "Romance", IsSystemGenre = true, CreatedAt = seedDate },
             new Genre { Name = "Mystery", IsSystemGenre = true, CreatedAt = seedDate },
             new Genre { Name = "Fantasy", IsSystemGenre = true, CreatedAt = seedDate },
-            new Genre { Name = "Self-Help", IsSystemGenre = true, CreatedAt = seedDate }
-        );
-    }
-
-    /// <summary>
-    /// Saves changes to the database with automatic timestamp updates.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The number of entities written to the database.</returns>
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        var entries = ChangeTracker.Entries<Book>()
-            .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
-
-        foreach (var entry in entries)
-        {
-            if (entry.State == EntityState.Added)
-            {
-                entry.Entity.CreatedAt = DateTime.UtcNow;
-                entry.Entity.Id = Guid.NewGuid();
-            }
-
-            entry.Entity.UpdatedAt = DateTime.UtcNow;
-        }
-
-        var genreEntries = ChangeTracker.Entries<Genre>()
-            .Where(e => e.State == EntityState.Added);
-
-        foreach (var entry in genreEntries)
-        {
-            entry.Entity.CreatedAt = DateTime.UtcNow;
-        }
-
-        return await base.SaveChangesAsync(cancellationToken);
+            new Genre { Name = "Self-Help", IsSystemGenre = true, CreatedAt = seedDate });
     }
 }

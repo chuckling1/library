@@ -7,4 +7,6 @@ export interface GenreFilterContextType {
   isGenreActive: (genre: string) => boolean;
 }
 
-export const GenreFilterContext = createContext<GenreFilterContextType | undefined>(undefined);
+export const GenreFilterContext = createContext<
+  GenreFilterContextType | undefined
+>(undefined);

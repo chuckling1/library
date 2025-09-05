@@ -1,16 +1,21 @@
-using LibraryApi.Responses;
+// <copyright file="IStatsService.cs" company="Library API">
+// Copyright (c) Library API. All rights reserved.
+// </copyright>
 
-namespace LibraryApi.Services;
-
-/// <summary>
-/// Interface for statistics business logic operations.
-/// </summary>
-public interface IStatsService
+namespace LibraryApi.Services
 {
+    using LibraryApi.Responses;
+
     /// <summary>
-    /// Gets comprehensive book collection statistics.
+    /// Interface for statistics business logic operations.
     /// </summary>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Statistics about the book collection.</returns>
-    Task<BookStatsResponse> GetBookStatsAsync(CancellationToken cancellationToken = default);
+    public interface IStatsService
+    {
+        /// <summary>
+        /// Gets comprehensive book collection statistics.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>Statistics about the book collection.</returns>
+        Task<BookStatsResponse> GetBookStatsAsync(CancellationToken cancellationToken = default);
+    }
 }

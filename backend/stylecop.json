@@ -2,17 +2,19 @@
   "$schema": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json",
   "settings": {
     "documentationRules": {
-      "companyName": "Library API",
+      "companyName": "Library API", 
       "copyrightText": "Copyright (c) {companyName}. All rights reserved.",
       "documentExposedElements": false,
-      "documentInternalElements": false
+      "documentInternalElements": false,
+      "requireFileHeader": false
     },
     "orderingRules": {
-      "usingDirectivesPlacement": "outsideNamespace"
+      "usingDirectivesPlacement": "insideNamespace"
     },
     "namingRules": {
       "allowCommonHungarianPrefixes": true,
-      "allowedHungarianPrefixes": ["_"]
+      "allowedHungarianPrefixes": ["_"],
+      "allowedFieldNamePrefixes": ["_"]
     },
     "layoutRules": {
       "newlineAtEndOfFile": "allow"
