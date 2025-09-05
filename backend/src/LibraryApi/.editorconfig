@@ -1,0 +1,22 @@
+root = true
+
+# All files
+[*]
+indent_style = space
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# C# files
+[*.cs]
+indent_size = 4
+
+# Exclude auto-generated migration files from all StyleCop rules
+[Migrations/**.cs]
+dotnet_analyzer_diagnostic.category-stylecop.severity = none
+dotnet_diagnostic.SA0001.severity = none
+dotnet_diagnostic.SA1028.severity = none
+dotnet_diagnostic.SA1200.severity = none
+dotnet_diagnostic.SA1413.severity = none
+dotnet_diagnostic.SA1512.severity = none
+dotnet_diagnostic.SA1633.severity = none

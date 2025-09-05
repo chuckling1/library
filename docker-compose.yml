@@ -1,0 +1,89 @@
+# Development Docker Compose - Hot reload and development tools enabled
+
+services:
+  # Backend API service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: build  # Use build stage for development with SDK
+    ports:
+      - "5000:8080"  # Expose backend on localhost:5000
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/library.db
+      - CORS__AllowedOrigins=http://localhost:3000,http://localhost:80
+    volumes:
+      - ./backend/src/LibraryApi:/app/src/LibraryApi  # Hot reload source code
+      - ./backend/data:/app/data  # Persist SQLite database
+      - ./backend/logs:/app/logs  # Persist log files
+    working_dir: /app/src/LibraryApi
+    command: ["dotnet", "watch", "run", "--urls", "http://+:8080"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - library-network
+
+  # Frontend service  
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev  # Development-specific Dockerfile
+    ports:
+      - "3000:3000"  # Expose frontend on localhost:3000
+    environment:
+      - NODE_ENV=development
+      - VITE_API_BASE_URL=http://localhost:5000/api
+      - VITE_PROXY_TARGET=http://backend:8080  # Use Docker service name for proxy
+      - CHOKIDAR_USEPOLLING=true  # Enable hot reload in container
+    volumes:
+      - ./frontend/src:/app/src  # Hot reload source code
+      - ./frontend/public:/app/public  # Hot reload static files
+      - ./frontend/index.html:/app/index.html  # Hot reload entry point
+      - ./frontend/vite.config.ts:/app/vite.config.ts  # Hot reload vite config
+      - /app/node_modules  # Anonymous volume for node_modules
+    working_dir: /app
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health.json"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - library-network
+
+  # Development database browser (optional)
+  db-browser:
+    image: coleifer/sqlite-web:latest
+    ports:
+      - "8080:8080"  # SQLite web interface
+    volumes:
+      - ./backend/data:/data
+    command: ["sqlite_web", "/data/library.db", "--host", "0.0.0.0", "--port", "8080"]
+    depends_on:
+      - backend
+    networks:
+      - library-network
+    profiles:
+      - debug  # Optional service, start with: docker-compose --profile debug up
+
+networks:
+  library-network:
+    driver: bridge
+
+volumes:
+  backend-data:
+    driver: local
+  backend-logs:
+    driver: local

@@ -87,5 +87,30 @@ namespace LibraryApi.Repositories
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>Recently added books.</returns>
         Task<IEnumerable<Book>> GetRecentBooksAsync(int count = 5, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Creates multiple books in a single transaction with bulk optimization.
+        /// </summary>
+        /// <param name="books">The books to create.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The created books.</returns>
+        Task<List<Book>> BulkCreateBooksAsync(List<Book> books, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Finds duplicate books by title and author combinations.
+        /// </summary>
+        /// <param name="titleAuthorPairs">The title-author pairs to check for duplicates.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A dictionary mapping "title|author" keys to existing Book entities.</returns>
+        Task<Dictionary<string, Book>> FindDuplicateBooksByTitleAuthorAsync(
+            List<(string Title, string Author)> titleAuthorPairs,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets all books with their genres for export.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>All books in the library.</returns>
+        Task<IEnumerable<Book>> GetAllBooksAsync(CancellationToken cancellationToken = default);
     }
 }

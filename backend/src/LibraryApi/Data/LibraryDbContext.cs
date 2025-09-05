@@ -37,6 +37,11 @@ public class LibraryDbContext : DbContext
     public DbSet<BookGenre> BookGenres { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the bulk import jobs DbSet.
+    /// </summary>
+    public DbSet<BulkImportJob> BulkImportJobs { get; set; } = null!;
+
+    /// <summary>
     /// Saves changes to the database with automatic timestamp updates.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -109,6 +114,16 @@ public class LibraryDbContext : DbContext
                   .WithMany(g => g.BookGenres)
                   .HasForeignKey(bg => bg.GenreName)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure BulkImportJob entity
+        modelBuilder.Entity<BulkImportJob>(entity =>
+        {
+            entity.HasKey(j => j.Id);
+            entity.Property(j => j.FileName).IsRequired().HasMaxLength(255);
+            entity.Property(j => j.Status).IsRequired();
+            entity.Property(j => j.ErrorSummaryJson).HasColumnType("TEXT");
+            entity.Property(j => j.CreatedAt).IsRequired();
         });
 
         // Seed system genres

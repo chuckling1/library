@@ -74,14 +74,21 @@ public static class Program
         // Register repositories (Interface-first design)
         builder.Services.AddScoped<IBookRepository, BookRepository>();
         builder.Services.AddScoped<IGenreRepository, GenreRepository>();
+        builder.Services.AddScoped<IBulkImportRepository, BulkImportRepository>();
 
         // Register services (Interface-first design)
         builder.Services.AddScoped<IBookService, BookService>();
         builder.Services.AddScoped<IGenreService, GenreService>();
         builder.Services.AddScoped<IStatsService, StatsService>();
+        builder.Services.AddScoped<IBulkImportService, BulkImportService>();
 
         // Register validators
         builder.Services.AddValidatorsFromAssemblyContaining<LibraryApi.Validators.CreateBookRequestValidator>();
+
+        // Add health checks
+        builder.Services.AddHealthChecks()
+            .AddDbContextCheck<LibraryDbContext>("database")
+            .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy("API is running"));
 
         var app = builder.Build();
 
@@ -100,11 +107,22 @@ public static class Program
         app.UseAuthorization();
         app.MapControllers();
 
+        // Map health check endpoints
+        app.MapHealthChecks("/health");
+        app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions()
+        {
+            Predicate = check => check.Tags.Contains("ready"),
+        });
+        app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions()
+        {
+            Predicate = check => check.Name.Equals("self"),
+        });
+
         // Ensure database is created and migrated
         using (var scope = app.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<LibraryDbContext>();
-            await context.Database.EnsureCreatedAsync();
+            await context.Database.MigrateAsync();
         }
 
         Log.Information("Library API starting up");

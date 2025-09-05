@@ -173,4 +173,84 @@ public class BookRepository : IBookRepository
             .AsNoTracking()
             .ToListAsync(cancellationToken);
     }
+
+    /// <inheritdoc/>
+    public async Task<List<Book>> BulkCreateBooksAsync(List<Book> books, CancellationToken cancellationToken = default)
+    {
+        using var transaction = await this.context.Database.BeginTransactionAsync(cancellationToken);
+
+        try
+        {
+            this.logger.LogInformation("Starting bulk creation of {Count} books", books.Count);
+
+            // Add all books to context
+            this.context.Books.AddRange(books);
+
+            // Save changes to get the bulk insert
+            await this.context.SaveChangesAsync(cancellationToken);
+
+            // Commit the transaction
+            await transaction.CommitAsync(cancellationToken);
+
+            this.logger.LogInformation("Successfully bulk created {Count} books", books.Count);
+            return books;
+        }
+        catch (Exception ex)
+        {
+            this.logger.LogError(ex, "Failed to bulk create books");
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<Dictionary<string, Book>> FindDuplicateBooksByTitleAuthorAsync(
+        List<(string Title, string Author)> titleAuthorPairs,
+        CancellationToken cancellationToken = default)
+    {
+        if (!titleAuthorPairs.Any())
+        {
+            return new Dictionary<string, Book>();
+        }
+
+        var duplicates = new Dictionary<string, Book>();
+
+        // Create a list of lowercase title|author combinations for matching
+        var searchKeys = titleAuthorPairs
+            .Select(pair => $"{pair.Title.ToLower()}|{pair.Author.ToLower()}")
+            .ToList();
+
+        // Query existing books and filter in memory (more SQLite-friendly)
+        var allBooks = await this.context.Books
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        var existingBooks = allBooks
+            .Where(b => searchKeys.Contains($"{b.Title.ToLower()}|{b.Author.ToLower()}"))
+            .ToList();
+
+        // Build the dictionary with title|author keys
+        foreach (var book in existingBooks)
+        {
+            var key = $"{book.Title}|{book.Author}";
+            duplicates[key] = book;
+        }
+
+        this.logger.LogInformation(
+            "Found {Count} duplicate books out of {TotalChecked} candidates",
+            duplicates.Count,
+            titleAuthorPairs.Count);
+
+        return duplicates;
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<Book>> GetAllBooksAsync(CancellationToken cancellationToken = default)
+    {
+        return await this.context.Books
+            .Include(b => b.BookGenres)
+                .ThenInclude(bg => bg.Genre)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
 }

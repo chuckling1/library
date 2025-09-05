@@ -26,6 +26,87 @@ That's it! The application will be running at:
 - **Backend API**: http://localhost:5000  
 - **Swagger UI**: http://localhost:5000/swagger
 
+## 🐳 Docker Setup
+
+**Prefer Docker?** Run the entire application with Docker - no Node.js or .NET installation required!
+
+### Quick Start with Docker
+
+**Development Environment:**
+```powershell
+# Windows PowerShell (recommended)
+.\docker-dev.ps1 start
+
+# Or using docker-compose directly
+docker-compose up -d
+```
+
+**Production Environment:**
+```powershell
+# Windows PowerShell (recommended) 
+.\docker-prod.ps1 start
+
+# Or using docker-compose directly
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+### Docker Management Scripts
+
+We've included PowerShell scripts for easy Docker management:
+
+**Development (`docker-dev.ps1`):**
+- `start` - Start all development containers with hot reload
+- `debug` - Start with database browser at http://localhost:8080
+- `stop` - Stop all containers
+- `restart` - Restart all containers
+- `logs [service]` - Show logs (optionally for specific service)
+- `status` - Show container status and URLs
+- `build` - Rebuild all containers
+- `clean` - Clean up containers and volumes
+
+**Production (`docker-prod.ps1`):**
+- `start` - Start production-optimized containers
+- `backup` - Start with automated database backups
+- `stop` - Stop all production containers
+- `status` - Show status and resource usage
+- `logs [service]` - Show production logs
+- `build` - Rebuild production containers
+- `clean` - Clean up production environment
+
+### Service URLs
+
+**Development:**
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:5000
+- **Swagger UI**: http://localhost:5000/swagger
+- **Database Browser**: http://localhost:8080 (debug profile)
+
+**Production:**
+- **Application**: http://localhost
+- **Backend API**: http://localhost:5000
+- **Reverse Proxy**: http://localhost:8080
+- **Health Checks**: http://localhost/health
+
+### Install Docker First
+
+**Windows:**
+```bash
+winget install Docker.DockerDesktop
+```
+
+**macOS:**
+```bash
+brew install --cask docker
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+```
+
+📖 **[Complete Docker Setup Guide →](DOCKER_SETUP.md)**
+
 ### Missing Dependencies?
 
 If you don't have the required dependencies, the setup script will guide you through installation:
@@ -232,57 +313,50 @@ Each phase has specific deliverables, success criteria, and validation requireme
 ### Current: Manual Setup
 Currently requires Node.js 18+ and .NET 8+ SDK installation as described in Quick Start.
 
-### 🐳 Future Enhancement: Docker Containerization
+### ✅ Complete Docker Containerization
 
-**Planned**: Complete Docker containerization for zero-dependency setup:
+**Available Now**: Complete Docker containerization for zero-dependency setup!
 
 ```bash
-# Future: One-command setup (planned)
-docker-compose up
+# One-command development setup
+.\docker-dev.ps1 start
+# or
+docker-compose up -d
 ```
 
-**Benefits of planned Docker setup:**
+**Benefits of Docker setup:**
 - ✅ **Zero Dependencies**: Only Docker required on host machine
 - ✅ **Instant Setup**: No Node.js or .NET SDK installation needed  
 - ✅ **Consistent Environment**: Same setup across Windows/macOS/Linux
 - ✅ **Isolated Development**: No conflicts with existing installations
-- ✅ **Production-Ready**: Same containers for dev and deployment
+- ✅ **Production-Ready**: Optimized containers for deployment
+- ✅ **Hot Reload**: Development containers support live code changes
+- ✅ **Health Monitoring**: Built-in health checks and status monitoring
+- ✅ **Easy Management**: PowerShell scripts for common operations
 
-**Planned Docker Architecture:**
-```yaml
-# docker-compose.yml (planned)
-version: '3.8'
-services:
-  backend:
-    build: ./backend
-    ports: ["5000:5000"]
-    environment: 
-      - ASPNETCORE_ENVIRONMENT=Development
-  
-  frontend:
-    build: ./frontend  
-    ports: ["3000:3000"]
-    depends_on: [backend]
-    
-  database:
-    image: sqlite:latest
-    volumes: ["./data:/data"]
-```
+**Docker Architecture:**
+- **Development**: Hot reload containers with volume mounts
+- **Production**: Multi-stage builds with nginx reverse proxy
+- **Database**: SQLite with persistent volumes and backup service
+- **Security**: Non-root users, health checks, rate limiting
+- **Monitoring**: Structured logging, metrics endpoints, resource limits
 
-**Future Quick Start (Docker):**
+**Quick Start (Docker):**
 ```bash
-# Install Docker Desktop
-# https://www.docker.com/products/docker-desktop
+# Install Docker Desktop first
+# Then choose your environment:
 
-# One command setup
-docker-compose up --build
+# Development with hot reload
+.\docker-dev.ps1 start
 
-# Application running at:
-# Frontend: http://localhost:3000
-# Backend: http://localhost:5000
+# Production optimized
+.\docker-prod.ps1 start
+
+# Debug mode (includes database browser)
+.\docker-dev.ps1 debug
 ```
 
-This enhancement will eliminate all dependency management and provide a universal setup experience for evaluators and developers.
+This provides a universal setup experience that eliminates all dependency management for both development and production environments.
 
 ## 📖 Documentation
 

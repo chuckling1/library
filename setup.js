@@ -59,6 +59,7 @@ function checkPrerequisites() {
   
   let nodeOk = false;
   let dotnetOk = false;
+  let dockerOk = false;
   
   // Check Node.js
   try {
@@ -94,6 +95,23 @@ function checkPrerequisites() {
     logError('.NET SDK not found.');
   }
   
+  // Check Docker (optional but recommended)
+  try {
+    const dockerVersion = execSync('docker --version', { encoding: 'utf8' }).trim();
+    logSuccess(`${dockerVersion} ✓`);
+    dockerOk = true;
+    
+    // Also check Docker Compose
+    try {
+      const composeVersion = execSync('docker-compose --version', { encoding: 'utf8' }).trim();
+      logSuccess(`${composeVersion} ✓`);
+    } catch {
+      logWarning('Docker Compose not found. Some Docker features may not work.');
+    }
+  } catch {
+    logWarning('Docker not found (optional - enables containerized development)');
+  }
+  
   // Handle missing prerequisites
   if (!nodeOk || !dotnetOk) {
     log('\n🚨 Missing Prerequisites Detected!', 'yellow');
@@ -126,16 +144,26 @@ function checkPrerequisites() {
     
     if (process.platform === 'win32') {
       log('   Windows users can run:', 'white');
-      log('   • winget install Microsoft.dotnet', 'yellow');
-      log('   • winget install OpenJS.NodeJS', 'yellow');
+      log('   • winget install Microsoft.DotNet.SDK.9', 'yellow');
+      log('   • winget install OpenJS.NodeJS.LTS', 'yellow');
+      if (!dockerOk) {
+        log('   • winget install Docker.DockerDesktop', 'yellow');
+        log('     (verify package: winget search docker)', 'blue');
+      }
     } else if (process.platform === 'darwin') {
       log('   macOS users with Homebrew can run:', 'white');
       log('   • brew install node', 'yellow');
       log('   • brew install dotnet', 'yellow');
+      if (!dockerOk) {
+        log('   • brew install --cask docker', 'yellow');
+      }
     } else {
       log('   Linux users can use their package manager:', 'white');
       log('   • sudo apt install nodejs npm (Ubuntu/Debian)', 'yellow');
       log('   • Follow .NET installation: https://learn.microsoft.com/en-us/dotnet/core/install/linux', 'yellow');
+      if (!dockerOk) {
+        log('   • curl -fsSL https://get.docker.com | sh (Docker)', 'yellow');
+      }
     }
     
     // Offer to attempt auto-installation
@@ -151,6 +179,34 @@ function checkPrerequisites() {
     logError('\nSetup cannot continue without these prerequisites.');
     log('After installing the missing dependencies, please run "npm run setup" again.', 'white');
     process.exit(1);
+  }
+  
+  // Docker installation guidance (if not installed)
+  if (!dockerOk) {
+    log('\n🐳 Docker Installation (Optional but Recommended)', 'cyan');
+    log('   Docker enables containerized development - no local dependencies needed!', 'white');
+    log('   With Docker, you can run the entire application with just:', 'white');
+    log('   • docker-compose up -d', 'green');
+    
+    log('\n📦 Install Docker Desktop:', 'white');
+    if (process.platform === 'win32') {
+      log('   • winget install Docker.DockerDesktop', 'yellow');
+      log('     (verify with: winget search docker)', 'blue');
+      log('   • Or download: https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe', 'blue');
+    } else if (process.platform === 'darwin') {
+      log('   • brew install --cask docker', 'yellow');
+      log('   • Or download: https://desktop.docker.com/mac/main/amd64/Docker.dmg', 'blue');
+    } else {
+      log('   • curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh', 'yellow');
+      log('   • sudo usermod -aG docker $USER && newgrp docker', 'yellow');
+    }
+    
+    log('\n✨ Benefits of Docker:', 'magenta');
+    log('   • No need to install Node.js or .NET locally', 'white');
+    log('   • Consistent environment across all machines', 'white');
+    log('   • Production-ready containerized deployment', 'white');
+    log('   • Isolated development with hot reload', 'white');
+    log('   • Easy cleanup and reset', 'white');
   }
   
   logSuccess('All prerequisites met!');

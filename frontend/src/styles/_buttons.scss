@@ -31,12 +31,13 @@
 .btn-primary {
   @extend %btn-base;
   background: vars.$accent-primary;
-  color: vars.$bg-primary;
+  color: white;
   border: 1px solid vars.$accent-primary;
 
   &:hover:not(:disabled) {
     background: vars.$accent-hover;
     border-color: vars.$accent-hover;
+    color: white;
   }
 }
 

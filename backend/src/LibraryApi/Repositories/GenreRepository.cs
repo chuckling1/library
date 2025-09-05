@@ -100,5 +100,48 @@ namespace LibraryApi.Repositories
 
             return genres;
         }
+
+        /// <inheritdoc/>
+        public async Task<List<Genre>> BulkEnsureGenresExistAsync(IEnumerable<string> genreNames, CancellationToken cancellationToken = default)
+        {
+            var normalizedNames = genreNames.Select(name => name.Trim())
+                .Where(name => !string.IsNullOrEmpty(name))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (!normalizedNames.Any())
+            {
+                return new List<Genre>();
+            }
+
+            this.logger.LogDebug("Bulk ensuring {Count} genres exist", normalizedNames.Count);
+
+            // Get all existing genres in one query
+            var existingGenres = await this.context.Genres
+                .Where(g => normalizedNames.Contains(g.Name))
+                .ToListAsync(cancellationToken);
+
+            var existingGenreNames = existingGenres.Select(g => g.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var newGenreNames = normalizedNames.Where(name => !existingGenreNames.Contains(name)).ToList();
+
+            // Create new genres if any are missing
+            if (newGenreNames.Any())
+            {
+                var newGenres = newGenreNames.Select(name => new Genre
+                {
+                    Name = name,
+                    IsSystemGenre = false,
+                    CreatedAt = DateTime.UtcNow,
+                }).ToList();
+
+                this.context.Genres.AddRange(newGenres);
+                await this.context.SaveChangesAsync(cancellationToken);
+
+                existingGenres.AddRange(newGenres);
+                this.logger.LogInformation("Created {Count} new genres during bulk operation", newGenres.Count);
+            }
+
+            return existingGenres.OrderBy(g => g.Name).ToList();
+        }
     }
 }

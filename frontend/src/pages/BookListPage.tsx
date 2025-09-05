@@ -14,6 +14,8 @@ import {
   getBookGenres,
 } from '../hooks/useBooks';
 import { useGenreFilter } from '../hooks/useGenreFilter';
+import { useBulkImport } from '../hooks/useBulkImport';
+import { useBookExport } from '../hooks/useBookExport';
 import BookCard from '../components/BookCard';
 import StarRatingFilter from '../components/StarRatingFilter';
 import GenreFilter from '../components/GenreFilter';
@@ -54,6 +56,12 @@ const BookListPage: React.FC = () => {
   // Genre filter context
   const { activeGenres } = useGenreFilter();
 
+  // Bulk import functionality
+  const { isImporting, fileInputRef, handleImportBooks, handleFileSelect } = useBulkImport();
+
+  // Export functionality
+  const { exportBooks, getButtonLabel } = useBookExport();
+
   // Query hooks - fetch paginated books
   const {
     data: paginatedResponse,
@@ -65,6 +73,9 @@ const BookListPage: React.FC = () => {
     genres: undefined, // Remove server-side genre filtering for now (client-side filtering)
   });
   const deleteBookMutation = useDeleteBook();
+
+  // Calculate hasBooks after we have the response
+  const hasBooks = (paginatedResponse?.totalItems ?? 0) > 0;
 
   // Extract books and pagination info
   const pagination = paginatedResponse
@@ -185,9 +196,33 @@ const BookListPage: React.FC = () => {
     <div className="book-list-page">
       <div className="page-header">
         <h2>Book Collection</h2>
-        <Link to="/books/new" className="btn-primary">
-          Add Book
-        </Link>
+        <div className="page-header__actions">
+          <button
+            onClick={() => void exportBooks()}
+            className="btn-secondary"
+            title={hasBooks ? "Export your book collection to CSV" : "Download CSV template for importing books"}
+          >
+            {getButtonLabel(hasBooks)}
+          </button>
+          <button
+            onClick={handleImportBooks}
+            className="btn-secondary"
+            disabled={isImporting}
+            title="Import books from CSV file"
+          >
+            {isImporting ? 'Importing...' : 'Import Books'}
+          </button>
+          <Link to="/books/new" className="btn-primary">
+            Add Book
+          </Link>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv"
+            style={{ display: 'none' }}
+            onChange={(e): void => void handleFileSelect(e)}
+          />
+        </div>
       </div>
 
       {/* Filter Bar */}
@@ -232,14 +267,25 @@ const BookListPage: React.FC = () => {
         <div className="results-bar__count">
           {pagination ? (
             <>
-              Showing {(pagination.currentPage - 1) * pagination.pageSize + 1}-
-              {Math.min(
-                pagination.currentPage * pagination.pageSize,
-                pagination.totalItems
-              )}{' '}
-              of {pagination.totalItems} books
-              {hasActiveFilters && (
-                <span className="results-bar__filtered"> (filtered)</span>
+              {pagination.totalItems > 0 ? (
+                <>
+                  Showing {(pagination.currentPage - 1) * pagination.pageSize + 1}-
+                  {Math.min(
+                    pagination.currentPage * pagination.pageSize,
+                    pagination.totalItems
+                  )}{' '}
+                  of {pagination.totalItems} books
+                  {hasActiveFilters && (
+                    <span className="results-bar__filtered"> (filtered)</span>
+                  )}
+                </>
+              ) : (
+                <>
+                  0 books
+                  {hasActiveFilters && (
+                    <span className="results-bar__filtered"> (filtered)</span>
+                  )}
+                </>
               )}
             </>
           ) : (

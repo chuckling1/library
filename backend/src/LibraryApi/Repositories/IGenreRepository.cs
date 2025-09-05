@@ -42,5 +42,13 @@ namespace LibraryApi.Repositories
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The list of existing genres.</returns>
         Task<IEnumerable<Genre>> EnsureGenresExistAsync(IEnumerable<string> genreNames, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Bulk ensures that all specified genres exist with optimized batch processing.
+        /// </summary>
+        /// <param name="genreNames">The list of genre names to ensure exist.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The list of existing genres.</returns>
+        Task<List<Genre>> BulkEnsureGenresExistAsync(IEnumerable<string> genreNames, CancellationToken cancellationToken = default);
     }
 }

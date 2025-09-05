@@ -267,6 +267,7 @@ describe('BookListPage', () => {
         'Your library is empty. Add your first book to get started!'
       )
     ).toBeInTheDocument();
+    expect(screen.getByText('0 books')).toBeInTheDocument();
   });
 
   it('handles live search functionality with debouncing', async () => {

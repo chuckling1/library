@@ -7,6 +7,134 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased] - 2025-09-05
 
 ### Added
+- **CSV Export/Import Functionality**: Complete CSV-based book data export and import system
+  - **Export Feature**: Books can be exported to CSV format via new "Export Collection" button on Book Collection page
+    - **Dynamic Button Text**: Shows "Export Collection" when books exist, "Download Import Template" when empty
+    - **Full Data Export**: Exports all book data including Title, Author, Genres, PublishedDate, Rating, Edition, ISBN
+    - **Template Generation**: When no books exist, provides instructional CSV template with:
+      - Comments explaining required vs optional fields
+      - Example rows with proper formatting
+      - Field format specifications (YYYY-MM-DD dates, 1-5 ratings, comma-separated genres)
+  - **Import Feature**: Enhanced bulk import with improved error handling and duplicate detection
+    - **CSV Format Support**: Processes CSV files with same format as export
+    - **Duplicate Detection**: Automatically skips books already in database based on title/author matching
+    - **Validation**: Comprehensive field validation with detailed error reporting
+    - **Progress Feedback**: User-friendly success/error messages with import statistics
+  - **Backend Implementation**: 
+    - Added `ExportBooksToCSVAsync` method to `BulkImportService`
+    - New `/api/BulkImport/export/books` GET endpoint in `BulkImportController`
+    - Enhanced CSV field escaping for proper handling of commas, quotes, and special characters
+    - Added `GetAllBooksAsync` method to `BookRepository` for efficient data export
+  - **Frontend Implementation**:
+    - Created `useBookExport` custom hook for export functionality
+    - Enhanced BookListPage with export button and dynamic labeling
+    - Automatic file download with timestamped filenames
+    - Integration with existing import workflow
+
+### Fixed
+- **CSV Bulk Import 500 Error**: Resolved critical server error preventing CSV file imports
+  - **Root Cause Analysis**: Multiple interconnected issues causing import failures:
+    - **Entity Framework Tracking Conflict**: `BulkImportJob` entity was being tracked multiple times during import process
+    - **URL Case Sensitivity**: Frontend calling `/api/bulkimport/books` vs backend expecting `/api/BulkImport/books`
+    - **Docker Network Configuration**: Frontend container unable to connect to backend via `localhost:5000`
+  - **Issue Impact**: CSV import functionality completely broken with 500 Internal Server Error
+  - **Technical Solutions**:
+    - **EF Core Fix**: Refactored `BulkImportService.ExecuteBulkImportAsync` to avoid entity tracking conflicts by returning simple DTO instead of tracked entity
+    - **URL Fix**: Updated frontend `useBulkImport.ts` to use correct case-sensitive API endpoint `/api/BulkImport/books`
+    - **Docker Network Fix**: 
+      - Updated `vite.config.ts` to use environment variable for proxy target
+      - Added `VITE_PROXY_TARGET=http://backend:8080` to docker-compose.yml for container-to-container communication
+      - Added volume mount for `vite.config.ts` in docker-compose for real-time config updates
+  - **Process Improvement**: Enhanced error logging and Docker container orchestration
+  - **Testing**: Verified both curl tests and frontend UI imports work correctly
+  - **Result**: CSV import now returns HTTP 200 with proper success/duplicate detection messaging
+
+- **BookListPage Variable Initialization Error**: Fixed "Cannot access before initialization" runtime error
+  - **Root Cause**: `hasBooks` variable was calculated using `paginatedResponse` before the `useBooks` hook was called
+  - **Issue Impact**: Frontend crash with `ReferenceError: Cannot access 'paginatedResponse' before initialization`
+  - **Solution**: Moved `hasBooks` calculation after `useBooks` hook declaration
+  - **Technical Details**: Reordered variable declarations in BookListPage.tsx to respect JavaScript temporal dead zone
+  - **Verification**: Confirmed UI loads correctly without initialization errors
+
+### Enhanced
+- **Development Workflow Improvements**: Enhanced Docker configuration for seamless development experience
+  - **Frontend Hot Reload**: Vite configuration properly integrated with Docker container environment
+  - **Backend Integration**: Improved proxy configuration supporting both local and containerized development
+  - **Network Architecture**: Proper service-to-service communication within Docker Compose network
+  - **Configuration Management**: Environment-based proxy targeting for different deployment scenarios
+
+### Fixed
+- **Statistics Page Dark Theme Integration**: Complete dark theme implementation for Statistics page
+  - **Root Cause**: Statistics page was using hardcoded light theme colors (white backgrounds, light gray text) instead of design system variables
+  - **Issue Impact**: Jarring white backgrounds and poor readability that didn't match the rest of the application's dark theme
+  - **Solution**: 
+    - Updated all SCSS to use design system variables (`vars.$bg-surface`, `vars.$text-primary`, etc.)
+    - Replaced hardcoded colors with proper dark theme palette
+    - Updated chart styling with dark-friendly grid lines, axis text, and tooltip backgrounds
+    - Fixed Recharts hover overlay using `cursor` prop with subtle teal highlight instead of default white overlay
+  - **Components Updated**: Overview cards, chart containers, recent books section, detailed stats table, all typography
+  - **Chart Improvements**: Dark tooltip backgrounds, teal accent colors, proper contrast for readability
+  - **Testing**: Verified zero ESLint warnings and TypeScript compilation success
+  - **Verification**: Confirmed seamless visual integration with application's existing dark theme
+
+- **Primary Button Text Visibility**: Fixed "Add Book" button text disappearing on hover
+  - **Root Cause**: Button text color was set to `vars.$bg-primary` (dark gray) which became invisible against teal hover background
+  - **Issue Impact**: Users unable to read button text when hovering over primary action buttons
+  - **Solution**: Changed text color to `white` for both normal and hover states of `.btn-primary` class
+  - **Testing**: Verified proper contrast and accessibility compliance
+  - **Verification**: Confirmed white text remains visible against both normal and hover teal backgrounds
+- **Results Bar Zero Books Display**: Fixed "Showing 1-0 of 0 books" nonsensical display when no books found
+  - **Root Cause**: Results bar calculation always computed start index as `(currentPage - 1) * pageSize + 1` even when totalItems was 0
+  - **Issue Impact**: Users seeing confusing "1-0 of 0" text in results bar when library was empty or no search results
+  - **Solution**: Added conditional logic to show "0 books" when totalItems is 0, maintaining filter status display
+  - **Testing**: Added unit test to verify correct "0 books" display in empty state scenarios
+  - **Verification**: Confirmed proper display for both empty library and filtered results with no matches
+
+### Added
+- **Production-Ready Docker Containerization**: Complete Docker setup for development and production environments
+  - **Multi-Stage Dockerfiles**: Optimized builds for both backend (.NET 9) and frontend (React + Vite)
+    - **Backend**: Uses `mcr.microsoft.com/dotnet/sdk:9.0` for build and `mcr.microsoft.com/dotnet/aspnet:9.0` for runtime
+    - **Frontend**: Uses `node:22-alpine` for build and `nginx:alpine` for serving static files
+  - **Docker Compose Configurations**: 
+    - **Development**: `docker-compose.yml` with hot reload, volume mounts, and optional database browser
+    - **Production**: `docker-compose.prod.yml` with optimized builds, resource limits, and automated backups
+  - **Health Check Integration**: Comprehensive health monitoring across all services
+    - **Backend API**: `/health`, `/health/ready`, `/health/live` endpoints with Entity Framework database checks
+    - **Container Health**: Docker health checks for all services with configurable intervals and retries
+    - **Monitoring**: Nginx status endpoint and structured JSON logging
+  - **Security Hardening**: Production-ready security configuration
+    - **Non-root users**: All containers run as non-root with proper permission management
+    - **Network isolation**: Custom bridge network with service communication
+    - **Resource limits**: CPU and memory constraints for production deployment
+    - **Security headers**: X-Frame-Options, X-Content-Type-Options, CORS, rate limiting
+  - **Development Features**: 
+    - **Hot reload**: Volume mounts for both frontend and backend source code
+    - **Database browser**: Optional SQLite web interface accessible at http://localhost:8080
+    - **Debug profiles**: Configurable service profiles for development tools
+  - **Production Features**:
+    - **Reverse proxy**: Nginx load balancer with rate limiting and SSL/TLS support
+    - **Automated backups**: Daily SQLite database backups with configurable retention
+    - **Log aggregation**: Structured logging with rotation and centralized collection
+    - **SSL/TLS ready**: HTTPS configuration prepared for production deployment
+  - **Comprehensive Documentation**: 
+    - **DOCKER_SETUP.md**: Complete guide covering architecture, configuration, troubleshooting, and deployment
+    - **README.md integration**: Quick start Docker commands for immediate usage
+    - **Configuration examples**: Environment variables, volume mounts, and service customization
+  - **Performance Optimization**:
+    - **Build caching**: Docker layer caching and .dockerignore files for faster builds
+    - **Static file optimization**: Gzip compression, caching headers, and optimized nginx configuration
+    - **Connection pooling**: HTTP/1.1 keepalive and efficient resource management
+  - **One-Command Deployment**: Simple commands for both development and production environments
+    - Development: `docker-compose up -d`
+    - Production: `docker-compose -f docker-compose.prod.yml up -d`
+- **Enhanced Setup Script with Docker Detection**: Comprehensive Docker installation guidance and detection
+  - **Docker Detection**: Setup script now detects Docker and Docker Compose installation status
+  - **Platform-Specific Installation**: Provides correct installation commands for Windows (winget), macOS (homebrew), and Linux
+  - **Installation Verification**: Includes commands to verify package availability before installation
+  - **Benefits Education**: Explains advantages of Docker development (no local dependencies, consistent environments)
+  - **Optional Installation**: Docker marked as optional but recommended with clear benefits explanation
+
+### Added
 - **Genre Filter Sorting and Prioritization**: Enhanced GenreFilter component with intelligent sorting capabilities
   - **Dual Toggle System**: Separate controls for sort type and direction
     - **Sort Type Toggle**: `📊 Popular` (by book count) vs `🔤 A-Z` (alphabetical)  

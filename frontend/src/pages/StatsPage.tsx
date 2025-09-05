@@ -222,7 +222,7 @@ const StatsPage: React.FC = () => {
                     data={chartData}
                     margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                     <XAxis
                       dataKey="genre"
                       angle={-45}
@@ -230,8 +230,9 @@ const StatsPage: React.FC = () => {
                       height={100}
                       interval={0}
                       fontSize={12}
+                      tick={{ fill: '#9ca3af' }}
                     />
-                    <YAxis />
+                    <YAxis tick={{ fill: '#9ca3af' }} />
                     <Tooltip
                       formatter={(value: number) => [
                         `${value} book${value !== 1 ? 's' : ''}`,
@@ -240,10 +241,17 @@ const StatsPage: React.FC = () => {
                       labelFormatter={(label: string) =>
                         `Genre: ${label} (click to filter books)`
                       }
+                      contentStyle={{
+                        backgroundColor: '#1f2937',
+                        border: '1px solid #374151',
+                        borderRadius: '6px',
+                        color: '#f9fafb'
+                      }}
+                      cursor={{ fill: 'rgba(20, 184, 166, 0.1)' }}
                     />
                     <Bar
                       dataKey="count"
-                      fill="#4f46e5"
+                      fill="#14b8a6"
                       radius={[4, 4, 0, 0]}
                       onClick={(data: { genre?: string }) => {
                         if (data.genre) {
@@ -283,6 +291,12 @@ const StatsPage: React.FC = () => {
                         `${value} books (click to filter)`,
                         'Count',
                       ]}
+                      contentStyle={{
+                        backgroundColor: '#1f2937',
+                        border: '1px solid #374151',
+                        borderRadius: '6px',
+                        color: '#f9fafb'
+                      }}
                     />
                   </PieChart>
                 )}
@@ -322,18 +336,25 @@ const StatsPage: React.FC = () => {
                     data={ratingData}
                     margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="rating" />
-                    <YAxis />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis dataKey="rating" tick={{ fill: '#9ca3af' }} />
+                    <YAxis tick={{ fill: '#9ca3af' }} />
                     <Tooltip
                       formatter={(value: number) => [
                         `${value} genre${value !== 1 ? 's' : ''} (click to filter books)`,
                         'Count',
                       ]}
+                      contentStyle={{
+                        backgroundColor: '#1f2937',
+                        border: '1px solid #374151',
+                        borderRadius: '6px',
+                        color: '#f9fafb'
+                      }}
+                      cursor={{ fill: 'rgba(20, 184, 166, 0.1)' }}
                     />
                     <Bar
                       dataKey="count"
-                      fill="#10b981"
+                      fill="#14b8a6"
                       radius={[4, 4, 0, 0]}
                       onClick={(data: { rating?: string }) => {
                         const ratingString = data.rating;
@@ -358,7 +379,7 @@ const StatsPage: React.FC = () => {
                         `${rating}: ${count} (${(percent * 100).toFixed(1)}%)`
                       }
                       outerRadius={100}
-                      fill="#10b981"
+                      fill="#14b8a6"
                       dataKey="count"
                       onClick={(_, index) => {
                         const ratingString = ratingData[index]?.rating;
@@ -380,6 +401,12 @@ const StatsPage: React.FC = () => {
                         `${value} genres (click to filter books)`,
                         'Count',
                       ]}
+                      contentStyle={{
+                        backgroundColor: '#1f2937',
+                        border: '1px solid #374151',
+                        borderRadius: '6px',
+                        color: '#f9fafb'
+                      }}
                     />
                   </PieChart>
                 )}
@@ -459,28 +486,28 @@ const StatsPage: React.FC = () => {
   );
 };
 
-// Color palettes for charts
+// Color palettes for charts - optimized for dark theme
 const CHART_COLORS = [
-  '#4f46e5',
-  '#06b6d4',
-  '#10b981',
-  '#f59e0b',
-  '#ef4444',
-  '#8b5cf6',
-  '#ec4899',
-  '#14b8a6',
-  '#f97316',
-  '#84cc16',
-  '#6366f1',
-  '#d946ef',
+  '#14b8a6', // Primary teal
+  '#06b6d4', // Cyan
+  '#10b981', // Emerald
+  '#f59e0b', // Amber
+  '#ef4444', // Red
+  '#8b5cf6', // Purple
+  '#ec4899', // Pink
+  '#0d9488', // Darker teal
+  '#f97316', // Orange
+  '#84cc16', // Lime
+  '#6366f1', // Indigo
+  '#d946ef', // Fuchsia
 ];
 
 const RATING_COLORS = [
   '#ef4444', // 1 star - red
   '#f97316', // 2 stars - orange
-  '#f59e0b', // 3 stars - yellow
-  '#84cc16', // 4 stars - light green
-  '#10b981', // 5 stars - green
+  '#f59e0b', // 3 stars - amber
+  '#84cc16', // 4 stars - lime
+  '#10b981', // 5 stars - emerald
 ];
 
 export default StatsPage;

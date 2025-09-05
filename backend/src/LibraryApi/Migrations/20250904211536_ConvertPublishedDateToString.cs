@@ -13,7 +13,7 @@ namespace LibraryApi.Migrations
             // Convert existing DateTime records to appropriate string format
             // Pattern: If date is YYYY-01-01T00:00:00, convert to just YYYY (year only)
             // Otherwise, convert to YYYY-MM-DD format (remove time component)
-            
+
             migrationBuilder.Sql(@"
                 UPDATE Books 
                 SET PublishedDate = CASE 

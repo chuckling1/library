@@ -21,6 +21,17 @@
     margin: 0;
   }
 
+  &__actions {
+    display: flex;
+    gap: vars.$spacing-sm;
+    align-items: center;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      width: 100%;
+    }
+  }
+
   @media (max-width: 768px) {
     flex-direction: column;
     gap: vars.$spacing-md;
