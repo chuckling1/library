@@ -171,7 +171,11 @@ export const getBookGenres = (book: Book): string[] => {
 // Helper function to format date - now handles ISO 8601 format properly
 export const formatDate = (dateString: string): string => {
   // Use the new ISO 8601 utility for consistent formatting
-  return formatIso8601ForDisplay(dateString, { year: 'numeric', month: 'long', day: 'numeric' });
+  return formatIso8601ForDisplay(dateString, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 };
 
 // Helper function to format rating stars

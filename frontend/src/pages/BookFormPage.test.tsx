@@ -25,7 +25,13 @@ vi.mock('react-router-dom', async () => {
 
 // Mock BookForm component to make testing easier
 vi.mock('../components/BookForm', () => ({
-  default: ({ book, isEditing }: { book?: Book; isEditing: boolean }): React.JSX.Element => (
+  default: ({
+    book,
+    isEditing,
+  }: {
+    book?: Book;
+    isEditing: boolean;
+  }): React.JSX.Element => (
     <div data-testid="book-form">
       <div data-testid="book-form-book">
         {book ? JSON.stringify(book) : 'undefined'}
@@ -101,7 +107,9 @@ const createLoadingQuery = (): UseQueryResult<Book, Error> =>
     promise: Promise.resolve(undefined as unknown as Book),
   }) as unknown as UseQueryResult<Book, Error>;
 
-const createSuccessQuery = (data: Book | undefined): UseQueryResult<Book, Error> =>
+const createSuccessQuery = (
+  data: Book | undefined
+): UseQueryResult<Book, Error> =>
   ({
     data,
     isLoading: false,

@@ -398,7 +398,7 @@ const StatsPage: React.FC = () => {
         <div className="recent-books-section">
           <h3>Recently Added Books</h3>
           <div className="recent-books-grid">
-            {recentBooks.items.slice(0, 5).map((book) => (
+            {recentBooks.items.slice(0, 5).map(book => (
               <div key={book.id} className="recent-book-card">
                 <h4 className="book-title">{book.title}</h4>
                 <p className="book-author">{book.author}</p>

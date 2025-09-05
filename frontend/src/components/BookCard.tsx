@@ -27,15 +27,12 @@ const BookCard: React.FC<BookCardProps> = React.memo(({ book, onDelete }) => {
   };
 
   const handleDelete = async (): Promise<void> => {
-    if (window.confirm(`Are you sure you want to delete "${book.title}"?`)) {
-      await onDelete(book);
-    }
+    await onDelete(book);
   };
 
   const handleGenreClick = (genre: string): void => {
     toggleGenre(genre);
   };
-
 
   // Get image URL (title or fallback to cover component)
   const imageUrl = book.title

@@ -11,7 +11,6 @@ vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
     ...actual,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     useLocation: (): { pathname: string } => mockUseLocation(),
   };
 });

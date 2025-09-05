@@ -11,8 +11,12 @@ import {
 describe('dateUtils', () => {
   describe('convertHtmlDateToIso8601', () => {
     it('converts HTML date to ISO 8601 format', () => {
-      expect(convertHtmlDateToIso8601('2023-12-25')).toBe('2023-12-25T00:00:00.000Z');
-      expect(convertHtmlDateToIso8601('1999-10-30')).toBe('1999-10-30T00:00:00.000Z');
+      expect(convertHtmlDateToIso8601('2023-12-25')).toBe(
+        '2023-12-25T00:00:00.000Z'
+      );
+      expect(convertHtmlDateToIso8601('1999-10-30')).toBe(
+        '1999-10-30T00:00:00.000Z'
+      );
     });
 
     it('returns empty string for invalid input', () => {
@@ -24,9 +28,15 @@ describe('dateUtils', () => {
 
   describe('convertIso8601ToHtmlDate', () => {
     it('converts ISO 8601 to HTML date format', () => {
-      expect(convertIso8601ToHtmlDate('2023-12-25T00:00:00.000Z')).toBe('2023-12-25');
-      expect(convertIso8601ToHtmlDate('1999-10-30T00:00:00Z')).toBe('1999-10-30');
-      expect(convertIso8601ToHtmlDate('2023-01-01T15:30:45.123Z')).toBe('2023-01-01');
+      expect(convertIso8601ToHtmlDate('2023-12-25T00:00:00.000Z')).toBe(
+        '2023-12-25'
+      );
+      expect(convertIso8601ToHtmlDate('1999-10-30T00:00:00Z')).toBe(
+        '1999-10-30'
+      );
+      expect(convertIso8601ToHtmlDate('2023-01-01T15:30:45.123Z')).toBe(
+        '2023-01-01'
+      );
     });
 
     it('handles null/undefined/empty input', () => {
@@ -50,9 +60,9 @@ describe('dateUtils', () => {
     });
 
     it('uses custom formatting options', () => {
-      const result = formatIso8601ForDisplay('2023-12-25T00:00:00.000Z', { 
-        year: 'numeric', 
-        month: 'short' 
+      const result = formatIso8601ForDisplay('2023-12-25T00:00:00.000Z', {
+        year: 'numeric',
+        month: 'short',
       });
       expect(result).toContain('Dec');
       expect(result).toContain('2023');
@@ -92,7 +102,7 @@ describe('dateUtils', () => {
       expect(isNotFutureDate(futureDate.toISOString())).toBe(false);
     });
 
-    it('accepts today\'s date', () => {
+    it("accepts today's date", () => {
       const today = new Date();
       today.setHours(12, 0, 0, 0); // Set to noon today
       expect(isNotFutureDate(today.toISOString())).toBe(true);

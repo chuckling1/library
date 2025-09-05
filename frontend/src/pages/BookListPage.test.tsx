@@ -202,7 +202,9 @@ describe('BookListPage', () => {
     vi.clearAllMocks();
     mockUseDeleteBook.mockReturnValue(mockDeleteMutation);
     // Set default mock implementation that returns empty paginated response
-    mockUseBooks.mockImplementation(() => createSuccessQuery(createMockPaginatedResponse([])));
+    mockUseBooks.mockImplementation(() =>
+      createSuccessQuery(createMockPaginatedResponse([]))
+    );
   });
 
   it('renders loading state', () => {
@@ -216,7 +218,10 @@ describe('BookListPage', () => {
   it('renders error state', () => {
     const mockRefetch = vi.fn();
     mockUseBooks.mockReturnValue(
-      createErrorQuery<PaginatedResponse<Book>>(new Error('Failed to fetch'), mockRefetch)
+      createErrorQuery<PaginatedResponse<Book>>(
+        new Error('Failed to fetch'),
+        mockRefetch
+      )
     );
 
     render(<BookListPage />, { wrapper: createWrapper() });
@@ -237,7 +242,9 @@ describe('BookListPage', () => {
       createMockBook({ id: '2', title: 'Book 2' }),
     ];
 
-    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse(mockBooks)));
+    mockUseBooks.mockReturnValue(
+      createSuccessQuery(createMockPaginatedResponse(mockBooks))
+    );
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
@@ -248,7 +255,9 @@ describe('BookListPage', () => {
   });
 
   it('renders empty state when no books found', () => {
-    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse([])));
+    mockUseBooks.mockReturnValue(
+      createSuccessQuery(createMockPaginatedResponse([]))
+    );
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
@@ -263,7 +272,9 @@ describe('BookListPage', () => {
   it('handles live search functionality with debouncing', async () => {
     const mockBooks = [createMockBook()];
 
-    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse(mockBooks)));
+    mockUseBooks.mockReturnValue(
+      createSuccessQuery(createMockPaginatedResponse(mockBooks))
+    );
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
@@ -290,7 +301,9 @@ describe('BookListPage', () => {
   });
 
   it('handles sort by selection', () => {
-    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse([createMockBook()])));
+    mockUseBooks.mockReturnValue(
+      createSuccessQuery(createMockPaginatedResponse([createMockBook()]))
+    );
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
@@ -305,7 +318,9 @@ describe('BookListPage', () => {
   });
 
   it('handles sort direction selection', () => {
-    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse([createMockBook()])));
+    mockUseBooks.mockReturnValue(
+      createSuccessQuery(createMockPaginatedResponse([createMockBook()]))
+    );
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
@@ -321,7 +336,9 @@ describe('BookListPage', () => {
   });
 
   it('handles rating filter selection', () => {
-    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse([createMockBook()])));
+    mockUseBooks.mockReturnValue(
+      createSuccessQuery(createMockPaginatedResponse([createMockBook()]))
+    );
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
@@ -341,7 +358,9 @@ describe('BookListPage', () => {
   });
 
   it('clears filters when clear button is clicked', () => {
-    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse([createMockBook()])));
+    mockUseBooks.mockReturnValue(
+      createSuccessQuery(createMockPaginatedResponse([createMockBook()]))
+    );
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
@@ -363,7 +382,9 @@ describe('BookListPage', () => {
     // Mock with search filter to show clear button
     mockUseBooks.mockImplementation(filters => {
       if (filters?.search) {
-        return createSuccessQuery(createMockPaginatedResponse([createMockBook()]));
+        return createSuccessQuery(
+          createMockPaginatedResponse([createMockBook()])
+        );
       }
       return createSuccessQuery(createMockPaginatedResponse([]));
     });
@@ -386,7 +407,9 @@ describe('BookListPage', () => {
   });
 
   it('clears only search when search clear button is clicked', async () => {
-    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse([createMockBook()])));
+    mockUseBooks.mockReturnValue(
+      createSuccessQuery(createMockPaginatedResponse([createMockBook()]))
+    );
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
@@ -409,7 +432,9 @@ describe('BookListPage', () => {
     const mockBooks = [createMockBook()];
     const mockMutateAsync = vi.fn().mockResolvedValue(undefined);
 
-    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse(mockBooks)));
+    mockUseBooks.mockReturnValue(
+      createSuccessQuery(createMockPaginatedResponse(mockBooks))
+    );
 
     mockUseDeleteBook.mockReturnValue(
       createMockUseMutationResult({
@@ -438,7 +463,9 @@ describe('BookListPage', () => {
       .fn()
       .mockRejectedValue(new Error('Delete failed'));
 
-    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse(mockBooks)));
+    mockUseBooks.mockReturnValue(
+      createSuccessQuery(createMockPaginatedResponse(mockBooks))
+    );
 
     mockUseDeleteBook.mockReturnValue(
       createMockUseMutationResult({
@@ -466,7 +493,9 @@ describe('BookListPage', () => {
   });
 
   it('shows loading indicator during deletion', () => {
-    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse([createMockBook()])));
+    mockUseBooks.mockReturnValue(
+      createSuccessQuery(createMockPaginatedResponse([createMockBook()]))
+    );
 
     mockUseDeleteBook.mockReturnValue(
       createMockUseMutationResult({
@@ -485,7 +514,9 @@ describe('BookListPage', () => {
       if (filters?.search) {
         return createSuccessQuery(createMockPaginatedResponse([]));
       }
-      return createSuccessQuery(createMockPaginatedResponse([createMockBook()]));
+      return createSuccessQuery(
+        createMockPaginatedResponse([createMockBook()])
+      );
     });
 
     render(<BookListPage />, { wrapper: createWrapper() });
@@ -514,7 +545,9 @@ describe('BookListPage', () => {
 
   it('trims whitespace from search input', async () => {
     const mockBooks = [createMockBook()];
-    mockUseBooks.mockImplementation(() => createSuccessQuery(createMockPaginatedResponse(mockBooks)));
+    mockUseBooks.mockImplementation(() =>
+      createSuccessQuery(createMockPaginatedResponse(mockBooks))
+    );
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
@@ -539,7 +572,9 @@ describe('BookListPage', () => {
 
   it('clears search when input is empty', async () => {
     const mockBooks = [createMockBook()];
-    mockUseBooks.mockImplementation(() => createSuccessQuery(createMockPaginatedResponse(mockBooks)));
+    mockUseBooks.mockImplementation(() =>
+      createSuccessQuery(createMockPaginatedResponse(mockBooks))
+    );
 
     render(<BookListPage />, { wrapper: createWrapper() });
 
@@ -563,7 +598,9 @@ describe('BookListPage', () => {
   });
 
   it('maintains input value during typing before debounce', async () => {
-    mockUseBooks.mockReturnValue(createSuccessQuery(createMockPaginatedResponse([createMockBook()])));
+    mockUseBooks.mockReturnValue(
+      createSuccessQuery(createMockPaginatedResponse([createMockBook()]))
+    );
 
     render(<BookListPage />, { wrapper: createWrapper() });
 

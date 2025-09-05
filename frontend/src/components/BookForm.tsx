@@ -4,11 +4,11 @@ import { Book, CreateBookRequest, UpdateBookRequest } from '../generated/api';
 import { useCreateBook, useUpdateBook } from '../hooks/useBooks';
 import { openLibraryService } from '../services/openLibraryService';
 import { logger } from '../utils/logger';
-import { 
-  convertIso8601ToHtmlDate, 
-  convertHtmlDateToIso8601, 
+import {
+  convertIso8601ToHtmlDate,
+  convertHtmlDateToIso8601,
   normalizeToIso8601,
-  isNotFutureDate 
+  isNotFutureDate,
 } from '../utils/dateUtils';
 import StarRating from './StarRating';
 import './BookForm.scss';
@@ -22,7 +22,7 @@ interface BookFormProps {
 // Helper function to format date for HTML5 date input using ISO 8601 utilities
 const formatDateForInput = (dateString: string | undefined | null): string => {
   if (!dateString) return '';
-  
+
   // First try to normalize to ISO 8601, then convert to HTML date format
   const iso8601Date = normalizeToIso8601(dateString);
   return convertIso8601ToHtmlDate(iso8601Date);
@@ -170,7 +170,7 @@ const BookForm: React.FC<BookFormProps> = ({ book, isEditing }) => {
       } else {
         // Convert HTML date to ISO 8601 for validation
         const iso8601Date = convertHtmlDateToIso8601(value);
-        
+
         if (!iso8601Date) {
           newErrors.publishedDate = 'Published date must be a valid date';
         } else if (!isNotFutureDate(iso8601Date)) {
@@ -234,7 +234,7 @@ const BookForm: React.FC<BookFormProps> = ({ book, isEditing }) => {
     } else {
       // Convert HTML date to ISO 8601 for validation
       const iso8601Date = convertHtmlDateToIso8601(formData.publishedDate);
-      
+
       if (!iso8601Date) {
         newErrors.publishedDate = 'Published date must be a valid date';
       } else if (!isNotFutureDate(iso8601Date)) {

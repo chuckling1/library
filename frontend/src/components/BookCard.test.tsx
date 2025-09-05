@@ -168,29 +168,9 @@ describe('BookCard', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/books/123/edit');
   });
 
-  it('shows confirmation dialog when delete button is clicked', () => {
-    const book = createMockBook();
-    const onDelete = vi.fn();
-
-    // Mock window.confirm
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
-
-    renderBookCard(book, onDelete);
-
-    const deleteButton = screen.getByLabelText('Delete Test Book');
-    fireEvent.click(deleteButton);
-
-    expect(confirmSpy).toHaveBeenCalledWith(
-      'Are you sure you want to delete "Test Book"?'
-    );
-    confirmSpy.mockRestore();
-  });
-
-  it('calls onDelete when confirmation is accepted', async () => {
+  it('calls onDelete when delete button is clicked', async () => {
     const book = createMockBook();
     const onDelete = vi.fn().mockResolvedValue(undefined);
-
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
 
     renderBookCard(book, onDelete);
 
@@ -200,23 +180,6 @@ describe('BookCard', () => {
     await waitFor(() => {
       expect(onDelete).toHaveBeenCalledWith(book);
     });
-
-    confirmSpy.mockRestore();
-  });
-
-  it('does not call onDelete when confirmation is cancelled', () => {
-    const book = createMockBook();
-    const onDelete = vi.fn();
-
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
-
-    renderBookCard(book, onDelete);
-
-    const deleteButton = screen.getByLabelText('Delete Test Book');
-    fireEvent.click(deleteButton);
-
-    expect(onDelete).not.toHaveBeenCalled();
-    confirmSpy.mockRestore();
   });
 
   it('has correct aria labels for accessibility', () => {

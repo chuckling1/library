@@ -9,7 +9,7 @@ export const createMockPaginatedResponse = (
 ): PaginatedResponse<Book> => {
   const actualTotalItems = totalItems ?? books.length;
   const totalPages = Math.ceil(actualTotalItems / pageSize);
-  
+
   return {
     items: books,
     page,

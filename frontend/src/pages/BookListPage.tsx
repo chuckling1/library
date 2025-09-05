@@ -66,15 +66,17 @@ const BookListPage: React.FC = () => {
   });
   const deleteBookMutation = useDeleteBook();
 
-  // Extract books and pagination info  
-  const pagination = paginatedResponse ? {
-    currentPage: paginatedResponse.page,
-    totalPages: paginatedResponse.totalPages,
-    totalItems: paginatedResponse.totalItems,
-    pageSize: paginatedResponse.pageSize,
-    hasPrevious: paginatedResponse.hasPreviousPage,
-    hasNext: paginatedResponse.hasNextPage,
-  } : null;
+  // Extract books and pagination info
+  const pagination = paginatedResponse
+    ? {
+        currentPage: paginatedResponse.page,
+        totalPages: paginatedResponse.totalPages,
+        totalItems: paginatedResponse.totalItems,
+        pageSize: paginatedResponse.pageSize,
+        hasPrevious: paginatedResponse.hasPreviousPage,
+        hasNext: paginatedResponse.hasNextPage,
+      }
+    : null;
 
   // Client-side filtering for genre functionality
   const filteredBooks = useMemo(() => {
@@ -230,14 +232,20 @@ const BookListPage: React.FC = () => {
         <div className="results-bar__count">
           {pagination ? (
             <>
-              Showing {((pagination.currentPage - 1) * pagination.pageSize) + 1}-{Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems)} of {pagination.totalItems} books
+              Showing {(pagination.currentPage - 1) * pagination.pageSize + 1}-
+              {Math.min(
+                pagination.currentPage * pagination.pageSize,
+                pagination.totalItems
+              )}{' '}
+              of {pagination.totalItems} books
               {hasActiveFilters && (
                 <span className="results-bar__filtered"> (filtered)</span>
               )}
             </>
           ) : (
             <>
-              {displayBooks.length} book{displayBooks.length !== 1 ? 's' : ''} found
+              {displayBooks.length} book{displayBooks.length !== 1 ? 's' : ''}{' '}
+              found
               {hasActiveFilters && (
                 <span className="results-bar__filtered"> (filtered)</span>
               )}
@@ -312,21 +320,24 @@ const BookListPage: React.FC = () => {
 
             {/* Page Numbers */}
             <div className="pagination-pages">
-              {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, index) => {
-                const pageNum = index + 1;
-                const isCurrentPage = pageNum === pagination.currentPage;
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => handlePageChange(pageNum)}
-                    className={`pagination-btn pagination-page ${isCurrentPage ? 'pagination-page--current' : ''}`}
-                    aria-label={`Go to page ${pageNum}`}
-                    aria-current={isCurrentPage ? 'page' : undefined}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
+              {Array.from(
+                { length: Math.min(5, pagination.totalPages) },
+                (_, index) => {
+                  const pageNum = index + 1;
+                  const isCurrentPage = pageNum === pagination.currentPage;
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                      className={`pagination-btn pagination-page ${isCurrentPage ? 'pagination-page--current' : ''}`}
+                      aria-label={`Go to page ${pageNum}`}
+                      aria-current={isCurrentPage ? 'page' : undefined}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                }
+              )}
             </div>
 
             {/* Next Button */}

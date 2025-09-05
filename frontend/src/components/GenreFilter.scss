@@ -1,4 +1,5 @@
 @use '../styles/variables' as vars;
+@use '../styles/buttons' as btns;
 
 .genre-filter {
   display: flex;
@@ -18,25 +19,87 @@
   color: vars.$text-primary;
 }
 
-.genre-filter__clear {
-  font-size: vars.$font-size-xs;
-  color: vars.$accent-primary;
-  background: none;
-  border: 1px solid vars.$accent-primary;
-  padding: vars.$spacing-xs vars.$spacing-sm;
-  border-radius: vars.$border-radius-sm;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-weight: vars.$font-weight-medium;
+.genre-filter__controls {
+  display: flex;
+  gap: vars.$spacing-xs;
+  align-items: center;
+}
 
-  &:hover {
-    background-color: vars.$accent-primary;
-    color: vars.$bg-primary;
+.genre-filter__sort-controls {
+  display: flex;
+  gap: vars.$spacing-xs;
+  align-items: center;
+}
+
+.genre-filter__sort-type-toggle {
+  display: flex;
+  border: 1px solid vars.$border-color;
+  border-radius: vars.$border-radius-md;
+  overflow: hidden;
+  background-color: transparent;
+}
+
+.genre-filter__toggle-option {
+  @extend %btn-base;
+  padding: vars.$spacing-xs vars.$spacing-sm;
+  font-size: vars.$font-size-sm;
+  border-radius: 0;
+  min-width: 80px;
+  background: transparent;
+  color: vars.$text-secondary;
+  border: none;
+
+  &:hover:not(&--active) {
+    background-color: vars.$border-color;
+    color: vars.$text-primary;
   }
 
   &:focus {
     outline: 2px solid vars.$accent-primary;
-    outline-offset: 2px;
+    outline-offset: -2px;
+  }
+
+  &--left {
+    border-right: 1px solid vars.$border-color;
+  }
+
+  &--active {
+    background-color: vars.$accent-primary;
+    color: vars.$bg-primary;
+    font-weight: vars.$font-weight-medium;
+
+    &:hover {
+      background-color: vars.$accent-hover;
+    }
+  }
+}
+
+.genre-filter__direction-toggle {
+  @extend %btn-base;
+  padding: vars.$spacing-xs;
+  font-size: vars.$font-size-md;
+  min-width: 36px;
+  background: transparent;
+  color: vars.$text-secondary;
+  border: 1px solid vars.$border-color;
+
+  &:hover {
+    background-color: vars.$border-color;
+    color: vars.$text-primary;
+  }
+}
+
+.genre-filter__clear {
+  @extend %btn-base;
+  padding: vars.$spacing-xs vars.$spacing-sm;
+  font-size: vars.$font-size-xs;
+  background: transparent;
+  color: vars.$accent-primary;
+  border: 1px solid vars.$accent-primary;
+
+  &:hover {
+    background-color: vars.$accent-primary;
+    color: vars.$bg-primary;
   }
 
   &--hidden {

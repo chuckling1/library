@@ -7,6 +7,22 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased] - 2025-09-05
 
 ### Added
+- **Genre Filter Sorting and Prioritization**: Enhanced GenreFilter component with intelligent sorting capabilities
+  - **Dual Toggle System**: Separate controls for sort type and direction
+    - **Sort Type Toggle**: `📊 Popular` (by book count) vs `🔤 A-Z` (alphabetical)  
+    - **Direction Toggle**: `↓` (descending) vs `↑` (ascending) for both sort types
+  - **Selected Genres Priority**: Active/selected genres always appear first regardless of sort mode
+  - **Smart Fallback**: Falls back to book data when genre statistics unavailable
+  - **API Integration**: Uses existing `/api/books/stats` endpoint for real-time genre distribution data
+  - **Custom Hook**: Created `useGenreDistribution` hook for managing genre statistics
+  - **Enhanced UI**: Visual active states, emojis for clarity, improved spacing and layout
+
+### Fixed
+- **Genre Sorting Direction**: Fixed direction toggle to properly affect both popularity and alphabetical sorting modes
+  - **Popular Mode**: `↓` shows most popular first, `↑` shows least popular first
+  - **A-Z Mode**: `↓` shows A→Z order, `↑` shows Z→A order
+  - **Debug Logging**: Added comprehensive console logging for troubleshooting sort behavior
+
 - **Comprehensive BookFormPage Test Coverage**: Created complete test suite for BookFormPage.tsx component
   - **Achievement**: Brought coverage from 0% (52 lines untested) to 100% across all metrics
   - **Coverage Results**: 
