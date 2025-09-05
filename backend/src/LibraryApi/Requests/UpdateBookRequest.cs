@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
-
-namespace LibraryApi.Requests;
+namespace LibraryApi.Requests
+{
+    using System.ComponentModel.DataAnnotations;
 
 /// <summary>
 /// Request model for updating an existing book.
@@ -53,4 +53,5 @@ public class UpdateBookRequest
     /// </summary>
     [MaxLength(20, ErrorMessage = "ISBN cannot exceed 20 characters")]
     public string? Isbn { get; set; }
+}
 }

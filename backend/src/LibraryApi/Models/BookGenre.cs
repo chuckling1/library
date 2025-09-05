@@ -1,6 +1,6 @@
-using Microsoft.EntityFrameworkCore;
-
-namespace LibraryApi.Models;
+namespace LibraryApi.Models
+{
+    using Microsoft.EntityFrameworkCore;
 
 /// <summary>
 /// Junction table for the many-to-many relationship between books and genres.
@@ -27,4 +27,5 @@ public class BookGenre
     /// Gets or sets the navigation property to the genre.
     /// </summary>
     public virtual Genre Genre { get; set; } = null!;
+}
 }

@@ -1,6 +1,6 @@
-using LibraryApi.Models;
-
-namespace LibraryApi.Repositories;
+namespace LibraryApi.Repositories
+{
+    using LibraryApi.Models;
 
 /// <summary>
 /// Interface for book repository operations.
@@ -83,4 +83,5 @@ public interface IBookRepository
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Recently added books.</returns>
     Task<IEnumerable<Book>> GetRecentBooksAsync(int count = 5, CancellationToken cancellationToken = default);
+}
 }

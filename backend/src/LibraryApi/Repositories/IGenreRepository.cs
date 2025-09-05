@@ -1,6 +1,6 @@
-using LibraryApi.Models;
-
-namespace LibraryApi.Repositories;
+namespace LibraryApi.Repositories
+{
+    using LibraryApi.Models;
 
 /// <summary>
 /// Interface for genre repository operations.
@@ -38,4 +38,5 @@ public interface IGenreRepository
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The list of existing genres.</returns>
     Task<IEnumerable<Genre>> EnsureGenresExistAsync(IEnumerable<string> genreNames, CancellationToken cancellationToken = default);
+}
 }

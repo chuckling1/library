@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
-
-namespace LibraryApi.Models;
+namespace LibraryApi.Models
+{
+    using System.ComponentModel.DataAnnotations;
 
 /// <summary>
 /// Represents a genre that can be associated with books.
@@ -28,4 +28,5 @@ public class Genre
     /// Gets or sets the collection of books associated with this genre.
     /// </summary>
     public virtual ICollection<BookGenre> BookGenres { get; set; } = new List<BookGenre>();
+}
 }

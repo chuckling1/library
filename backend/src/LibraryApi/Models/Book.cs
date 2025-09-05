@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
-
-namespace LibraryApi.Models;
+namespace LibraryApi.Models
+{
+    using System.ComponentModel.DataAnnotations;
 
 /// <summary>
 /// Represents a book in the library collection.
@@ -67,4 +67,5 @@ public class Book
     /// Gets or sets the collection of genres associated with this book.
     /// </summary>
     public virtual ICollection<BookGenre> BookGenres { get; set; } = new List<BookGenre>();
+}
 }

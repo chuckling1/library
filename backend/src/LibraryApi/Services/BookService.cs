@@ -1,9 +1,9 @@
-using LibraryApi.Models;
-using LibraryApi.Repositories;
-using LibraryApi.Requests;
-using LibraryApi.Responses;
-
-namespace LibraryApi.Services;
+namespace LibraryApi.Services
+{
+    using LibraryApi.Models;
+    using LibraryApi.Repositories;
+    using LibraryApi.Requests;
+    using LibraryApi.Responses;
 
 /// <summary>
 /// Service implementation for book business logic.

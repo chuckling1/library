@@ -1,13 +1,19 @@
+namespace LibraryApi;
+
+using System.Reflection;
+using FluentValidation;
 using LibraryApi.Data;
 using LibraryApi.Middleware;
 using LibraryApi.Repositories;
 using LibraryApi.Services;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using System.Reflection;
-using FluentValidation;
 
-var builder = WebApplication.CreateBuilder(args);
+public static class Program
+{
+    public static async Task Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()

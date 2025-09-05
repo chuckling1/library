@@ -20,4 +20,5 @@
     <WarningLevel>0</WarningLevel>
     <NoWarn>$(NoWarn);StyleCop</NoWarn>
   </PropertyGroup>
+  
 </Project>

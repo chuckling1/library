@@ -6,3 +6,5 @@ global using LibraryApi.Models;
 global using LibraryApi.Services;
 global using LibraryApi.Repositories;
 global using LibraryApi.Data;
+global using LibraryApi.Requests;
+global using LibraryApi.Responses;

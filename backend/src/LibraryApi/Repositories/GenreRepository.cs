@@ -1,8 +1,8 @@
-using LibraryApi.Data;
-using LibraryApi.Models;
-using Microsoft.EntityFrameworkCore;
-
-namespace LibraryApi.Repositories;
+namespace LibraryApi.Repositories
+{
+    using LibraryApi.Data;
+    using LibraryApi.Models;
+    using Microsoft.EntityFrameworkCore;
 
 /// <summary>
 /// Repository implementation for genre operations.
@@ -96,4 +96,5 @@ public class GenreRepository : IGenreRepository
 
         return genres;
     }
+}
 }
