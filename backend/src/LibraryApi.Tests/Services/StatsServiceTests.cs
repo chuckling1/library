@@ -1,5 +1,9 @@
 using LibraryApi.Responses;
+using LibraryApi.Services;
 using Microsoft.Extensions.Logging;
+using Moq;
+using FluentAssertions;
+using Xunit;
 
 namespace LibraryApi.Tests.Services;
 
@@ -11,6 +15,7 @@ public class StatsServiceTests
     private readonly Mock<IBookService> _mockBookService;
     private readonly Mock<ILogger<StatsService>> _mockLogger;
     private readonly StatsService _statsService;
+    private readonly Guid _testUserId = Guid.NewGuid();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StatsServiceTests"/> class.
@@ -38,16 +43,16 @@ public class StatsServiceTests
         };
 
         _mockBookService
-            .Setup(x => x.GetBookStatsAsync(It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetBookStatsAsync(_testUserId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedStats);
 
         // Act
-        var result = await _statsService.GetBookStatsAsync();
+        var result = await _statsService.GetBookStatsAsync(_testUserId);
 
         // Assert
         result.Should().NotBeNull();
         result.Should().BeEquivalentTo(expectedStats);
-        _mockBookService.Verify(x => x.GetBookStatsAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _mockBookService.Verify(x => x.GetBookStatsAsync(_testUserId, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -58,16 +63,16 @@ public class StatsServiceTests
         var cancellationToken = new CancellationToken();
 
         _mockBookService
-            .Setup(x => x.GetBookStatsAsync(cancellationToken))
+            .Setup(x => x.GetBookStatsAsync(_testUserId, cancellationToken))
             .ReturnsAsync(expectedStats);
 
         // Act
-        var result = await _statsService.GetBookStatsAsync(cancellationToken);
+        var result = await _statsService.GetBookStatsAsync(_testUserId, cancellationToken);
 
         // Assert
         result.Should().NotBeNull();
         result.Should().BeEquivalentTo(expectedStats);
-        _mockBookService.Verify(x => x.GetBookStatsAsync(cancellationToken), Times.Once);
+        _mockBookService.Verify(x => x.GetBookStatsAsync(_testUserId, cancellationToken), Times.Once);
     }
 
     [Fact]
@@ -82,18 +87,18 @@ public class StatsServiceTests
         };
 
         _mockBookService
-            .Setup(x => x.GetBookStatsAsync(It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetBookStatsAsync(_testUserId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(emptyStats);
 
         // Act
-        var result = await _statsService.GetBookStatsAsync();
+        var result = await _statsService.GetBookStatsAsync(_testUserId);
 
         // Assert
         result.Should().NotBeNull();
         result.TotalBooks.Should().Be(0);
         result.AverageRating.Should().Be(0);
         result.GenreDistribution.Should().BeEmpty();
-        _mockBookService.Verify(x => x.GetBookStatsAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _mockBookService.Verify(x => x.GetBookStatsAsync(_testUserId, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -103,16 +108,16 @@ public class StatsServiceTests
         var expectedException = new InvalidOperationException("Database connection failed");
         
         _mockBookService
-            .Setup(x => x.GetBookStatsAsync(It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetBookStatsAsync(_testUserId, It.IsAny<CancellationToken>()))
             .ThrowsAsync(expectedException);
 
         // Act
-        var act = async () => await _statsService.GetBookStatsAsync();
+        var act = async () => await _statsService.GetBookStatsAsync(_testUserId);
 
         // Assert
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Database connection failed");
-        _mockBookService.Verify(x => x.GetBookStatsAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _mockBookService.Verify(x => x.GetBookStatsAsync(_testUserId, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -133,11 +138,11 @@ public class StatsServiceTests
         };
 
         _mockBookService
-            .Setup(x => x.GetBookStatsAsync(It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetBookStatsAsync(_testUserId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(complexStats);
 
         // Act
-        var result = await _statsService.GetBookStatsAsync();
+        var result = await _statsService.GetBookStatsAsync(_testUserId);
 
         // Assert
         result.Should().NotBeNull();
@@ -153,7 +158,7 @@ public class StatsServiceTests
         scienceGenre.Count.Should().Be(2);
         scienceGenre.AverageRating.Should().Be(4.5);
 
-        _mockBookService.Verify(x => x.GetBookStatsAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _mockBookService.Verify(x => x.GetBookStatsAsync(_testUserId, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -165,15 +170,15 @@ public class StatsServiceTests
         var cancellationToken = cancellationTokenSource.Token;
 
         _mockBookService
-            .Setup(x => x.GetBookStatsAsync(cancellationToken))
+            .Setup(x => x.GetBookStatsAsync(_testUserId, cancellationToken))
             .ThrowsAsync(new TaskCanceledException("The operation was canceled."));
 
         // Act
-        var act = async () => await _statsService.GetBookStatsAsync(cancellationToken);
+        var act = async () => await _statsService.GetBookStatsAsync(_testUserId, cancellationToken);
 
         // Assert
         await act.Should().ThrowAsync<TaskCanceledException>()
             .WithMessage("The operation was canceled.");
-        _mockBookService.Verify(x => x.GetBookStatsAsync(cancellationToken), Times.Once);
+        _mockBookService.Verify(x => x.GetBookStatsAsync(_testUserId, cancellationToken), Times.Once);
     }
 }

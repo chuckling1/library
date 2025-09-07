@@ -13,7 +13,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Data Source=/app/data/library.db
-      - CORS__AllowedOrigins=http://localhost:3000,http://localhost:80
+      - CORS__AllowedOrigins__0=http://localhost:3000
+      - CORS__AllowedOrigins__1=http://frontend:3000
     volumes:
       - ./backend/src/LibraryApi:/app/src/LibraryApi  # Hot reload source code
       - ./backend/data:/app/data  # Persist SQLite database
@@ -39,7 +40,7 @@ services:
       - "3000:3000"  # Expose frontend on localhost:3000
     environment:
       - NODE_ENV=development
-      - VITE_API_BASE_URL=http://localhost:5000/api
+      - VITE_API_BASE_URL=http://localhost:5000
       - VITE_PROXY_TARGET=http://backend:8080  # Use Docker service name for proxy
       - CHOKIDAR_USEPOLLING=true  # Enable hot reload in container
     volumes:

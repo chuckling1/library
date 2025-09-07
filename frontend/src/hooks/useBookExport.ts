@@ -1,20 +1,29 @@
 import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { booksKeys } from './useBooks';
+import { getApiBaseUrl } from '../config/apiConfig';
+import { useAuth } from '../contexts/AuthContext';
 
 export const useBookExport = (): {
   exportBooks: () => Promise<void>;
   getButtonLabel: (hasBooks: boolean) => string;
 } => {
   const queryClient = useQueryClient();
+  const { token } = useAuth();
 
   const exportBooks = useCallback(async (): Promise<void> => {
     try {
-      const response = await fetch('/api/BulkImport/export/books', {
+      const headers: Record<string, string> = {
+        'Accept': 'text/csv',
+      };
+      
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${getApiBaseUrl()}/api/BulkImport/export/books`, {
         method: 'GET',
-        headers: {
-          'Accept': 'text/csv',
-        },
+        headers,
       });
 
       if (!response.ok) {
@@ -57,7 +66,7 @@ export const useBookExport = (): {
       console.error('Failed to export books:', error);
       alert('Failed to export books. Please try again.');
     }
-  }, [queryClient]);
+  }, [queryClient, token]);
 
   const getButtonLabel = useCallback((hasBooks: boolean): string => {
     return hasBooks ? 'Export Collection' : 'Download Import Template';

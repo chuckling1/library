@@ -99,6 +99,40 @@ public class BooksController : ControllerBase
 - ✅ Using directives inside namespace
 - ✅ Consistent bracket placement (opening bracket on new line for methods)
 - ✅ Private fields use camelCase (not underscore prefix)
+- ✅ **CRITICAL**: Files MUST end with a single newline character (SA1518 violation prevention)
+
+**🚨 CRITICAL: Common StyleCop Whitespace Violations (SA1028) - ALWAYS CHECK THESE:**
+
+```csharp
+// ❌ BAD - Trailing whitespace after statements (SA1028)
+var totalBooks = await this.context.Books.CountAsync(cancellationToken);        
+        
+// Handle empty database case - AverageAsync throws when sequence is empty        
+var averageRating = totalBooks > 0 
+    ? await this.context.Books.AverageAsync(b => (double)b.Rating, cancellationToken)        
+    : 0.0;        
+
+// ❌ BAD - Trailing whitespace on blank lines
+[blank line with spaces or tabs]        
+
+// ❌ BAD - Trailing whitespace after comments
+// This is a comment        
+
+// ✅ GOOD - No trailing whitespace anywhere
+var totalBooks = await this.context.Books.CountAsync(cancellationToken);
+
+// Handle empty database case - AverageAsync throws when sequence is empty
+var averageRating = totalBooks > 0
+    ? await this.context.Books.AverageAsync(b => (double)b.Rating, cancellationToken)
+    : 0.0;
+```
+
+**MANDATORY: After editing any C# code, ALWAYS:**
+1. **Check for trailing whitespace** - No spaces or tabs at end of lines
+2. **Check blank lines** - Empty lines must be completely empty (no spaces/tabs)
+3. **Check comments** - No trailing whitespace after comment text
+4. **Check conditional expressions** - No trailing whitespace after `?` or operators
+5. **Use editor "Show whitespace" mode** to visually verify before saving
 
 ### Frontend TypeScript Code Generation Rules
 **MANDATORY: Follow these exact patterns when generating React/TypeScript code:**

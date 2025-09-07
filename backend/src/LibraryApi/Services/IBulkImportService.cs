@@ -17,12 +17,14 @@ namespace LibraryApi.Services
         /// <param name="fileStream">The CSV file stream to process.</param>
         /// <param name="fileName">The name of the uploaded file.</param>
         /// <param name="options">Configuration options for the import operation.</param>
+        /// <param name="userId">The ID of the user who owns the imported books.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The completed bulk import job with results.</returns>
         Task<BulkImportJob> ProcessBulkImportAsync(
             Stream fileStream,
             string fileName,
             BulkImportOptions options,
+            Guid userId,
             CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -53,12 +55,14 @@ namespace LibraryApi.Services
         /// <param name="jobId">The import job identifier for tracking.</param>
         /// <param name="candidates">The validated and enriched book candidates.</param>
         /// <param name="options">Import options containing duplicate handling strategy.</param>
+        /// <param name="userId">The ID of the user who owns the imported books.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The updated bulk import job with final results.</returns>
         Task<BulkImportJob> ExecuteBulkImportAsync(
             Guid jobId,
             List<BookImportCandidate> candidates,
             BulkImportOptions options,
+            Guid userId,
             CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -70,10 +74,11 @@ namespace LibraryApi.Services
         Task<BulkImportJob?> GetImportJobStatusAsync(Guid jobId, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Exports all books to CSV format.
+        /// Exports all books for the specified user to CSV format.
         /// </summary>
+        /// <param name="userId">The ID of the user whose books to export.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>CSV content as a string.</returns>
-        Task<string> ExportBooksToCSVAsync(CancellationToken cancellationToken = default);
+        Task<string> ExportBooksToCSVAsync(Guid userId, CancellationToken cancellationToken = default);
     }
 }

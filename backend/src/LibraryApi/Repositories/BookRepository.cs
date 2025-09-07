@@ -29,6 +29,7 @@ public class BookRepository : IBookRepository
 
     /// <inheritdoc/>
     public async Task<(IEnumerable<Book> Books, int TotalCount)> GetBooksAsync(
+        Guid userId,
         IEnumerable<string>? genres = null,
         int? rating = null,
         string? searchTerm = null,
@@ -38,10 +39,17 @@ public class BookRepository : IBookRepository
         int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
+        Console.WriteLine("=== REPOSITORY QUERY DEBUG ===");
+        Console.WriteLine($"Repository called with UserId: {userId}");
+        Console.WriteLine($"Page: {page}, PageSize: {pageSize}");
+
         var query = this.context.Books
+            .Where(b => b.UserId == userId)
             .Include(b => b.BookGenres)
             .ThenInclude(bg => bg.Genre)
             .AsNoTracking();
+
+        Console.WriteLine($"Generated Query: {query.ToQueryString()}");
 
         // Apply filters
         if (genres != null && genres.Any())
@@ -71,6 +79,9 @@ public class BookRepository : IBookRepository
             _ => query.OrderBy(b => b.Title), // Default sort by title
         };
 
+        // Log the generated SQL query for debugging
+        this.logger.LogInformation("Generated Query: {Query}", query.ToQueryString());
+
         var totalCount = await query.CountAsync(cancellationToken);
 
         var books = await query
@@ -78,31 +89,42 @@ public class BookRepository : IBookRepository
             .Take(pageSize)
             .ToListAsync(cancellationToken);
 
+        Console.WriteLine($"Repository returned {books.Count} books for UserId: {userId} (Total: {totalCount})");
+        Console.WriteLine("Sample returned books:");
+        foreach (var book in books.Take(3))
+        {
+            Console.WriteLine($"  - {book.Title} (UserId: {book.UserId})");
+        }
+        Console.WriteLine("=== END REPOSITORY QUERY ===");
+
         return (books, totalCount);
     }
 
     /// <inheritdoc/>
-    public async Task<Book?> GetBookByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Book?> GetBookByIdAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
     {
         return await this.context.Books
+            .Where(b => b.Id == id && b.UserId == userId)
             .Include(b => b.BookGenres)
             .ThenInclude(bg => bg.Genre)
             .AsNoTracking()
-            .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <summary>
-    /// Gets a book by ID for updating (with tracking enabled).
+    /// Gets a book by ID for updating (with tracking enabled) for a specific user.
     /// </summary>
     /// <param name="id">The book ID.</param>
+    /// <param name="userId">The ID of the user who should own the book.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The book if found, with tracking enabled for updates.</returns>
-    public async Task<Book?> GetBookForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
+    /// <returns>The book if found and owned by user, with tracking enabled for updates.</returns>
+    public async Task<Book?> GetBookForUpdateAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
     {
         return await this.context.Books
+            .Where(b => b.Id == id && b.UserId == userId)
             .Include(b => b.BookGenres)
             .ThenInclude(bg => bg.Genre)
-            .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -112,7 +134,7 @@ public class BookRepository : IBookRepository
         await this.context.SaveChangesAsync(cancellationToken);
 
         // Reload with genres
-        return await this.GetBookByIdAsync(book.Id, cancellationToken) ?? book;
+        return await this.GetBookByIdAsync(book.Id, book.UserId, cancellationToken) ?? book;
     }
 
     /// <inheritdoc/>
@@ -122,13 +144,14 @@ public class BookRepository : IBookRepository
         await this.context.SaveChangesAsync(cancellationToken);
 
         // Reload with genres
-        return await this.GetBookByIdAsync(book.Id, cancellationToken) ?? book;
+        return await this.GetBookByIdAsync(book.Id, book.UserId, cancellationToken) ?? book;
     }
 
     /// <inheritdoc/>
-    public async Task<bool> DeleteBookAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteBookAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
     {
-        var book = await this.context.Books.FindAsync(new object[] { id }, cancellationToken);
+        var book = await this.context.Books
+            .FirstOrDefaultAsync(b => b.Id == id && b.UserId == userId, cancellationToken);
         if (book == null)
         {
             return false;
@@ -140,13 +163,22 @@ public class BookRepository : IBookRepository
     }
 
     /// <inheritdoc/>
-    public async Task<(int TotalBooks, double AverageRating, IEnumerable<(string Genre, int Count, double AverageRating)> GenreStats)> GetBooksStatsAsync(CancellationToken cancellationToken = default)
+    public async Task<(int TotalBooks, double AverageRating, IEnumerable<(string Genre, int Count, double AverageRating)> GenreStats)> GetBooksStatsAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var totalBooks = await this.context.Books.CountAsync(cancellationToken);
-        var averageRating = await this.context.Books.AverageAsync(b => (double)b.Rating, cancellationToken);
+        var totalBooks = await this.context.Books
+            .Where(b => b.UserId == userId)
+            .CountAsync(cancellationToken);
+
+        // Handle empty database case - AverageAsync throws when sequence is empty
+        var averageRating = totalBooks > 0
+            ? await this.context.Books
+                .Where(b => b.UserId == userId)
+                .AverageAsync(b => (double)b.Rating, cancellationToken)
+            : 0.0;
 
         var genreStats = await this.context.BookGenres
             .Include(bg => bg.Book)
+            .Where(bg => bg.Book.UserId == userId)
             .GroupBy(bg => bg.GenreName)
             .Select(g => new
             {
@@ -163,9 +195,10 @@ public class BookRepository : IBookRepository
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<Book>> GetRecentBooksAsync(int count = 5, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Book>> GetRecentBooksAsync(Guid userId, int count = 5, CancellationToken cancellationToken = default)
     {
         return await this.context.Books
+            .Where(b => b.UserId == userId)
             .Include(b => b.BookGenres)
             .ThenInclude(bg => bg.Genre)
             .OrderByDescending(b => b.CreatedAt)
@@ -206,6 +239,7 @@ public class BookRepository : IBookRepository
     /// <inheritdoc/>
     public async Task<Dictionary<string, Book>> FindDuplicateBooksByTitleAuthorAsync(
         List<(string Title, string Author)> titleAuthorPairs,
+        Guid userId,
         CancellationToken cancellationToken = default)
     {
         if (!titleAuthorPairs.Any())
@@ -220,8 +254,9 @@ public class BookRepository : IBookRepository
             .Select(pair => $"{pair.Title.ToLower()}|{pair.Author.ToLower()}")
             .ToList();
 
-        // Query existing books and filter in memory (more SQLite-friendly)
+        // Query existing books for the specific user and filter in memory (more SQLite-friendly)
         var allBooks = await this.context.Books
+            .Where(b => b.UserId == userId)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
@@ -245,9 +280,10 @@ public class BookRepository : IBookRepository
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<Book>> GetAllBooksAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Book>> GetAllBooksAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await this.context.Books
+            .Where(b => b.UserId == userId)
             .Include(b => b.BookGenres)
                 .ThenInclude(bg => bg.Genre)
             .AsNoTracking()

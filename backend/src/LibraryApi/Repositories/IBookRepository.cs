@@ -12,8 +12,9 @@ namespace LibraryApi.Repositories
     public interface IBookRepository
     {
         /// <summary>
-        /// Gets all books with optional filtering and sorting.
+        /// Gets all books with optional filtering and sorting for a specific user.
         /// </summary>
+        /// <param name="userId">The ID of the user whose books to retrieve.</param>
         /// <param name="genres">Optional list of genres to filter by.</param>
         /// <param name="rating">Optional exact rating to filter by.</param>
         /// <param name="searchTerm">Optional search term for title/author.</param>
@@ -24,6 +25,7 @@ namespace LibraryApi.Repositories
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A tuple containing the books and total count.</returns>
         Task<(IEnumerable<Book> Books, int TotalCount)> GetBooksAsync(
+            Guid userId,
             IEnumerable<string>? genres = null,
             int? rating = null,
             string? searchTerm = null,
@@ -34,20 +36,22 @@ namespace LibraryApi.Repositories
             CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Gets a book by its identifier.
+        /// Gets a book by its identifier for a specific user.
         /// </summary>
         /// <param name="id">The book identifier.</param>
+        /// <param name="userId">The ID of the user who should own the book.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>The book if found, null otherwise.</returns>
-        Task<Book?> GetBookByIdAsync(Guid id, CancellationToken cancellationToken = default);
+        /// <returns>The book if found and owned by user, null otherwise.</returns>
+        Task<Book?> GetBookByIdAsync(Guid id, Guid userId, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Gets a book by its identifier for updating (with tracking enabled).
+        /// Gets a book by its identifier for updating (with tracking enabled) for a specific user.
         /// </summary>
         /// <param name="id">The book identifier.</param>
+        /// <param name="userId">The ID of the user who should own the book.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>The book if found, null otherwise, with tracking enabled for updates.</returns>
-        Task<Book?> GetBookForUpdateAsync(Guid id, CancellationToken cancellationToken = default);
+        /// <returns>The book if found and owned by user, null otherwise, with tracking enabled for updates.</returns>
+        Task<Book?> GetBookForUpdateAsync(Guid id, Guid userId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates a new book.
@@ -66,27 +70,30 @@ namespace LibraryApi.Repositories
         Task<Book> UpdateBookAsync(Book book, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Deletes a book by its identifier.
+        /// Deletes a book by its identifier for a specific user.
         /// </summary>
         /// <param name="id">The book identifier.</param>
+        /// <param name="userId">The ID of the user who should own the book.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>True if the book was deleted, false if not found.</returns>
-        Task<bool> DeleteBookAsync(Guid id, CancellationToken cancellationToken = default);
+        /// <returns>True if the book was deleted, false if not found or not owned by user.</returns>
+        Task<bool> DeleteBookAsync(Guid id, Guid userId, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Gets books statistics for dashboard.
+        /// Gets books statistics for dashboard for a specific user.
         /// </summary>
+        /// <param name="userId">The ID of the user whose stats to retrieve.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>Statistics about books and genres.</returns>
-        Task<(int TotalBooks, double AverageRating, IEnumerable<(string Genre, int Count, double AverageRating)> GenreStats)> GetBooksStatsAsync(CancellationToken cancellationToken = default);
+        /// <returns>Statistics about books and genres for the user.</returns>
+        Task<(int TotalBooks, double AverageRating, IEnumerable<(string Genre, int Count, double AverageRating)> GenreStats)> GetBooksStatsAsync(Guid userId, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Gets recently added books.
+        /// Gets recently added books for a specific user.
         /// </summary>
+        /// <param name="userId">The ID of the user whose recent books to retrieve.</param>
         /// <param name="count">Number of recent books to retrieve.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>Recently added books.</returns>
-        Task<IEnumerable<Book>> GetRecentBooksAsync(int count = 5, CancellationToken cancellationToken = default);
+        /// <returns>Recently added books for the user.</returns>
+        Task<IEnumerable<Book>> GetRecentBooksAsync(Guid userId, int count = 5, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates multiple books in a single transaction with bulk optimization.
@@ -97,20 +104,23 @@ namespace LibraryApi.Repositories
         Task<List<Book>> BulkCreateBooksAsync(List<Book> books, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Finds duplicate books by title and author combinations.
+        /// Finds duplicate books by title and author combinations for a specific user.
         /// </summary>
         /// <param name="titleAuthorPairs">The title-author pairs to check for duplicates.</param>
+        /// <param name="userId">The ID of the user to check duplicates for.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A dictionary mapping "title|author" keys to existing Book entities.</returns>
         Task<Dictionary<string, Book>> FindDuplicateBooksByTitleAuthorAsync(
             List<(string Title, string Author)> titleAuthorPairs,
+            Guid userId,
             CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Gets all books with their genres for export.
+        /// Gets all books with their genres for export for a specific user.
         /// </summary>
+        /// <param name="userId">The ID of the user whose books to retrieve.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>All books in the library.</returns>
-        Task<IEnumerable<Book>> GetAllBooksAsync(CancellationToken cancellationToken = default);
+        /// <returns>All books in the user's library.</returns>
+        Task<IEnumerable<Book>> GetAllBooksAsync(Guid userId, CancellationToken cancellationToken = default);
     }
 }

@@ -10,17 +10,18 @@ import {
   Book,
   CreateBookRequest,
   UpdateBookRequest,
-  Configuration,
   BookStatsResponse,
 } from '../generated/api';
 import type { PaginatedResponse } from '../types/PaginatedResponse';
 import { formatIso8601ForDisplay } from '../utils/dateUtils';
+import { getApiConfiguration } from '../config/apiConfig';
+import { useAuth } from '../contexts/AuthContext';
 
-// Create API instance with proper base URL configuration
-const configuration = new Configuration({
-  basePath: 'http://localhost:5000',
-});
-const booksApi = new BooksApi(configuration);
+// Create authenticated API instance
+const createBooksApi = (token?: string | null): BooksApi => {
+  const configuration = getApiConfiguration(token);
+  return new BooksApi(configuration);
+};
 
 // Query key factory
 export const booksKeys = {
@@ -49,9 +50,46 @@ export interface BooksFilters {
 export const useBooks = (
   filters: BooksFilters = {}
 ): UseQueryResult<PaginatedResponse<Book>, Error> => {
+  const { token } = useAuth();
+
   return useQuery({
     queryKey: booksKeys.list(filters),
     queryFn: async (): Promise<PaginatedResponse<Book>> => {
+      // === BOOKS API DEBUG ===
+      // eslint-disable-next-line no-console
+      console.log('=== BOOKS API CALL DEBUG ===');
+      // eslint-disable-next-line no-console
+      console.log('Filters:', filters);
+      // eslint-disable-next-line no-console
+      console.log('Token (first 50 chars):', token ? token.substring(0, 50) + '...' : 'NULL');
+      
+      // Decode JWT token to see what userId it contains
+      if (token) {
+        try {
+          const tokenParts = token.split('.');
+          if (tokenParts.length === 3 && tokenParts[1]) {
+            const payload = JSON.parse(atob(tokenParts[1])) as {
+              'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'?: string;
+              'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'?: string;
+              sub?: string;
+              email?: string;
+            };
+            // eslint-disable-next-line no-console
+            console.log('JWT Token UserId:', payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] ?? payload.sub);
+            // eslint-disable-next-line no-console
+            console.log('JWT Token Email:', payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] ?? payload.email);
+          }
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.log('Could not decode JWT token:', e);
+        }
+      }
+      
+      const booksApi = createBooksApi(token);
+      
+      // eslint-disable-next-line no-console
+      console.log('Making API call to /api/Books...');
+      
       const response = await booksApi.apiBooksGet(
         filters.genres,
         filters.rating,
@@ -62,37 +100,58 @@ export const useBooks = (
         filters.pageSize
       );
 
-      return response.data as unknown as PaginatedResponse<Book>;
+      const data = response.data as unknown as PaginatedResponse<Book>;
+      
+      // eslint-disable-next-line no-console
+      console.log('API Response received:');
+      // eslint-disable-next-line no-console
+      console.log('  Total books returned:', data.items.length);
+      // eslint-disable-next-line no-console
+      console.log('  Total items:', data.totalItems);
+      // eslint-disable-next-line no-console
+      console.log('  Sample books:', data.items.slice(0, 3).map(b => ({ title: b.title, id: b.id })));
+      // eslint-disable-next-line no-console
+      console.log('=== END BOOKS API CALL ===');
+
+      return data;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 10, // 10 minutes (was cacheTime)
     refetchOnWindowFocus: false, // Prevent refetch on window focus
     refetchOnReconnect: false, // Prevent refetch on reconnect
     placeholderData: previousData => previousData, // Keep previous data while fetching
+    enabled: !!token, // Only run query when authenticated
   });
 };
 
 // Custom hook for fetching a single book
 export const useBook = (id: string): UseQueryResult<Book, Error> => {
+  const { token } = useAuth();
+
   return useQuery({
     queryKey: booksKeys.detail(id),
     queryFn: async (): Promise<Book> => {
+      const booksApi = createBooksApi(token);
       const response = await booksApi.apiBooksIdGet(id);
       return response.data;
     },
-    enabled: !!id,
+    enabled: !!id && !!token, // Only run query when authenticated and ID is provided
   });
 };
 
 // Custom hook for fetching book statistics
 export const useBookStats = (): UseQueryResult<BookStatsResponse, Error> => {
+  const { token } = useAuth();
+
   return useQuery({
     queryKey: booksKeys.stats(),
     queryFn: async (): Promise<BookStatsResponse> => {
+      const booksApi = createBooksApi(token);
       const response = await booksApi.apiBooksStatsGet();
       return response.data;
     },
     staleTime: 1000 * 60 * 10, // 10 minutes for stats
+    enabled: !!token, // Only run query when authenticated
   });
 };
 
@@ -103,9 +162,11 @@ export const useCreateBook = (): UseMutationResult<
   CreateBookRequest
 > => {
   const queryClient = useQueryClient();
+  const { token } = useAuth();
 
   return useMutation({
     mutationFn: async (bookData: CreateBookRequest): Promise<Book> => {
+      const booksApi = createBooksApi(token);
       const response = await booksApi.apiBooksPost(bookData);
       return response.data;
     },
@@ -124,6 +185,7 @@ export const useUpdateBook = (): UseMutationResult<
   { id: string; bookData: UpdateBookRequest }
 > => {
   const queryClient = useQueryClient();
+  const { token } = useAuth();
 
   return useMutation({
     mutationFn: async ({
@@ -133,6 +195,7 @@ export const useUpdateBook = (): UseMutationResult<
       id: string;
       bookData: UpdateBookRequest;
     }): Promise<Book> => {
+      const booksApi = createBooksApi(token);
       const response = await booksApi.apiBooksIdPut(id, bookData);
       return response.data;
     },
@@ -150,9 +213,11 @@ export const useUpdateBook = (): UseMutationResult<
 // Custom hook for deleting a book
 export const useDeleteBook = (): UseMutationResult<void, Error, string> => {
   const queryClient = useQueryClient();
+  const { token } = useAuth();
 
   return useMutation({
     mutationFn: async (id: string): Promise<void> => {
+      const booksApi = createBooksApi(token);
       await booksApi.apiBooksIdDelete(id);
     },
     onSuccess: () => {

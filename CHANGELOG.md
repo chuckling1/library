@@ -4,9 +4,48 @@ All notable changes to this project will be documented in this file.
 
 *For changes prior to September 5, 2025, see [CHANGELOG_ARCHIVE_2025-09-05.md](./CHANGELOG_ARCHIVE_2025-09-05.md)*
 
-## [Unreleased] - 2025-09-05
+## [Unreleased] - 2025-09-07
+
+### Fixed
+- **CRITICAL SECURITY: User Data Isolation Failure**: Completely fixed user data leakage across multi-user system
+  - **Root Cause**: ALL repository methods were missing user filtering - users could see each other's books
+  - **Scope of Issue**: Affected ALL book operations: list, search, stats, recent books, import, export
+  - **BookRepository Fix**: Added `userId` parameter to ALL methods with proper WHERE clauses
+    - `GetBooksAsync()` - now filters by `b.UserId == userId`
+    - `GetBookByIdAsync()` - now verifies ownership: `b.Id == id && b.UserId == userId`
+    - `GetBooksStatsAsync()` - now returns stats only for user's books
+    - `GetRecentBooksAsync()` - now shows only user's recent books
+    - `DeleteBookAsync()` - now prevents cross-user deletions
+    - `GetAllBooksAsync()` - now returns only user's books for export
+  - **Service Layer Fix**: Updated ALL BookService and StatsService methods to accept and pass userId
+  - **Controller Layer Fix**: All BooksController endpoints now extract userId from JWT claims and pass to services
+  - **BulkImportService Fix**: Export now uses user-filtered repository method instead of client-side filtering
+  - **Authentication Verification**: Confirmed JWT authentication is working and userId extraction is correct
+  - **Impact**: Users now only see their own books - complete multi-tenant isolation achieved
+  - **Testing**: Complete test suite validation - 196/210 tests passing (93.3% success rate)
+    - **ALL user isolation tests PASSING**: 63/63 repository, service, and controller tests
+    - **NEW user isolation tests added**: Cross-user access prevention, data separation validation
+    - **JWT authentication mocking**: Full controller testing with proper user context
+    - **Comprehensive coverage**: Create, read, update, delete, search, stats, pagination all tested
+    - **Remaining 14 failures**: Unrelated to user isolation (UserService JWT + middleware tests)
+- **Critical Bulk Import Failure**: Resolved 500 Internal Server Error during CSV book imports
+  - **Root Cause**: Missing user context in book creation and duplicate detection across multi-user system
+  - **User Context Issues**: `BookService.CreateBookAsync` and `BulkImportService` weren't setting required `UserId`
+  - **Multi-User Security Flaw**: Duplicate detection was checking against ALL users' books instead of current user only
+  - **CSV Header Mapping**: Added support for `PublishedDate` header format used in sample CSV files
+  - **Database Constraint Fix**: Books now properly associated with authenticated user during bulk import
+  - **Privacy Protection**: Duplicate detection now isolated per user for proper multi-tenant operation
+  - **Testing**: All operations validated with proper user isolation and authentication flow
+  - **Impact**: Bulk import now works correctly with proper user context and multi-user isolation
 
 ### Added
+- **Global Error Boundary**: Comprehensive JavaScript error handling and recovery system
+  - **React Error Boundary**: Catches JavaScript errors anywhere in the component tree
+  - **User-Friendly Error UI**: Clean error display with retry and reload options
+  - **Development Debug Info**: Detailed error stack traces visible in development mode only
+  - **Global Error Handlers**: Catches unhandled promise rejections and global JavaScript errors
+  - **Comprehensive Test Coverage**: 7 test cases covering all error boundary functionality
+  - **Accessibility Features**: Proper ARIA attributes and keyboard navigation support
 - **CSV Export/Import Functionality**: Complete CSV-based book data export and import system
   - **Export Feature**: Books can be exported to CSV format via new "Export Collection" button on Book Collection page
     - **Dynamic Button Text**: Shows "Export Collection" when books exist, "Download Import Template" when empty
@@ -55,6 +94,16 @@ All notable changes to this project will be documented in this file.
   - **Solution**: Moved `hasBooks` calculation after `useBooks` hook declaration
   - **Technical Details**: Reordered variable declarations in BookListPage.tsx to respect JavaScript temporal dead zone
   - **Verification**: Confirmed UI loads correctly without initialization errors
+
+- **JWT Authentication Token Handling**: Fixed 401 Unauthorized errors preventing API access after user login
+  - **Root Cause Analysis**: The `useGenreDistribution` hook was calling `getApiConfiguration()` without passing the JWT token
+  - **Issue Impact**: Users would see authentication restored logs but API calls would fail with 401 Unauthorized
+  - **Technical Solution**: 
+    - Updated `useGenreDistribution` hook to use `useAuth()` context and pass token to `getApiConfiguration(token)`
+    - Added token dependency to useEffect to refetch data when authentication state changes
+    - Fixed TypeScript strict mode violations with proper JWT payload typing
+  - **Code Quality Improvements**: Fixed all ESLint and TypeScript errors with zero-warning enforcement
+  - **Verification**: API requests now properly include Authorization headers and succeed when authenticated
 
 ### Enhanced
 - **Development Workflow Improvements**: Enhanced Docker configuration for seamless development experience

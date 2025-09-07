@@ -42,6 +42,11 @@ public class LibraryDbContext : DbContext
     public DbSet<BulkImportJob> BulkImportJobs { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the users DbSet.
+    /// </summary>
+    public DbSet<User> Users { get; set; } = null!;
+
+    /// <summary>
     /// Saves changes to the database with automatic timestamp updates.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -70,6 +75,18 @@ public class LibraryDbContext : DbContext
             entry.Entity.CreatedAt = DateTime.UtcNow;
         }
 
+        var userEntries = this.ChangeTracker.Entries<User>()
+            .Where(e => e.State == EntityState.Added);
+
+        foreach (var entry in userEntries)
+        {
+            entry.Entity.CreatedAt = DateTime.UtcNow;
+            if (entry.Entity.Id == Guid.Empty)
+            {
+                entry.Entity.Id = Guid.NewGuid();
+            }
+        }
+
         return await base.SaveChangesAsync(cancellationToken);
     }
 
@@ -81,6 +98,15 @@ public class LibraryDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        // Configure User entity
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(u => u.Id);
+            entity.Property(u => u.Email).IsRequired().HasMaxLength(255);
+            entity.Property(u => u.PasswordHash).IsRequired().HasMaxLength(255);
+            entity.HasIndex(u => u.Email).IsUnique();
+        });
+
         // Configure Book entity
         modelBuilder.Entity<Book>(entity =>
         {
@@ -90,6 +116,13 @@ public class LibraryDbContext : DbContext
             entity.Property(b => b.Edition).HasMaxLength(100);
             entity.Property(b => b.Isbn).HasMaxLength(20);
             entity.Property(b => b.Rating).HasDefaultValue(1);
+            entity.Property(b => b.UserId).IsRequired();
+
+            // Configure relationship with User
+            entity.HasOne(b => b.User)
+                  .WithMany(u => u.Books)
+                  .HasForeignKey(b => b.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         // Configure Genre entity

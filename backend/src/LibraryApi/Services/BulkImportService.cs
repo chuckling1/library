@@ -49,6 +49,7 @@ namespace LibraryApi.Services
             Stream fileStream,
             string fileName,
             BulkImportOptions options,
+            Guid userId,
             CancellationToken cancellationToken = default)
         {
             var jobId = Guid.NewGuid();
@@ -64,7 +65,8 @@ namespace LibraryApi.Services
 
             try
             {
-                this.logger.LogInformation("Starting bulk import job {JobId} for file {FileName}", jobId, fileName);
+                this.logger.LogInformation("=== BULK IMPORT DEBUG ===");
+                this.logger.LogInformation("Starting bulk import job {JobId} for file {FileName} for UserId: {UserId}", jobId, fileName, userId);
 
                 // PHASE 1: Parse and validate CSV data
                 var (candidates, parseErrors) = await this.ParseAndValidateAsync(fileStream, cancellationToken);
@@ -82,12 +84,12 @@ namespace LibraryApi.Services
                 }
 
                 // PHASE 3: Duplicate detection and handling
-                var finalCandidates = await this.HandleDuplicatesAsync(validCandidates, options, cancellationToken);
+                var finalCandidates = await this.HandleDuplicatesAsync(validCandidates, options, userId, cancellationToken);
 
                 // PHASE 4: Bulk database import
                 if (finalCandidates.Any())
                 {
-                    var importResult = await this.ExecuteBulkImportAsync(jobId, finalCandidates, options, cancellationToken);
+                    var importResult = await this.ExecuteBulkImportAsync(jobId, finalCandidates, options, userId, cancellationToken);
                     job.ValidRows = importResult.ValidRows;
                 }
                 else
@@ -251,9 +253,11 @@ namespace LibraryApi.Services
             Guid jobId,
             List<BookImportCandidate> candidates,
             BulkImportOptions options,
+            Guid userId,
             CancellationToken cancellationToken = default)
         {
-            this.logger.LogInformation("Executing bulk import for {Count} validated candidates", candidates.Count);
+            this.logger.LogInformation("=== EXECUTE BULK IMPORT DEBUG ===");
+            this.logger.LogInformation("Executing bulk import for {Count} validated candidates for UserId: {UserId}", candidates.Count, userId);
 
             // Ensure all genres exist
             var allGenreNames = candidates.SelectMany(c => c.Genres).Distinct().ToList();
@@ -270,6 +274,7 @@ namespace LibraryApi.Services
                 Rating = candidate.Rating,
                 Edition = candidate.Edition,
                 Isbn = candidate.Isbn,
+                UserId = userId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 BookGenres = candidate.Genres.Select(genreName => new BookGenre
@@ -277,6 +282,10 @@ namespace LibraryApi.Services
                     GenreName = genreName,
                 }).ToList(),
             }).ToList();
+
+            this.logger.LogInformation("Creating {BookCount} books for UserId: {UserId}", books.Count, userId);
+            this.logger.LogInformation("Sample book creation data: {@BookSample}", 
+                books.Take(3).Select(b => new { Title = b.Title, UserId = b.UserId }).ToList());
 
             // Execute bulk insert
             var createdBooks = await this.bookRepository.BulkCreateBooksAsync(books, cancellationToken);
@@ -296,9 +305,17 @@ namespace LibraryApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<string> ExportBooksToCSVAsync(CancellationToken cancellationToken = default)
+        public async Task<string> ExportBooksToCSVAsync(Guid userId, CancellationToken cancellationToken = default)
         {
-            var books = await this.bookRepository.GetAllBooksAsync(cancellationToken);
+            this.logger.LogInformation("=== EXPORT BOOKS DEBUG ===");
+            this.logger.LogInformation("Exporting books for UserId: {UserId}", userId);
+            
+            var books = await this.bookRepository.GetAllBooksAsync(userId, cancellationToken);
+            
+            this.logger.LogInformation("Retrieved {BookCount} books for export for UserId: {UserId}", books.Count(), userId);
+            this.logger.LogInformation("Sample exported book UserIds: {@BookUserIds}", 
+                books.Take(3).Select(b => new { BookId = b.Id, Title = b.Title, UserId = b.UserId }).ToList());
+            
             var csv = new System.Text.StringBuilder();
 
             // If no books, return a template with instructions
@@ -363,6 +380,7 @@ namespace LibraryApi.Services
         private async Task<List<BookImportCandidate>> HandleDuplicatesAsync(
             List<BookImportCandidate> candidates,
             BulkImportOptions options,
+            Guid userId,
             CancellationToken cancellationToken)
         {
             if (options.DuplicateStrategy == DuplicateHandling.Allow)
@@ -372,7 +390,7 @@ namespace LibraryApi.Services
 
             // Find existing duplicates
             var titleAuthorPairs = candidates.Select(c => (c.Title, c.Author)).ToList();
-            var duplicates = await this.bookRepository.FindDuplicateBooksByTitleAuthorAsync(titleAuthorPairs, cancellationToken);
+            var duplicates = await this.bookRepository.FindDuplicateBooksByTitleAuthorAsync(titleAuthorPairs, userId, cancellationToken);
 
             if (options.DuplicateStrategy == DuplicateHandling.Skip)
             {
@@ -418,6 +436,7 @@ namespace LibraryApi.Services
                         mapping["author"] = i;
                         break;
                     case "published":
+                    case "publisheddate":
                     case "publish_date":
                     case "publication_date":
                         mapping["publisheddate"] = i;

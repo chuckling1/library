@@ -68,6 +68,17 @@ namespace LibraryApi.Models
         public DateTime UpdatedAt { get; set; }
 
         /// <summary>
+        /// Gets or sets the unique identifier of the user who owns this book.
+        /// </summary>
+        [Required]
+        public Guid UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user who owns this book.
+        /// </summary>
+        public virtual User User { get; set; } = null!;
+
+        /// <summary>
         /// Gets or sets the collection of genres associated with this book.
         /// </summary>
         public virtual ICollection<BookGenre> BookGenres { get; set; } = new List<BookGenre>();

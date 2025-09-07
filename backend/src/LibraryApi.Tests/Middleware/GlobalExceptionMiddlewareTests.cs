@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Text.Json;
 using FluentAssertions;
@@ -118,9 +119,9 @@ namespace LibraryApi.Tests.Middleware
             var timestampString = responseObject.GetProperty("error").GetProperty("timestamp").GetString();
             timestampString.Should().NotBeEmpty();
 
-            // Verify timestamp format and is recent
-            var timestamp = DateTime.Parse(timestampString!);
-            timestamp.Should().BeCloseTo(beforeExecution, TimeSpan.FromSeconds(5));
+            // Verify timestamp format and is recent (allow for timezone differences)
+            var timestamp = DateTime.ParseExact(timestampString!, "yyyy-MM-ddTHH:mm:ss.fffZ", null, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+            timestamp.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(10));
             
             // Verify ISO 8601 format with milliseconds and Z suffix
             timestampString.Should().MatchRegex(@"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z");

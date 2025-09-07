@@ -1,0 +1,163 @@
+@use '../styles/variables' as vars;
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, vars.$accent-primary 0%, vars.$accent-hover 100%);
+  padding: vars.$spacing-lg;
+
+  .auth-container {
+    background: vars.$bg-primary;
+    border: 1px solid vars.$border-color;
+    border-radius: vars.$border-radius-lg;
+    box-shadow: vars.$box-shadow-md;
+    padding: vars.$spacing-xxl;
+    width: 100%;
+    max-width: 400px;
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: vars.$spacing-xl;
+
+      h1 {
+        color: vars.$text-primary;
+        margin-bottom: vars.$spacing-sm;
+        font-size: vars.$font-size-xl;
+        font-weight: vars.$font-weight-bold;
+      }
+
+      p {
+        color: vars.$text-secondary;
+        font-size: vars.$font-size-md;
+      }
+    }
+
+    .auth-form {
+      .form-group {
+        margin-bottom: vars.$spacing-lg;
+
+        .form-label {
+          display: block;
+          margin-bottom: vars.$spacing-sm;
+          font-weight: vars.$font-weight-medium;
+          color: vars.$text-primary;
+          font-size: vars.$font-size-sm;
+        }
+
+        .form-input {
+          width: 100%;
+          padding: vars.$spacing-md;
+          border: 2px solid vars.$border-color;
+          border-radius: vars.$border-radius-md;
+          background-color: vars.$bg-secondary;
+          color: vars.$text-primary;
+          font-size: vars.$font-size-md;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+          &:focus {
+            outline: none;
+            border-color: vars.$accent-primary;
+            box-shadow: 0 0 0 3px rgba(vars.$accent-primary, 0.2);
+          }
+
+          &.error {
+            border-color: vars.$accent-error;
+            box-shadow: 0 0 0 3px rgba(vars.$accent-error, 0.2);
+          }
+
+          &:disabled {
+            background-color: vars.$bg-surface;
+            color: vars.$text-disabled;
+            cursor: not-allowed;
+            opacity: 0.6;
+          }
+
+          &::placeholder {
+            color: vars.$text-tertiary;
+          }
+        }
+      }
+
+      .error-message {
+        color: vars.$accent-error;
+        font-size: vars.$font-size-sm;
+        font-weight: vars.$font-weight-medium;
+
+        &.field-error {
+          margin-top: vars.$spacing-xs;
+        }
+
+        &.general-error {
+          background-color: rgba(vars.$accent-error, 0.1);
+          border: 1px solid vars.$accent-error;
+          border-radius: vars.$border-radius-sm;
+          padding: vars.$spacing-md;
+          margin-bottom: vars.$spacing-lg;
+          text-align: center;
+        }
+      }
+
+      .auth-submit-button {
+        width: 100%;
+        padding: vars.$spacing-md vars.$spacing-lg;
+        background: vars.$accent-primary;
+        color: vars.$text-primary;
+        border: none;
+        border-radius: vars.$border-radius-md;
+        font-size: vars.$font-size-md;
+        font-weight: vars.$font-weight-medium;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+
+        &:hover:not(:disabled) {
+          background: vars.$accent-hover;
+          transform: translateY(-1px);
+        }
+
+        &:active:not(:disabled) {
+          transform: translateY(0);
+        }
+
+        &:disabled {
+          background: vars.$bg-surface;
+          color: vars.$text-disabled;
+          cursor: not-allowed;
+          opacity: 0.6;
+          transform: none;
+        }
+      }
+    }
+
+    .auth-footer {
+      margin-top: vars.$spacing-xl;
+      text-align: center;
+
+      p {
+        color: vars.$text-secondary;
+        font-size: vars.$font-size-sm;
+      }
+
+      .auth-link {
+        color: vars.$accent-primary;
+        text-decoration: none;
+        font-weight: vars.$font-weight-medium;
+        transition: color 0.2s ease;
+
+        &:hover {
+          color: vars.$accent-hover;
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: vars.$spacing-md;
+
+    .auth-container {
+      padding: vars.$spacing-xl;
+    }
+  }
+}

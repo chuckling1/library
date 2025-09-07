@@ -5,12 +5,15 @@
 namespace LibraryApi;
 
 using System.Reflection;
+using System.Text;
 using FluentValidation;
 using LibraryApi.Data;
 using LibraryApi.Middleware;
 using LibraryApi.Repositories;
 using LibraryApi.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
 
 /// <summary>
@@ -65,8 +68,12 @@ public static class Program
         // Configure CORS
         builder.Services.AddCors(options =>
         {
+            // Get allowed origins from configuration (environment variables)
+            var allowedOrigins = builder.Configuration.GetSection("CORS:AllowedOrigins").Get<string[]>()
+                ?? new[] { "http://localhost:3000", "http://localhost:5173" }; // Fallback for development
+
             options.AddPolicy("AllowReactApp", policy =>
-                policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
+                policy.WithOrigins(allowedOrigins)
                       .AllowAnyHeader()
                       .AllowAnyMethod());
         });
@@ -75,15 +82,41 @@ public static class Program
         builder.Services.AddScoped<IBookRepository, BookRepository>();
         builder.Services.AddScoped<IGenreRepository, GenreRepository>();
         builder.Services.AddScoped<IBulkImportRepository, BulkImportRepository>();
+        builder.Services.AddScoped<IUserRepository, UserRepository>();
 
         // Register services (Interface-first design)
         builder.Services.AddScoped<IBookService, BookService>();
         builder.Services.AddScoped<IGenreService, GenreService>();
         builder.Services.AddScoped<IStatsService, StatsService>();
         builder.Services.AddScoped<IBulkImportService, BulkImportService>();
+        builder.Services.AddScoped<IUserService, UserService>();
 
         // Register validators
         builder.Services.AddValidatorsFromAssemblyContaining<LibraryApi.Validators.CreateBookRequestValidator>();
+
+        // Configure JWT Authentication
+        var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+        var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey is not configured");
+        var issuer = jwtSettings["Issuer"] ?? throw new InvalidOperationException("JWT Issuer is not configured");
+        var audience = jwtSettings["Audience"] ?? throw new InvalidOperationException("JWT Audience is not configured");
+
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = issuer,
+                    ValidAudience = audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+                    ClockSkew = TimeSpan.Zero,
+                };
+            });
+
+        builder.Services.AddAuthorization();
 
         // Add health checks
         builder.Services.AddHealthChecks()
@@ -104,7 +137,11 @@ public static class Program
 
         app.UseHttpsRedirection();
         app.UseCors("AllowReactApp");
+
+        // Authentication must come before Authorization
+        app.UseAuthentication();
         app.UseAuthorization();
+
         app.MapControllers();
 
         // Map health check endpoints

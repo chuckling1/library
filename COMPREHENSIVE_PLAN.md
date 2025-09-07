@@ -232,3 +232,39 @@ logger.error('API call failed', { functionName: 'fetchBooks', error: error.messa
 // Expected JSON Output:
 // {"timestamp":"...", "level":"ERROR", "appLayer":"Frontend-UI", "sourceContext":"BookService", "functionName":"fetchBooks", "message":"API call failed", "payload":{"error":"Network Error", "url":"/api/books"}}
 </example_react>
+
+Phase 8: Final System Validation (Clean State Testing)
+Goal: Validate the complete system functionality from a pristine state to ensure proper initialization, setup, and end-to-end functionality.
+
+AI Persona: QA Engineer / System Integration Tester
+
+User Prompt: "We are now in the final validation phase. Adopt the persona of a QA Engineer specializing in system integration testing. Perform a complete clean-state validation of the entire application."
+
+Tasks:
+1. **Database Reset**: Delete all existing database files and ensure clean startup
+2. **Dependency Verification**: Confirm all package installations work from scratch
+3. **Migration Testing**: Verify database migrations run successfully on empty database
+4. **End-to-End Functionality**: Test complete user workflows from initial setup
+5. **Docker Clean State**: Test both development and production Docker environments from clean state
+6. **Setup Script Validation**: Verify setup.js works correctly for new installations
+
+Validation Checklist:
+- [ ] Delete backend/data/library.db and any migration files
+- [ ] Run `npm run clean` in both frontend and backend (if available)
+- [ ] Delete node_modules and .nuget packages
+- [ ] Test setup.js script execution
+- [ ] Verify database migrations create proper schema
+- [ ] Test adding first book through UI
+- [ ] Verify all CRUD operations work correctly
+- [ ] Test CSV import/export with clean database
+- [ ] Validate Docker containers start successfully from scratch
+- [ ] Confirm health checks pass in clean environment
+- [ ] Test complete user journey: setup → add books → search → export → import
+
+Success Criteria:
+- Application starts successfully without any existing data
+- All features work correctly in pristine environment
+- Setup documentation accurately reflects actual requirements
+- No hidden dependencies or manual configuration steps required
+
+Output File: Create a validation report documenting all test results and any issues discovered during clean state testing.

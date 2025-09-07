@@ -1,5 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../contexts/AuthContext';
+import { getApiBaseUrl } from '../config/apiConfig';
 
 interface BulkImportResult {
   jobId: string;
@@ -32,15 +34,22 @@ export const useBulkImport = (): {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
+  const { token } = useAuth();
 
   const bulkImportMutation = useMutation({
     mutationFn: async (file: File): Promise<BulkImportResult> => {
       const formData = new FormData();
       formData.append('file', file);
 
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
       // Create a custom request using fetch since the generated client might not handle FormData correctly
-      const response = await fetch('/api/BulkImport/books', {
+      const response = await fetch(`${getApiBaseUrl()}/api/BulkImport/books`, {
         method: 'POST',
+        headers,
         body: formData,
       });
 

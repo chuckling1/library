@@ -4,9 +4,11 @@
 
 namespace LibraryApi.Controllers;
 
+using System.Security.Claims;
 using LibraryApi.Models;
 using LibraryApi.Responses;
 using LibraryApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 /// <summary>
@@ -15,6 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
+[Authorize]
 public class BulkImportController : ControllerBase
 {
     private readonly IBulkImportService bulkImportService;
@@ -88,10 +91,12 @@ public class BulkImportController : ControllerBase
                 OpenLibraryBatchDelay = 1000,
             };
 
+            var userId = this.GetCurrentUserId();
             var result = await this.bulkImportService.ProcessBulkImportAsync(
                 stream,
                 file.FileName,
                 options,
+                userId,
                 cancellationToken);
 
             var response = new BulkImportResponse
@@ -167,7 +172,8 @@ public class BulkImportController : ControllerBase
         {
             this.logger.LogInformation("Starting book export to CSV");
 
-            var csvContent = await this.bulkImportService.ExportBooksToCSVAsync(cancellationToken);
+            var userId = this.GetCurrentUserId();
+            var csvContent = await this.bulkImportService.ExportBooksToCSVAsync(userId, cancellationToken);
             var bytes = System.Text.Encoding.UTF8.GetBytes(csvContent);
 
             this.logger.LogInformation("Completed book export, size: {Size} bytes", bytes.Length);
@@ -212,5 +218,20 @@ public class BulkImportController : ControllerBase
         return job.ErrorRows == 1
             ? $"1 row had validation errors."
             : $"{job.ErrorRows} rows had validation errors.";
+    }
+
+    /// <summary>
+    /// Gets the current user's ID from JWT claims.
+    /// </summary>
+    /// <returns>The current user's ID.</returns>
+    private Guid GetCurrentUserId()
+    {
+        var userIdClaim = this.User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        {
+            throw new UnauthorizedAccessException("Invalid user token");
+        }
+
+        return userId;
     }
 }

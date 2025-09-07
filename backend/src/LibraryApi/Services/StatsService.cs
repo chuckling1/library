@@ -26,9 +26,9 @@ namespace LibraryApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<BookStatsResponse> GetBookStatsAsync(CancellationToken cancellationToken = default)
+        public async Task<BookStatsResponse> GetBookStatsAsync(Guid userId, CancellationToken cancellationToken = default)
         {
-            return await this.bookService.GetBookStatsAsync(cancellationToken);
+            return await this.bookService.GetBookStatsAsync(userId, cancellationToken);
         }
     }
 }

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using FluentAssertions;
 using LibraryApi.Controllers;
 using LibraryApi.Models;
@@ -22,12 +23,29 @@ namespace LibraryApi.Tests.Controllers
         private readonly Mock<IBookService> _mockBookService;
         private readonly Mock<ILogger<BooksController>> _mockLogger;
         private readonly BooksController _controller;
+        private readonly Guid _testUserId = Guid.NewGuid();
 
         public BooksControllerTests()
         {
             _mockBookService = new Mock<IBookService>();
             _mockLogger = new Mock<ILogger<BooksController>>();
             _controller = new BooksController(_mockBookService.Object, _mockLogger.Object);
+            
+            // Setup JWT authentication mock
+            SetupUserContext();
+        }
+        
+        private void SetupUserContext()
+        {
+            var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, _testUserId.ToString())
+            }));
+            
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = user }
+            };
         }
 
         #region GetBooks Tests
@@ -41,10 +59,16 @@ namespace LibraryApi.Tests.Controllers
                 new Book { Id = Guid.NewGuid(), Title = "Test Book 1", Author = "Author 1", Rating = 4, PublishedDate = "2023" },
                 new Book { Id = Guid.NewGuid(), Title = "Test Book 2", Author = "Author 2", Rating = 5, PublishedDate = "2022" }
             };
-            _mockBookService.Setup(s => s.GetBooksAsync(
-                It.IsAny<string[]>(), It.IsAny<int?>(), It.IsAny<string>(), It.IsAny<string>(),
+            _mockBookService.Setup(s => s.GetBooksPaginatedAsync(
+                _testUserId, It.IsAny<string[]>(), It.IsAny<int?>(), It.IsAny<string>(), It.IsAny<string>(),
                 It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(books);
+                .ReturnsAsync(new PaginatedResponse<Book>
+                {
+                    Items = books,
+                    Page = 1,
+                    PageSize = 20,
+                    TotalItems = books.Count()
+                });
 
             // Act
             var result = await _controller.GetBooks();
@@ -52,9 +76,10 @@ namespace LibraryApi.Tests.Controllers
             // Assert
             result.Should().NotBeNull();
             var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
-            var returnedBooks = okResult.Value.Should().BeOfType<List<Book>>().Subject;
-            returnedBooks.Should().HaveCount(2);
-            returnedBooks.Should().BeEquivalentTo(books);
+            var paginatedResponse = okResult.Value.Should().BeOfType<PaginatedResponse<Book>>().Subject;
+            paginatedResponse.Items.Should().HaveCount(2);
+            paginatedResponse.Items.Should().BeEquivalentTo(books);
+            paginatedResponse.TotalItems.Should().Be(2);
         }
 
         [Fact]
@@ -70,16 +95,22 @@ namespace LibraryApi.Tests.Controllers
             var pageSize = 10;
             var books = new List<Book>();
 
-            _mockBookService.Setup(s => s.GetBooksAsync(
-                genres, rating, search, sortBy, sortDirection, page, pageSize, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(books);
+            _mockBookService.Setup(s => s.GetBooksPaginatedAsync(
+                _testUserId, genres, rating, search, sortBy, sortDirection, page, pageSize, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new PaginatedResponse<Book>
+                {
+                    Items = books,
+                    Page = page,
+                    PageSize = pageSize,
+                    TotalItems = books.Count()
+                });
 
             // Act
             var result = await _controller.GetBooks(genres, rating, search, sortBy, sortDirection, page, pageSize);
 
             // Assert
-            _mockBookService.Verify(s => s.GetBooksAsync(
-                genres, rating, search, sortBy, sortDirection, page, pageSize, It.IsAny<CancellationToken>()),
+            _mockBookService.Verify(s => s.GetBooksPaginatedAsync(
+                _testUserId, genres, rating, search, sortBy, sortDirection, page, pageSize, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -96,8 +127,8 @@ namespace LibraryApi.Tests.Controllers
             result.Should().NotBeNull();
             var badRequestResult = result.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
             badRequestResult.Value.Should().Be("Page size cannot exceed 100");
-            _mockBookService.Verify(s => s.GetBooksAsync(
-                It.IsAny<string[]>(), It.IsAny<int?>(), It.IsAny<string>(), It.IsAny<string>(),
+            _mockBookService.Verify(s => s.GetBooksPaginatedAsync(
+                It.IsAny<Guid>(), It.IsAny<string[]>(), It.IsAny<int?>(), It.IsAny<string>(), It.IsAny<string>(),
                 It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
                 Times.Never);
         }
@@ -110,17 +141,23 @@ namespace LibraryApi.Tests.Controllers
             var cancellationToken = cancellationTokenSource.Token;
             var books = new List<Book>();
 
-            _mockBookService.Setup(s => s.GetBooksAsync(
-                It.IsAny<string[]>(), It.IsAny<int?>(), It.IsAny<string>(), It.IsAny<string>(),
+            _mockBookService.Setup(s => s.GetBooksPaginatedAsync(
+                _testUserId, It.IsAny<string[]>(), It.IsAny<int?>(), It.IsAny<string>(), It.IsAny<string>(),
                 It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), cancellationToken))
-                .ReturnsAsync(books);
+                .ReturnsAsync(new PaginatedResponse<Book>
+                {
+                    Items = books,
+                    Page = 1,
+                    PageSize = 20,
+                    TotalItems = books.Count()
+                });
 
             // Act
             var result = await _controller.GetBooks(cancellationToken: cancellationToken);
 
             // Assert
-            _mockBookService.Verify(s => s.GetBooksAsync(
-                It.IsAny<string[]>(), It.IsAny<int?>(), It.IsAny<string>(), It.IsAny<string>(),
+            _mockBookService.Verify(s => s.GetBooksPaginatedAsync(
+                _testUserId, It.IsAny<string[]>(), It.IsAny<int?>(), It.IsAny<string>(), It.IsAny<string>(),
                 It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), cancellationToken),
                 Times.Once);
         }
@@ -135,7 +172,7 @@ namespace LibraryApi.Tests.Controllers
             // Arrange
             var bookId = Guid.NewGuid();
             var book = new Book { Id = bookId, Title = "Test Book", Author = "Test Author", Rating = 4, PublishedDate = "2023" };
-            _mockBookService.Setup(s => s.GetBookByIdAsync(bookId, It.IsAny<CancellationToken>()))
+            _mockBookService.Setup(s => s.GetBookByIdAsync(bookId, _testUserId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(book);
 
             // Act
@@ -153,7 +190,7 @@ namespace LibraryApi.Tests.Controllers
         {
             // Arrange
             var bookId = Guid.NewGuid();
-            _mockBookService.Setup(s => s.GetBookByIdAsync(bookId, It.IsAny<CancellationToken>()))
+            _mockBookService.Setup(s => s.GetBookByIdAsync(bookId, _testUserId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Book?)null);
 
             // Act
@@ -193,7 +230,7 @@ namespace LibraryApi.Tests.Controllers
                 Isbn = request.Isbn
             };
 
-            _mockBookService.Setup(s => s.CreateBookAsync(request, It.IsAny<CancellationToken>()))
+            _mockBookService.Setup(s => s.CreateBookAsync(request, _testUserId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(createdBook);
 
             // Act
@@ -223,7 +260,7 @@ namespace LibraryApi.Tests.Controllers
             result.Should().NotBeNull();
             var badRequestResult = result.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
             badRequestResult.Value.Should().BeOfType<SerializableError>();
-            _mockBookService.Verify(s => s.CreateBookAsync(It.IsAny<CreateBookRequest>(), It.IsAny<CancellationToken>()),
+            _mockBookService.Verify(s => s.CreateBookAsync(It.IsAny<CreateBookRequest>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
                 Times.Never);
         }
 
@@ -253,7 +290,7 @@ namespace LibraryApi.Tests.Controllers
                 Rating = request.Rating
             };
 
-            _mockBookService.Setup(s => s.UpdateBookAsync(bookId, request, It.IsAny<CancellationToken>()))
+            _mockBookService.Setup(s => s.UpdateBookAsync(bookId, request, _testUserId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(updatedBook);
 
             // Act
@@ -280,7 +317,7 @@ namespace LibraryApi.Tests.Controllers
                 Rating = 5
             };
 
-            _mockBookService.Setup(s => s.UpdateBookAsync(bookId, request, It.IsAny<CancellationToken>()))
+            _mockBookService.Setup(s => s.UpdateBookAsync(bookId, request, _testUserId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Book?)null);
 
             // Act
@@ -306,7 +343,7 @@ namespace LibraryApi.Tests.Controllers
             result.Should().NotBeNull();
             var badRequestResult = result.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
             badRequestResult.Value.Should().BeOfType<SerializableError>();
-            _mockBookService.Verify(s => s.UpdateBookAsync(It.IsAny<Guid>(), It.IsAny<UpdateBookRequest>(), It.IsAny<CancellationToken>()),
+            _mockBookService.Verify(s => s.UpdateBookAsync(It.IsAny<Guid>(), It.IsAny<UpdateBookRequest>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
                 Times.Never);
         }
 
@@ -319,7 +356,7 @@ namespace LibraryApi.Tests.Controllers
         {
             // Arrange
             var bookId = Guid.NewGuid();
-            _mockBookService.Setup(s => s.DeleteBookAsync(bookId, It.IsAny<CancellationToken>()))
+            _mockBookService.Setup(s => s.DeleteBookAsync(bookId, _testUserId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             // Act
@@ -335,7 +372,7 @@ namespace LibraryApi.Tests.Controllers
         {
             // Arrange
             var bookId = Guid.NewGuid();
-            _mockBookService.Setup(s => s.DeleteBookAsync(bookId, It.IsAny<CancellationToken>()))
+            _mockBookService.Setup(s => s.DeleteBookAsync(bookId, _testUserId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             // Act
@@ -366,7 +403,7 @@ namespace LibraryApi.Tests.Controllers
                 }
             };
 
-            _mockBookService.Setup(s => s.GetBookStatsAsync(It.IsAny<CancellationToken>()))
+            _mockBookService.Setup(s => s.GetBookStatsAsync(_testUserId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(stats);
 
             // Act

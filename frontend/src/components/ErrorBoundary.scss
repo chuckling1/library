@@ -1,0 +1,124 @@
+@use '../styles/variables' as vars;
+
+.error-boundary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  padding: vars.$spacing-lg;
+  background-color: vars.$bg-primary;
+  color: vars.$text-primary;
+
+  &__container {
+    text-align: center;
+    max-width: 500px;
+    padding: vars.$spacing-xl;
+    background-color: vars.$bg-surface;
+    border-radius: vars.$border-radius-lg;
+    box-shadow: vars.$box-shadow-md;
+  }
+
+  &__icon {
+    margin-bottom: vars.$spacing-lg;
+    color: vars.$accent-error;
+    
+    svg {
+      width: 64px;
+      height: 64px;
+    }
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: vars.$spacing-md;
+    color: vars.$text-primary;
+  }
+
+  &__message {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: vars.$spacing-xl;
+    color: vars.$text-secondary;
+  }
+
+  &__actions {
+    display: flex;
+    gap: vars.$spacing-md;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  &__details {
+    margin-top: vars.$spacing-xl;
+    text-align: left;
+    border: 1px solid vars.$border-color;
+    border-radius: vars.$border-radius-md;
+    padding: vars.$spacing-md;
+    background-color: vars.$bg-primary;
+
+    summary {
+      cursor: pointer;
+      font-weight: 600;
+      margin-bottom: vars.$spacing-sm;
+      color: vars.$text-secondary;
+      
+      &:hover {
+        color: vars.$text-primary;
+      }
+    }
+  }
+
+  &__error-info {
+    h4 {
+      margin: vars.$spacing-md 0 vars.$spacing-sm;
+      color: vars.$text-primary;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    pre {
+      background-color: vars.$bg-primary;
+      border: 1px solid vars.$border-color;
+      border-radius: vars.$border-radius-sm;
+      padding: vars.$spacing-sm;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: vars.$text-secondary;
+      overflow-x: auto;
+    }
+  }
+}
+
+// Mobile responsiveness
+@media (max-width: 768px) {
+  .error-boundary {
+    padding: vars.$spacing-md;
+    min-height: 40vh;
+
+    &__container {
+      padding: vars.$spacing-lg;
+    }
+
+    &__icon svg {
+      width: 48px;
+      height: 48px;
+    }
+
+    &__title {
+      font-size: 1.25rem;
+    }
+
+    &__actions {
+      flex-direction: column;
+      align-items: center;
+      
+      .btn {
+        width: 100%;
+        max-width: 200px;
+      }
+    }
+  }
+}

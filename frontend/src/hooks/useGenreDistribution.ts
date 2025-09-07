@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { BooksApi, GenreCount, Configuration } from '../generated/api';
+import { BooksApi, GenreCount } from '../generated/api';
+import { getApiConfiguration } from '../config/apiConfig';
+import { useAuth } from '../contexts/AuthContext';
 
 interface UseGenreDistributionResult {
   genreDistribution: GenreCount[];
@@ -8,6 +10,7 @@ interface UseGenreDistributionResult {
 }
 
 export const useGenreDistribution = (): UseGenreDistributionResult => {
+  const { token } = useAuth();
   const [genreDistribution, setGenreDistribution] = useState<GenreCount[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -18,9 +21,7 @@ export const useGenreDistribution = (): UseGenreDistributionResult => {
         setIsLoading(true);
         setError(null);
 
-        const configuration = new Configuration({
-          basePath: 'http://localhost:5000',
-        });
+        const configuration = getApiConfiguration(token);
         const api = new BooksApi(configuration);
         const response = await api.apiBooksStatsGet();
 
@@ -36,7 +37,7 @@ export const useGenreDistribution = (): UseGenreDistributionResult => {
     };
 
     void fetchGenreDistribution();
-  }, []);
+  }, [token]);
 
   return {
     genreDistribution,

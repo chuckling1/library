@@ -36,6 +36,7 @@ namespace LibraryApi.Services
 
         /// <inheritdoc/>
         public async Task<IEnumerable<Book>> GetBooksAsync(
+            Guid userId,
             string[]? genres = null,
             int? rating = null,
             string? searchTerm = null,
@@ -46,6 +47,7 @@ namespace LibraryApi.Services
             CancellationToken cancellationToken = default)
         {
             var (books, _) = await this.bookRepository.GetBooksAsync(
+                userId,
                 genres,
                 rating,
                 searchTerm,
@@ -60,6 +62,7 @@ namespace LibraryApi.Services
 
         /// <inheritdoc/>
         public async Task<PaginatedResponse<Book>> GetBooksPaginatedAsync(
+            Guid userId,
             string[]? genres = null,
             int? rating = null,
             string? searchTerm = null,
@@ -70,6 +73,7 @@ namespace LibraryApi.Services
             CancellationToken cancellationToken = default)
         {
             var (books, totalCount) = await this.bookRepository.GetBooksAsync(
+                userId,
                 genres,
                 rating,
                 searchTerm,
@@ -89,13 +93,13 @@ namespace LibraryApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Book?> GetBookByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<Book?> GetBookByIdAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
         {
-            return await this.bookRepository.GetBookByIdAsync(id, cancellationToken);
+            return await this.bookRepository.GetBookByIdAsync(id, userId, cancellationToken);
         }
 
         /// <inheritdoc/>
-        public async Task<Book> CreateBookAsync(CreateBookRequest request, CancellationToken cancellationToken = default)
+        public async Task<Book> CreateBookAsync(CreateBookRequest request, Guid userId, CancellationToken cancellationToken = default)
         {
             // Ensure all genres exist
             var genres = await this.genreRepository.EnsureGenresExistAsync(request.Genres, cancellationToken);
@@ -108,6 +112,7 @@ namespace LibraryApi.Services
                 Rating = request.Rating,
                 Edition = request.Edition,
                 Isbn = request.Isbn,
+                UserId = userId,
             };
 
             // Add genre relationships
@@ -124,9 +129,9 @@ namespace LibraryApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Book?> UpdateBookAsync(Guid id, UpdateBookRequest request, CancellationToken cancellationToken = default)
+        public async Task<Book?> UpdateBookAsync(Guid id, UpdateBookRequest request, Guid userId, CancellationToken cancellationToken = default)
         {
-            var existingBook = await this.bookRepository.GetBookForUpdateAsync(id, cancellationToken);
+            var existingBook = await this.bookRepository.GetBookForUpdateAsync(id, userId, cancellationToken);
             if (existingBook == null)
             {
                 return null;
@@ -158,15 +163,15 @@ namespace LibraryApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<bool> DeleteBookAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<bool> DeleteBookAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
         {
-            return await this.bookRepository.DeleteBookAsync(id, cancellationToken);
+            return await this.bookRepository.DeleteBookAsync(id, userId, cancellationToken);
         }
 
         /// <inheritdoc/>
-        public async Task<BookStatsResponse> GetBookStatsAsync(CancellationToken cancellationToken = default)
+        public async Task<BookStatsResponse> GetBookStatsAsync(Guid userId, CancellationToken cancellationToken = default)
         {
-            var (totalBooks, averageRating, genreStats) = await this.bookRepository.GetBooksStatsAsync(cancellationToken);
+            var (totalBooks, averageRating, genreStats) = await this.bookRepository.GetBooksStatsAsync(userId, cancellationToken);
 
             var response = new BookStatsResponse
             {

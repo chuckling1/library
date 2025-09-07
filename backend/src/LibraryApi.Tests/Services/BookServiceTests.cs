@@ -1,6 +1,12 @@
+using LibraryApi.Models;
+using LibraryApi.Repositories;
 using LibraryApi.Requests;
 using LibraryApi.Responses;
+using LibraryApi.Services;
 using Microsoft.Extensions.Logging;
+using Moq;
+using FluentAssertions;
+using Xunit;
 
 namespace LibraryApi.Tests.Services;
 
@@ -11,6 +17,7 @@ public class BookServiceTests
     private readonly Mock<ILogger<BookService>> _mockLogger;
     private readonly BookService _service;
     private readonly CancellationToken _cancellationToken = CancellationToken.None;
+    private readonly Guid _testUserId = Guid.NewGuid();
 
     public BookServiceTests()
     {
@@ -31,7 +38,8 @@ public class BookServiceTests
         };
 
         _mockBookRepository.Setup(x => x.GetBooksAsync(
-            It.IsAny<string[]>(),
+            _testUserId,
+            It.IsAny<IEnumerable<string>?>(),
             It.IsAny<int?>(),
             It.IsAny<string>(),
             It.IsAny<string>(),
@@ -42,7 +50,7 @@ public class BookServiceTests
             .ReturnsAsync((expectedBooks, expectedBooks.Count));
 
         // Act
-        var result = await _service.GetBooksAsync(cancellationToken: _cancellationToken);
+        var result = await _service.GetBooksAsync(_testUserId, cancellationToken: _cancellationToken);
 
         // Assert
         result.Should().NotBeNull();
@@ -61,6 +69,7 @@ public class BookServiceTests
         };
 
         _mockBookRepository.Setup(x => x.GetBooksAsync(
+            _testUserId,
             genres,
             It.IsAny<int?>(),
             It.IsAny<string>(),
@@ -72,11 +81,12 @@ public class BookServiceTests
             .ReturnsAsync((expectedBooks, expectedBooks.Count));
 
         // Act
-        var result = await _service.GetBooksAsync(genres: genres, cancellationToken: _cancellationToken);
+        var result = await _service.GetBooksAsync(_testUserId, genres: genres, cancellationToken: _cancellationToken);
 
         // Assert
         result.Should().HaveCount(1);
         _mockBookRepository.Verify(x => x.GetBooksAsync(
+            _testUserId,
             genres,
             It.IsAny<int?>(),
             It.IsAny<string>(),
@@ -100,7 +110,8 @@ public class BookServiceTests
         var pageSize = 10;
 
         _mockBookRepository.Setup(x => x.GetBooksAsync(
-            It.IsAny<string[]>(),
+            _testUserId,
+            It.IsAny<IEnumerable<string>?>(),
             It.IsAny<int?>(),
             It.IsAny<string>(),
             It.IsAny<string>(),
@@ -111,10 +122,11 @@ public class BookServiceTests
             .ReturnsAsync((new List<Book>(), 0));
 
         // Act
-        await _service.GetBooksAsync(genres, rating, searchTerm, sortBy, sortDirection, page, pageSize, _cancellationToken);
+        await _service.GetBooksAsync(_testUserId, genres, rating, searchTerm, sortBy, sortDirection, page, pageSize, _cancellationToken);
 
         // Assert
         _mockBookRepository.Verify(x => x.GetBooksAsync(
+            _testUserId,
             genres,
             rating,
             searchTerm,
@@ -132,11 +144,11 @@ public class BookServiceTests
         var bookId = Guid.NewGuid();
         var expectedBook = new Book { Id = bookId, Title = "Test Book", Author = "Test Author", Rating = 3, PublishedDate = "2023" };
 
-        _mockBookRepository.Setup(x => x.GetBookByIdAsync(bookId, _cancellationToken))
+        _mockBookRepository.Setup(x => x.GetBookByIdAsync(bookId, _testUserId, _cancellationToken))
             .ReturnsAsync(expectedBook);
 
         // Act
-        var result = await _service.GetBookByIdAsync(bookId, _cancellationToken);
+        var result = await _service.GetBookByIdAsync(bookId, _testUserId, _cancellationToken);
 
         // Assert
         result.Should().NotBeNull();
@@ -149,11 +161,11 @@ public class BookServiceTests
         // Arrange
         var bookId = Guid.NewGuid();
 
-        _mockBookRepository.Setup(x => x.GetBookByIdAsync(bookId, _cancellationToken))
+        _mockBookRepository.Setup(x => x.GetBookByIdAsync(bookId, _testUserId, _cancellationToken))
             .ReturnsAsync((Book?)null);
 
         // Act
-        var result = await _service.GetBookByIdAsync(bookId, _cancellationToken);
+        var result = await _service.GetBookByIdAsync(bookId, _testUserId, _cancellationToken);
 
         // Assert
         result.Should().BeNull();
@@ -200,7 +212,7 @@ public class BookServiceTests
             .ReturnsAsync(expectedBook);
 
         // Act
-        var result = await _service.CreateBookAsync(request, _cancellationToken);
+        var result = await _service.CreateBookAsync(request, _testUserId, _cancellationToken);
 
         // Assert
         result.Should().NotBeNull();
@@ -215,6 +227,7 @@ public class BookServiceTests
         _mockBookRepository.Verify(x => x.CreateBookAsync(It.Is<Book>(b => 
             b.Title == request.Title && 
             b.Author == request.Author &&
+            b.UserId == _testUserId &&
             b.BookGenres.Count == 2), _cancellationToken), Times.Once);
     }
 
@@ -261,7 +274,7 @@ public class BookServiceTests
             Isbn = request.Isbn
         };
 
-        _mockBookRepository.Setup(x => x.GetBookForUpdateAsync(bookId, _cancellationToken))
+        _mockBookRepository.Setup(x => x.GetBookForUpdateAsync(bookId, _testUserId, _cancellationToken))
             .ReturnsAsync(existingBook);
 
         _mockGenreRepository.Setup(x => x.EnsureGenresExistAsync(request.Genres, _cancellationToken))
@@ -271,15 +284,15 @@ public class BookServiceTests
             .ReturnsAsync(updatedBook);
 
         // Act
-        var result = await _service.UpdateBookAsync(bookId, request, _cancellationToken);
+        var result = await _service.UpdateBookAsync(bookId, request, _testUserId, _cancellationToken);
 
         // Assert
         result.Should().NotBeNull();
-        result.Title.Should().Be(request.Title);
-        result.Author.Should().Be(request.Author);
-        result.Rating.Should().Be(request.Rating);
+        result!.Title.Should().Be(request.Title);
+        result!.Author.Should().Be(request.Author);
+        result!.Rating.Should().Be(request.Rating);
 
-        _mockBookRepository.Verify(x => x.GetBookForUpdateAsync(bookId, _cancellationToken), Times.Once);
+        _mockBookRepository.Verify(x => x.GetBookForUpdateAsync(bookId, _testUserId, _cancellationToken), Times.Once);
         _mockGenreRepository.Verify(x => x.EnsureGenresExistAsync(request.Genres, _cancellationToken), Times.Once);
         _mockBookRepository.Verify(x => x.UpdateBookAsync(existingBook, _cancellationToken), Times.Once);
 
@@ -303,15 +316,15 @@ public class BookServiceTests
             Genres = new List<string> { "Fiction" }
         };
 
-        _mockBookRepository.Setup(x => x.GetBookForUpdateAsync(bookId, _cancellationToken))
+        _mockBookRepository.Setup(x => x.GetBookForUpdateAsync(bookId, _testUserId, _cancellationToken))
             .ReturnsAsync((Book?)null);
 
         // Act
-        var result = await _service.UpdateBookAsync(bookId, request, _cancellationToken);
+        var result = await _service.UpdateBookAsync(bookId, request, _testUserId, _cancellationToken);
 
         // Assert
         result.Should().BeNull();
-        _mockBookRepository.Verify(x => x.GetBookForUpdateAsync(bookId, _cancellationToken), Times.Once);
+        _mockBookRepository.Verify(x => x.GetBookForUpdateAsync(bookId, _testUserId, _cancellationToken), Times.Once);
         _mockGenreRepository.Verify(x => x.EnsureGenresExistAsync(It.IsAny<List<string>>(), It.IsAny<CancellationToken>()), Times.Never);
         _mockBookRepository.Verify(x => x.UpdateBookAsync(It.IsAny<Book>(), It.IsAny<CancellationToken>()), Times.Never);
     }
@@ -322,15 +335,15 @@ public class BookServiceTests
         // Arrange
         var bookId = Guid.NewGuid();
 
-        _mockBookRepository.Setup(x => x.DeleteBookAsync(bookId, _cancellationToken))
+        _mockBookRepository.Setup(x => x.DeleteBookAsync(bookId, _testUserId, _cancellationToken))
             .ReturnsAsync(true);
 
         // Act
-        var result = await _service.DeleteBookAsync(bookId, _cancellationToken);
+        var result = await _service.DeleteBookAsync(bookId, _testUserId, _cancellationToken);
 
         // Assert
         result.Should().BeTrue();
-        _mockBookRepository.Verify(x => x.DeleteBookAsync(bookId, _cancellationToken), Times.Once);
+        _mockBookRepository.Verify(x => x.DeleteBookAsync(bookId, _testUserId, _cancellationToken), Times.Once);
     }
 
     [Fact]
@@ -339,15 +352,15 @@ public class BookServiceTests
         // Arrange
         var bookId = Guid.NewGuid();
 
-        _mockBookRepository.Setup(x => x.DeleteBookAsync(bookId, _cancellationToken))
+        _mockBookRepository.Setup(x => x.DeleteBookAsync(bookId, _testUserId, _cancellationToken))
             .ReturnsAsync(false);
 
         // Act
-        var result = await _service.DeleteBookAsync(bookId, _cancellationToken);
+        var result = await _service.DeleteBookAsync(bookId, _testUserId, _cancellationToken);
 
         // Assert
         result.Should().BeFalse();
-        _mockBookRepository.Verify(x => x.DeleteBookAsync(bookId, _cancellationToken), Times.Once);
+        _mockBookRepository.Verify(x => x.DeleteBookAsync(bookId, _testUserId, _cancellationToken), Times.Once);
     }
 
     [Fact]
@@ -361,11 +374,11 @@ public class BookServiceTests
             ("Biography", 3, 3.9)
         };
 
-        _mockBookRepository.Setup(x => x.GetBooksStatsAsync(_cancellationToken))
+        _mockBookRepository.Setup(x => x.GetBooksStatsAsync(_testUserId, _cancellationToken))
             .ReturnsAsync((25, 4.3, genreStats));
 
         // Act
-        var result = await _service.GetBookStatsAsync(_cancellationToken);
+        var result = await _service.GetBookStatsAsync(_testUserId, _cancellationToken);
 
         // Assert
         result.Should().NotBeNull();
@@ -376,6 +389,40 @@ public class BookServiceTests
         result.GenreDistribution.Should().Contain(g => g.Genre == "Science" && g.Count == 5 && g.AverageRating == 4.8);
         result.GenreDistribution.Should().Contain(g => g.Genre == "Biography" && g.Count == 3 && g.AverageRating == 3.9);
 
-        _mockBookRepository.Verify(x => x.GetBooksStatsAsync(_cancellationToken), Times.Once);
+        _mockBookRepository.Verify(x => x.GetBooksStatsAsync(_testUserId, _cancellationToken), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetBooksPaginatedAsync_WithNoFilters_ReturnsPaginatedResponse()
+    {
+        // Arrange
+        var expectedBooks = new List<Book>
+        {
+            new Book { Id = Guid.NewGuid(), Title = "Book 1", Author = "Author 1", Rating = 4, PublishedDate = "2023", UserId = _testUserId },
+            new Book { Id = Guid.NewGuid(), Title = "Book 2", Author = "Author 2", Rating = 5, PublishedDate = "2024", UserId = _testUserId }
+        };
+
+        _mockBookRepository.Setup(x => x.GetBooksAsync(
+            _testUserId,
+            It.IsAny<IEnumerable<string>?>(),
+            It.IsAny<int?>(),
+            It.IsAny<string>(),
+            It.IsAny<string>(),
+            It.IsAny<string>(),
+            It.IsAny<int>(),
+            It.IsAny<int>(),
+            _cancellationToken))
+            .ReturnsAsync((expectedBooks, expectedBooks.Count));
+
+        // Act
+        var result = await _service.GetBooksPaginatedAsync(_testUserId, cancellationToken: _cancellationToken);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Items.Should().HaveCount(2);
+        result.Items.Should().BeEquivalentTo(expectedBooks);
+        result.Page.Should().Be(1);
+        result.PageSize.Should().Be(20);
+        result.TotalItems.Should().Be(2);
     }
 }

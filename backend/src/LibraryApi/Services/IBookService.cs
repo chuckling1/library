@@ -14,8 +14,9 @@ namespace LibraryApi.Services
     public interface IBookService
     {
         /// <summary>
-        /// Gets all books with optional filtering, sorting, and pagination.
+        /// Gets all books with optional filtering, sorting, and pagination for a specific user.
         /// </summary>
+        /// <param name="userId">The ID of the user whose books to retrieve.</param>
         /// <param name="genres">Optional list of genres to filter by.</param>
         /// <param name="rating">Optional exact rating to filter by.</param>
         /// <param name="searchTerm">Optional search term for title/author.</param>
@@ -26,6 +27,7 @@ namespace LibraryApi.Services
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A list of books matching the criteria.</returns>
         Task<IEnumerable<Book>> GetBooksAsync(
+            Guid userId,
             string[]? genres = null,
             int? rating = null,
             string? searchTerm = null,
@@ -36,8 +38,9 @@ namespace LibraryApi.Services
             CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Gets books with pagination metadata for UI display.
+        /// Gets books with pagination metadata for UI display for a specific user.
         /// </summary>
+        /// <param name="userId">The ID of the user whose books to retrieve.</param>
         /// <param name="genres">Optional list of genres to filter by.</param>
         /// <param name="rating">Optional exact rating to filter by.</param>
         /// <param name="searchTerm">Optional search term for title/author.</param>
@@ -48,6 +51,7 @@ namespace LibraryApi.Services
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A paginated response with books and metadata.</returns>
         Task<PaginatedResponse<Book>> GetBooksPaginatedAsync(
+            Guid userId,
             string[]? genres = null,
             int? rating = null,
             string? searchTerm = null,
@@ -58,43 +62,48 @@ namespace LibraryApi.Services
             CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Gets a book by its identifier.
+        /// Gets a book by its identifier for a specific user.
         /// </summary>
         /// <param name="id">The book identifier.</param>
+        /// <param name="userId">The ID of the user who should own the book.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>The book if found, null otherwise.</returns>
-        Task<Book?> GetBookByIdAsync(Guid id, CancellationToken cancellationToken = default);
+        /// <returns>The book if found and owned by user, null otherwise.</returns>
+        Task<Book?> GetBookByIdAsync(Guid id, Guid userId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates a new book from a request.
         /// </summary>
         /// <param name="request">The book creation request.</param>
+        /// <param name="userId">The ID of the user who owns the book.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The created book.</returns>
-        Task<Book> CreateBookAsync(CreateBookRequest request, CancellationToken cancellationToken = default);
+        Task<Book> CreateBookAsync(CreateBookRequest request, Guid userId, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Updates an existing book.
+        /// Updates an existing book for a specific user.
         /// </summary>
         /// <param name="id">The book identifier.</param>
         /// <param name="request">The book update request.</param>
+        /// <param name="userId">The ID of the user who should own the book.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>The updated book if found, null otherwise.</returns>
-        Task<Book?> UpdateBookAsync(Guid id, UpdateBookRequest request, CancellationToken cancellationToken = default);
+        /// <returns>The updated book if found and owned by user, null otherwise.</returns>
+        Task<Book?> UpdateBookAsync(Guid id, UpdateBookRequest request, Guid userId, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Deletes a book by its identifier.
+        /// Deletes a book by its identifier for a specific user.
         /// </summary>
         /// <param name="id">The book identifier.</param>
+        /// <param name="userId">The ID of the user who should own the book.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>True if the book was deleted, false if not found.</returns>
-        Task<bool> DeleteBookAsync(Guid id, CancellationToken cancellationToken = default);
+        /// <returns>True if the book was deleted, false if not found or not owned by user.</returns>
+        Task<bool> DeleteBookAsync(Guid id, Guid userId, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Gets book collection statistics.
+        /// Gets book collection statistics for a specific user.
         /// </summary>
+        /// <param name="userId">The ID of the user whose stats to retrieve.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>Statistics about the book collection.</returns>
-        Task<BookStatsResponse> GetBookStatsAsync(CancellationToken cancellationToken = default);
+        /// <returns>Statistics about the user's book collection.</returns>
+        Task<BookStatsResponse> GetBookStatsAsync(Guid userId, CancellationToken cancellationToken = default);
     }
 }
