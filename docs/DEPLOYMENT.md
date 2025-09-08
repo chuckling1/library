@@ -27,10 +27,9 @@ This guide covers deployment options for the Book Library application, from loca
 # Clone and setup
 git clone <repository-url>
 cd library
-npm run setup
+npm run setup    # Complete environment reset & auto-starts servers
 
-# Start development servers
-npm run dev
+# No need to run 'npm run dev' - setup script starts servers automatically
 ```
 
 Access: http://localhost:3000
@@ -40,9 +39,6 @@ Access: http://localhost:3000
 ```bash
 # One-command production deployment
 docker-compose -f docker-compose.prod.yml up -d
-
-# Or use the PowerShell script (Windows)
-.\docker-prod.ps1 start
 ```
 
 Access: http://localhost
@@ -53,7 +49,7 @@ Access: http://localhost
 
 **1. Prerequisites Installation**
 
-Windows (PowerShell):
+Windows:
 ```bash
 # Check for latest versions first
 winget search Microsoft.DotNet.SDK
@@ -85,10 +81,10 @@ sudo apt update && sudo apt install dotnet-sdk-9.0
 **2. Project Setup**
 
 ```bash
-# Automated setup
-npm run setup
+# Automated complete environment setup
+npm run setup    # Comprehensive fresh start with auto-server startup
 
-# Manual setup (if needed)
+# Manual setup (if you want to avoid the destructive reset)
 npm install
 cd backend && dotnet restore && cd ..
 cd frontend && npm install && cd ..
@@ -140,11 +136,8 @@ sudo sh get-docker.sh
 # Start development environment with hot reload
 docker-compose up -d
 
-# Using PowerShell script (Windows)
-.\docker-dev.ps1 start
-
-# With database browser for debugging
-.\docker-dev.ps1 debug
+# With database browser for debugging  
+docker-compose --profile debug up -d
 ```
 
 **3. Development URLs**
@@ -160,11 +153,8 @@ docker-compose up -d
 # Production-optimized containers
 docker-compose -f docker-compose.prod.yml up -d
 
-# Using PowerShell script (Windows) 
-.\docker-prod.ps1 start
-
 # With automated backups
-.\docker-prod.ps1 backup
+docker-compose -f docker-compose.prod.yml --profile backup up -d
 ```
 
 **2. Production URLs**
@@ -366,7 +356,7 @@ cp backups/library-backup-YYYYMMDD-HHMMSS.db library.db
 # - Stored in ./backups volume
 
 # Manual backup
-.\docker-prod.ps1 backup
+docker-compose -f docker-compose.prod.yml --profile backup up -d
 
 # List backups
 ls backups/
@@ -472,7 +462,7 @@ curl http://localhost:5000/health/details
 docker stats
 
 # Application health
-.\docker-prod.ps1 status
+docker-compose -f docker-compose.prod.yml ps
 
 # Log monitoring
 docker-compose logs -f backend

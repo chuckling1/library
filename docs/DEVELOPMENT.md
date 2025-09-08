@@ -22,11 +22,13 @@ This document provides comprehensive development guidelines for the Book Library
 ### Automated Setup
 
 ```bash
-# One-command setup (recommended)
+# One-command complete environment reset (recommended)
 npm run setup
 
-# Verifies dependencies, installs packages, builds projects
-# Runs initial validation to ensure everything works
+# Performs comprehensive fresh start: environment check, process cleanup,
+# complete clean of artifacts/dependencies, database reset, fresh install,
+# build validation, and auto-starts development servers
+# WARNING: This is destructive - resets entire development environment
 ```
 
 ### Manual Setup

@@ -4,17 +4,22 @@ A full-stack book management application with secure httpOnly cookie JWT authent
 
 ## 🚀 Quick Start
 
-**One-line setup:**
+**One-line complete environment setup:**
 ```bash
 npm run setup
 ```
 
-The setup script will:
-- ✅ Check for Node.js 22+ and .NET 9+ SDK (8+ minimum)
-- 📦 Provide installation guidance if dependencies are missing  
-- 🔧 Install all project dependencies automatically
-- 🏗️ Build both backend and frontend projects
-- ✅ Run validation tests to ensure everything works
+The setup script performs a **comprehensive fresh start** that:
+- ✅ **Environment Check**: Verifies Node.js 22+ and .NET 9+ SDK are installed
+- 🛑 **Process Cleanup**: Stops any running development servers and Docker containers
+- 🧹 **Complete Clean**: Removes all build artifacts, caches, node_modules, and temp files
+- 🗄️ **Database Reset**: Completely wipes and recreates SQLite database files
+- 📦 **Fresh Dependencies**: Reinstalls all dependencies from scratch
+- 🔧 **Build & Validate**: Builds both projects and applies database migrations
+- 📁 **Environment Setup**: Creates required directories and .env files
+- 🚀 **Auto-Start**: Launches both development servers automatically
+
+**⚠️ WARNING**: This is a **destructive operation** that resets your entire development environment!
 
 **Start development:**
 ```bash
@@ -30,7 +35,8 @@ That's it! The application will be running at:
 1. Navigate to http://localhost:3000
 2. Click "Sign Up" to create your account
 3. Log in with your credentials
-4. Start building your personal book library
+4. **Quick Start with Sample Data**: Click "Import Books" and select `test-books-import.csv` for 81 sample books
+5. Start building your personal book library
 
 ## 🐳 Docker Setup
 
@@ -38,28 +44,30 @@ That's it! The application will be running at:
 
 ### Quick Start with Docker
 
-```powershell
-# Windows PowerShell (recommended)
-.\docker-dev.ps1 start
-
-# Or using docker-compose directly
+```bash
 docker-compose up -d
 ```
 
 
 ### Docker Management Commands
 
-We've included a PowerShell script for easy Docker management:
+**Docker management commands:**
+```bash
+# Development environment
+docker-compose up -d                              # Start all development containers
+docker-compose --profile debug up -d              # Start with database browser at :8080
+docker-compose down                               # Stop all containers
+docker-compose restart                            # Restart all containers
+docker-compose logs -f [service]                  # Show logs (optionally for specific service)
+docker-compose ps                                 # Show container status
+docker-compose build --no-cache                   # Rebuild all containers
+docker-compose down -v && docker system prune -f  # Clean up containers and volumes
 
-**`docker-dev.ps1` commands:**
-- `start` - Start all development containers with hot reload
-- `debug` - Start with database browser at http://localhost:8080
-- `stop` - Stop all containers
-- `restart` - Restart all containers
-- `logs [service]` - Show logs (optionally for specific service)
-- `status` - Show container status and URLs
-- `build` - Rebuild all containers
-- `clean` - Clean up containers and volumes
+# Production environment
+docker-compose -f docker-compose.prod.yml up -d                    # Start production containers
+docker-compose -f docker-compose.prod.yml --profile backup up -d   # Start with backup service
+docker-compose -f docker-compose.prod.yml down                     # Stop production containers
+```
 
 ### Service URLs
 
@@ -161,9 +169,12 @@ npm run setup
 - **📚 Book Management**: Full CRUD operations with user-specific collections
 - **📊 Bulk Operations**: CSV import/export with duplicate detection and validation
 - **🏷️ Advanced Genre System**: Dynamic genre creation with intelligent filtering and sorting
-- **⭐ Smart Analytics**: Genre distribution charts, rating statistics, and collection insights
-- **🔍 Powerful Search & Filter**: Real-time search with advanced filtering by genre, rating, and dates
+- **⭐ Smart Analytics**: Interactive charts with click-to-filter functionality
+- **🔍 Powerful Search & Filter**: Real-time search with advanced multi-filter combinations
 - **📱 Responsive Design**: Clean UI with accessibility features and dark theme
+- **🌐 OpenLibrary Integration**: Auto-fill book details from the world's largest book database
+- **📊 Interactive Statistics**: Click charts to navigate with filters applied
+- **📁 Sample Data**: 81 test books available in `test-books-import.csv`
 
 ## 🔧 Development Workflow
 
@@ -215,7 +226,6 @@ library/
 │   │   ├── Requests/       # API request DTOs
 │   │   ├── Responses/      # API response DTOs
 │   │   └── Data/           # EF DbContext
-│   └── validate.ps1        # Backend validation script
 ├── frontend/               # React SPA
 │   ├── src/
 │   │   ├── components/     # Reusable UI components
@@ -244,7 +254,10 @@ npm run validate     # Run comprehensive validation gates
 **Need a completely clean development environment?** The fresh-start script provides a one-command solution to reset everything and start fresh.
 
 ```bash
-# Full fresh start (recommended)
+# Full fresh start (recommended) - same as npm run setup
+npm run setup
+
+# Direct script execution with options
 node fresh-start.js
 
 # With options
@@ -273,7 +286,7 @@ node fresh-start.js --help                   # Show all options
 
 **Cross-platform compatibility:**
 - ✅ Windows, macOS, and Linux
-- ✅ PowerShell and Bash terminals
+- ✅ Bash and shell terminals (cross-platform)
 - ✅ Works with all Node.js versions 18+
 
 The script is intelligent - it uses colored output, provides clear progress indicators, and handles interruptions gracefully. Perfect for ensuring a clean, working development environment every time.
@@ -283,7 +296,7 @@ The script is intelligent - it uses colored output, provides clear progress indi
 dotnet run --project src/LibraryApi    # Start API server
 dotnet build --configuration Release   # Build project
 dotnet test                            # Run tests
-./validate.ps1                        # Run validation gates
+# Validation is available via npm run validate:backend
 ```
 
 ### Frontend Commands (from frontend/)
@@ -338,6 +351,10 @@ Comprehensive documentation is available in the `docs/` directory:
 - **[👩‍💻 Development Guide](docs/DEVELOPMENT.md)**: Setup, workflow, coding standards, and validation
 - **[📖 User Guide](docs/USER_GUIDE.md)**: Complete user manual for all application features
 - **[🔧 Troubleshooting Guide](docs/TROUBLESHOOTING.md)**: Solutions for common issues and debugging
+
+**Feature Documentation:**
+- **[📋 Features Cheat Sheet](FEATURES_CHEATSHEET.md)**: Complete guide to all UI features and hidden interactions
+- **[📁 Sample Data](test-books-import.csv)**: 81 test books for quick setup and demonstration
 
 **Additional Resources:**
 - **Auto-generated Swagger UI**: http://localhost:5000/swagger

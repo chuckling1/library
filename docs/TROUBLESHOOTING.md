@@ -15,8 +15,7 @@ curl http://localhost:5000/health/ready
 
 # Check running services
 npm run dev:status          # Check dev servers
-docker-compose ps           # Check Docker containers
-.\docker-dev.ps1 status     # Docker status via script
+docker-compose ps           # Docker container status
 ```
 
 ### Log Locations
@@ -384,7 +383,7 @@ EMFILE: too many open files
 export NODE_OPTIONS="--max-old-space-size=4096"
 npm run build
 
-# Windows PowerShell
+# Windows Command Prompt/PowerShell
 $env:NODE_OPTIONS="--max-old-space-size=4096"
 npm run build
 

@@ -24,7 +24,7 @@
     "format:backend": "cd backend && dotnet format --include-generated --verbosity minimal",
     "format:frontend": "cd frontend && npm run format:all",
     "validate": "npm run validate:backend && npm run validate:frontend",
-    "validate:backend": "cd backend && .\\validate.ps1 -WarningsAsErrors",
+    "validate:backend": "cd backend && dotnet build --configuration Release && dotnet test --configuration Release --no-build",
     "validate:frontend": "cd frontend && npm run type-check && npm run lint && npm run build && npm run test",
     "update-openapi": "curl http://localhost:5000/swagger/v1/swagger.json -o openapi.json",
     "update-client": "npm run update-openapi && cd frontend && npm run update-client",
