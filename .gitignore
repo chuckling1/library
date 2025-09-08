@@ -92,8 +92,8 @@ CodeCoverage/
 *.sqlite
 *.sqlite3
 
-# Generated API clients
-frontend/src/generated/
+# Generated API clients - COMMENTED OUT to commit generated files
+# frontend/src/generated/
 
 # Documentation build outputs
 docs/_build/

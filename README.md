@@ -1,6 +1,6 @@
 # Book Library Application
 
-A production-ready full-stack book management application with secure httpOnly cookie JWT authentication, multi-user data isolation, comprehensive CSV import/export, and advanced analytics. Built with AI-assisted development workflows emphasizing clean architecture, strict type safety, and comprehensive testing.
+A full-stack book management application with secure httpOnly cookie JWT authentication, multi-user data isolation, comprehensive CSV import/export, and advanced analytics. Built with clean architecture, strict type safety, and comprehensive testing.
 
 ## 🚀 Quick Start
 
@@ -38,7 +38,6 @@ That's it! The application will be running at:
 
 ### Quick Start with Docker
 
-**Development Environment:**
 ```powershell
 # Windows PowerShell (recommended)
 .\docker-dev.ps1 start
@@ -47,20 +46,12 @@ That's it! The application will be running at:
 docker-compose up -d
 ```
 
-**Production Environment:**
-```powershell
-# Windows PowerShell (recommended) 
-.\docker-prod.ps1 start
 
-# Or using docker-compose directly
-docker-compose -f docker-compose.prod.yml up -d
-```
+### Docker Management Commands
 
-### Docker Management Scripts
+We've included a PowerShell script for easy Docker management:
 
-We've included PowerShell scripts for easy Docker management:
-
-**Development (`docker-dev.ps1`):**
+**`docker-dev.ps1` commands:**
 - `start` - Start all development containers with hot reload
 - `debug` - Start with database browser at http://localhost:8080
 - `stop` - Stop all containers
@@ -70,15 +61,6 @@ We've included PowerShell scripts for easy Docker management:
 - `build` - Rebuild all containers
 - `clean` - Clean up containers and volumes
 
-**Production (`docker-prod.ps1`):**
-- `start` - Start production-optimized containers
-- `backup` - Start with automated database backups
-- `stop` - Stop all production containers
-- `status` - Show status and resource usage
-- `logs [service]` - Show production logs
-- `build` - Rebuild production containers
-- `clean` - Clean up production environment
-
 ### Service URLs
 
 **Development:**
@@ -86,12 +68,6 @@ We've included PowerShell scripts for easy Docker management:
 - **Backend API**: http://localhost:5000
 - **Swagger UI**: http://localhost:5000/swagger
 - **Database Browser**: http://localhost:8080 (debug profile)
-
-**Production:**
-- **Application**: http://localhost
-- **Backend API**: http://localhost:5000
-- **Reverse Proxy**: http://localhost:8080
-- **Health Checks**: http://localhost/health
 
 ### Install Docker First
 
@@ -187,8 +163,7 @@ npm run setup
 - **🏷️ Advanced Genre System**: Dynamic genre creation with intelligent filtering and sorting
 - **⭐ Smart Analytics**: Genre distribution charts, rating statistics, and collection insights
 - **🔍 Powerful Search & Filter**: Real-time search with advanced filtering by genre, rating, and dates
-- **📱 Production-Ready Design**: Responsive UI with accessibility features and dark theme
-- **🚀 Professional Development**: Complete CI/CD workflow with zero-warning policy
+- **📱 Responsive Design**: Clean UI with accessibility features and dark theme
 
 ## 🔧 Development Workflow
 
@@ -321,37 +296,22 @@ npm run type-check      # Run TypeScript compiler
 npm run generate-client # Generate API client from OpenAPI
 ```
 
-## 🎯 AI-Assisted Development
-
-This project demonstrates a structured AI-assisted development methodology:
-
-1. **Product Management**: Requirements analysis and feature scoping
-2. **UX/UI Design**: API design and component architecture  
-3. **Principal Architecture**: Technical foundation and patterns
-4. **Lead Engineering**: Feature implementation with validation gates
-5. **Quality Assurance**: Comprehensive testing and review
-6. **Security Analysis**: Vulnerability assessment and best practices
-7. **Technical Writing**: Documentation and process recording
-
-Each phase has specific deliverables, success criteria, and validation requirements.
 
 ## 🔒 Security & Performance
 
 **Security Features:**
-- **httpOnly Cookie Authentication**: Secure cookie-based JWT authentication with 24-hour expiration
-- **Multi-User Data Isolation**: Complete separation of user data at database level
-- **Input Validation**: Comprehensive validation on all API endpoints and forms
-- **SQL Injection Prevention**: Parameterized queries with Entity Framework
-- **XSS Prevention**: Proper React sanitization and CSP headers
-- **Secure Configuration**: Environment variables only, no hardcoded secrets
-- **Error Handling**: Structured error responses without information leakage
+- httpOnly Cookie JWT authentication with 24-hour expiration
+- Complete multi-user data isolation at database level
+- Comprehensive input validation on all endpoints
+- SQL injection prevention with parameterized queries
+- Environment variables for all configuration (no hardcoded secrets)
 
 **Performance Features:**
-- **Async/Await**: Non-blocking operations throughout the application
-- **Database Optimization**: Strategic indexing and efficient EF Core queries
-- **React Optimization**: React.memo, useCallback, and lazy loading
-- **Bundle Optimization**: Code splitting and tree shaking with Vite
-- **Caching Strategy**: React Query with intelligent cache invalidation
+- Async/await operations throughout
+- Optimized database queries with strategic indexing
+- React optimization with memo, useCallback, and lazy loading
+- Bundle optimization with code splitting and tree shaking
+- Intelligent caching with React Query
 
 ## 🧪 Testing Strategy
 
@@ -365,58 +325,8 @@ Each phase has specific deliverables, success criteria, and validation requireme
 - **Ultra-strict TypeScript**: No `any` types, explicit typing everywhere
 - **Interface-first design**: All services and repositories have interfaces
 - **SOLID principles**: Single responsibility, dependency injection throughout
-- **Comprehensive logging**: Structured JSON logs for AI-assisted debugging
+- **Comprehensive logging**: Structured JSON logs for debugging
 - **Error-first design**: Every interaction has defined error states
-
-## 🚢 Deployment
-
-### Manual Setup
-Requires Node.js 22+ and .NET 9+ SDK installation as described in Quick Start. Fully automated setup available via `npm run setup`.
-
-### ✅ Complete Docker Containerization
-
-**Available Now**: Complete Docker containerization for zero-dependency setup!
-
-```bash
-# One-command development setup
-.\docker-dev.ps1 start
-# or
-docker-compose up -d
-```
-
-**Benefits of Docker setup:**
-- ✅ **Zero Dependencies**: Only Docker required on host machine
-- ✅ **Instant Setup**: No Node.js or .NET SDK installation needed  
-- ✅ **Consistent Environment**: Same setup across Windows/macOS/Linux
-- ✅ **Isolated Development**: No conflicts with existing installations
-- ✅ **Production-Ready**: Optimized containers for deployment
-- ✅ **Hot Reload**: Development containers support live code changes
-- ✅ **Health Monitoring**: Built-in health checks and status monitoring
-- ✅ **Easy Management**: PowerShell scripts for common operations
-
-**Docker Architecture:**
-- **Development**: Hot reload containers with volume mounts
-- **Production**: Multi-stage builds with nginx reverse proxy
-- **Database**: SQLite with persistent volumes and backup service
-- **Security**: Non-root users, health checks, rate limiting
-- **Monitoring**: Structured logging, metrics endpoints, resource limits
-
-**Quick Start (Docker):**
-```bash
-# Install Docker Desktop first
-# Then choose your environment:
-
-# Development with hot reload
-.\docker-dev.ps1 start
-
-# Production optimized
-.\docker-prod.ps1 start
-
-# Debug mode (includes database browser)
-.\docker-dev.ps1 debug
-```
-
-This provides a universal setup experience that eliminates all dependency management for both development and production environments.
 
 ## 📖 Documentation
 
@@ -434,12 +344,6 @@ Comprehensive documentation is available in the `docs/` directory:
 - **Architecture Decisions**: Documented in `project-docs/`
 - **Development Process**: Complete AI-assisted workflow documentation
 
-## 🤝 Contributing
-
-1. Follow the established validation gates
-2. Maintain 80%+ test coverage
-3. Use the AI-assisted development personas for structured development
-4. All code must pass `npm run validate` before submission
 
 ## 📄 License
 
@@ -447,4 +351,4 @@ MIT License - see LICENSE file for details.
 
 ---
 
-*This project showcases professional-grade full-stack development with AI assistance, emphasizing code quality, type safety, and comprehensive testing.*
+*This project showcases full-stack development emphasizing clean architecture, type safety, and comprehensive testing.*

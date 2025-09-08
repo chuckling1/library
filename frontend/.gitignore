@@ -37,5 +37,5 @@ Thumbs.db
 # Testing
 coverage/
 
-# Generated API client
-src/generated/
+# Generated API client - COMMENTED OUT to commit generated files
+# src/generated/

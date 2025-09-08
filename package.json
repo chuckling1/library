@@ -17,6 +17,7 @@
     "test": "npm run test:backend && npm run test:frontend",
     "test:backend": "npm run kill:backend && cd backend && dotnet test",
     "test:frontend": "cd frontend && npm run test",
+    "type-check": "cd frontend && npm run type-check",
     "lint": "npm run lint:frontend",
     "lint:frontend": "cd frontend && npm run lint",
     "format": "npm run format:backend && npm run format:frontend",
@@ -25,6 +26,8 @@
     "validate": "npm run validate:backend && npm run validate:frontend",
     "validate:backend": "cd backend && .\\validate.ps1 -WarningsAsErrors",
     "validate:frontend": "cd frontend && npm run type-check && npm run lint && npm run build && npm run test",
+    "update-openapi": "curl http://localhost:5000/swagger/v1/swagger.json -o openapi.json",
+    "update-client": "npm run update-openapi && cd frontend && npm run update-client",
     "generate-client": "cd frontend && npm run generate-client"
   },
   "devDependencies": {

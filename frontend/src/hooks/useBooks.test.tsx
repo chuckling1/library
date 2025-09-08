@@ -81,6 +81,7 @@ const createMockBook = (overrides: Partial<Book> = {}): Book => ({
   isbn: '978-0123456789',
   createdAt: '2023-06-01T00:00:00.000Z',
   updatedAt: '2023-06-01T00:00:00.000Z',
+  userId: 'user-123',
   bookGenres: [
     { bookId: '123', genreName: 'Fiction' },
     { bookId: '123', genreName: 'Mystery' },
