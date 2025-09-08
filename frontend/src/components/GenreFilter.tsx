@@ -49,8 +49,12 @@ const GenreFilter: React.FC = () => {
     }
 
     // Separate selected and unselected genres
-    const selectedGenres = availableGenres.filter(genre => activeGenres.includes(genre));
-    const unselectedGenres = availableGenres.filter(genre => !activeGenres.includes(genre));
+    const selectedGenres = availableGenres.filter(genre =>
+      activeGenres.includes(genre)
+    );
+    const unselectedGenres = availableGenres.filter(
+      genre => !activeGenres.includes(genre)
+    );
 
     // Sort selected genres (always alphabetically for consistency when selected)
     selectedGenres.sort((a, b) => a.localeCompare(b));
@@ -88,10 +92,15 @@ const GenreFilter: React.FC = () => {
 
     // Return selected genres first, then unselected
     const finalGenres = [...selectedGenres, ...unselectedGenres];
-    
-    
+
     return finalGenres;
-  }, [paginatedResponse, genreDistribution, sortType, sortDirection, activeGenres]);
+  }, [
+    paginatedResponse,
+    genreDistribution,
+    sortType,
+    sortDirection,
+    activeGenres,
+  ]);
 
   // Detect overflow by measuring actual container height
   useEffect(() => {
@@ -147,7 +156,6 @@ const GenreFilter: React.FC = () => {
     setIsExpanded(prev => !prev);
   };
 
-
   const handleSortDirectionToggle = (): void => {
     setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
   };
@@ -168,7 +176,9 @@ const GenreFilter: React.FC = () => {
                   }
                 }}
                 className={`genre-filter__toggle-option genre-filter__toggle-option--left ${
-                  sortType === 'popular' ? 'genre-filter__toggle-option--active' : ''
+                  sortType === 'popular'
+                    ? 'genre-filter__toggle-option--active'
+                    : ''
                 }`}
                 title="Sort by popularity (book count)"
               >
@@ -183,7 +193,9 @@ const GenreFilter: React.FC = () => {
                   }
                 }}
                 className={`genre-filter__toggle-option genre-filter__toggle-option--right ${
-                  sortType === 'alphabetical' ? 'genre-filter__toggle-option--active' : ''
+                  sortType === 'alphabetical'
+                    ? 'genre-filter__toggle-option--active'
+                    : ''
                 }`}
                 title="Sort alphabetically"
               >

@@ -7,7 +7,9 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }): React.JSX.Element => {
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  children,
+}): React.JSX.Element => {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 

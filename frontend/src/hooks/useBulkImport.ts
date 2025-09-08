@@ -24,7 +24,9 @@ export const useBulkImport = (): {
   error: string | null;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   handleImportBooks: () => void;
-  handleFileSelect: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
+  handleFileSelect: (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => Promise<void>;
 } => {
   const [state, setState] = useState<BulkImportState>({
     isImporting: false,
@@ -34,43 +36,46 @@ export const useBulkImport = (): {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
-  const { token } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const bulkImportMutation = useMutation({
     mutationFn: async (file: File): Promise<BulkImportResult> => {
+      if (!isAuthenticated) {
+        throw new Error('Authentication required');
+      }
+
       const formData = new FormData();
       formData.append('file', file);
-
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
 
       // Create a custom request using fetch since the generated client might not handle FormData correctly
       const response = await fetch(`${getApiBaseUrl()}/api/BulkImport/books`, {
         method: 'POST',
-        headers,
         body: formData,
+        credentials: 'include',
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || `HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(
+          errorText || `HTTP ${response.status}: ${response.statusText}`
+        );
       }
 
-      return await response.json() as BulkImportResult;
+      return (await response.json()) as BulkImportResult;
     },
-    onSuccess: (result) => {
+    onSuccess: result => {
       setState(prev => ({ ...prev, result, error: null }));
-      
+
       // Invalidate books queries to refresh the list
       void queryClient.invalidateQueries({ queryKey: ['books'] });
-      
+
       // Show success/error notification
       if (result.errorRows === 0) {
         alert(`Successfully imported ${result.validRows} books!`);
       } else {
-        alert(`Import completed: ${result.validRows} successful, ${result.errorRows} errors. ${result.errorSummary ?? ''}`);
+        alert(
+          `Import completed: ${result.validRows} successful, ${result.errorRows} errors. ${result.errorSummary ?? ''}`
+        );
       }
     },
     onError: (error: Error) => {
@@ -79,7 +84,7 @@ export const useBulkImport = (): {
     },
     onSettled: () => {
       setState(prev => ({ ...prev, isImporting: false }));
-      
+
       // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -89,36 +94,44 @@ export const useBulkImport = (): {
 
   const handleImportBooks = useCallback((): void => {
     if (state.isImporting) return;
-    
+
     setState(prev => ({ ...prev, error: null, result: null }));
     fileInputRef.current?.click();
   }, [state.isImporting]);
 
-  const handleFileSelect = useCallback(async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleFileSelect = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+      const file = event.target.files?.[0];
+      if (!file) return;
 
-    // Validate file type
-    if (!file.name.toLowerCase().endsWith('.csv')) {
-      alert('Please select a CSV file.');
-      return;
-    }
+      // Validate file type
+      if (!file.name.toLowerCase().endsWith('.csv')) {
+        alert('Please select a CSV file.');
+        return;
+      }
 
-    // Validate file size (10MB limit)
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    if (file.size > maxSize) {
-      alert('File is too large. Maximum size allowed is 10MB.');
-      return;
-    }
+      // Validate file size (10MB limit)
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        alert('File is too large. Maximum size allowed is 10MB.');
+        return;
+      }
 
-    setState(prev => ({ ...prev, isImporting: true, error: null, result: null }));
-    
-    try {
-      await bulkImportMutation.mutateAsync(file);
-    } catch {
-      // Error handling is done in mutation callbacks
-    }
-  }, [bulkImportMutation]);
+      setState(prev => ({
+        ...prev,
+        isImporting: true,
+        error: null,
+        result: null,
+      }));
+
+      try {
+        await bulkImportMutation.mutateAsync(file);
+      } catch {
+        // Error handling is done in mutation callbacks
+      }
+    },
+    [bulkImportMutation]
+  );
 
   return {
     isImporting: state.isImporting,

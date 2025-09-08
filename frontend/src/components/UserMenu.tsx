@@ -26,7 +26,7 @@ export const UserMenu: React.FC = (): React.JSX.Element => {
     setIsOpen(prev => !prev);
   };
 
-  const handleLogout = (): void => {
+  const handleLogout = async (): Promise<void> => {
     logger.info('User initiated logout from UserMenu', {
       appLayer: 'Frontend-UI',
       sourceContext: 'UserMenu',
@@ -34,8 +34,22 @@ export const UserMenu: React.FC = (): React.JSX.Element => {
       payload: { userEmail },
     });
 
-    logout();
-    setIsOpen(false);
+    try {
+      // SECURITY ENHANCEMENT: Handle async logout for httpOnly cookie clearing (Phase 2)
+      await logout();
+      setIsOpen(false);
+    } catch (error) {
+      logger.error('Logout failed in UserMenu', {
+        appLayer: 'Frontend-UI',
+        sourceContext: 'UserMenu',
+        functionName: 'handleLogout',
+        payload: {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+      });
+      // Still close menu even if logout fails
+      setIsOpen(false);
+    }
   };
 
   // Get the first letter of email for avatar
@@ -56,14 +70,12 @@ export const UserMenu: React.FC = (): React.JSX.Element => {
         aria-haspopup="true"
         aria-label="User menu"
       >
-        <div className="user-avatar">
-          {getAvatarLetter(userEmail)}
-        </div>
+        <div className="user-avatar">{getAvatarLetter(userEmail)}</div>
         <span className="user-email">{userEmail}</span>
-        <svg 
+        <svg
           className={`user-menu-arrow ${isOpen ? 'open' : ''}`}
-          width="12" 
-          height="12" 
+          width="12"
+          height="12"
           viewBox="0 0 12 12"
           fill="currentColor"
         >
@@ -79,11 +91,11 @@ export const UserMenu: React.FC = (): React.JSX.Element => {
           <div className="user-menu-divider"></div>
           <button
             className="user-menu-item logout-button"
-            onClick={handleLogout}
+            onClick={() => void handleLogout()}
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M10 2V0H2v16h8v-2H4V2h6z"/>
-              <path d="M12 5l-1.41 1.41L12.17 8H6v2h6.17l-1.58 1.59L12 13l4-4-4-4z"/>
+              <path d="M10 2V0H2v16h8v-2H4V2h6z" />
+              <path d="M12 5l-1.41 1.41L12.17 8H6v2h6.17l-1.58 1.59L12 13l4-4-4-4z" />
             </svg>
             Sign Out
           </button>

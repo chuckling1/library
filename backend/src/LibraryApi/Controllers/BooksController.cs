@@ -63,9 +63,10 @@ public class BooksController : ControllerBase
     {
         this.logger.LogInformation("=== GET BOOKS REQUEST DEBUG ===");
         this.logger.LogInformation("Request from IP: {IP}", this.HttpContext.Connection.RemoteIpAddress);
-        this.logger.LogInformation("Authorization Header: {AuthHeader}", 
+        this.logger.LogInformation(
+            "Authorization Header: {AuthHeader}",
             this.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Substring(0, 50) + "...");
-        
+
         if (pageSize > 100)
         {
             return this.BadRequest("Page size cannot exceed 100");
@@ -73,7 +74,7 @@ public class BooksController : ControllerBase
 
         var userId = this.GetCurrentUserId();
         this.logger.LogInformation("Processing GetBooks request for UserId: {UserId}", userId);
-        
+
         var paginatedBooks = await this.bookService.GetBooksPaginatedAsync(
             userId,
             genres,
@@ -85,8 +86,10 @@ public class BooksController : ControllerBase
             pageSize,
             cancellationToken);
 
-        this.logger.LogInformation("Returning {BookCount} books for UserId: {UserId}", 
-            paginatedBooks.Items?.Count() ?? 0, userId);
+        this.logger.LogInformation(
+            "Returning {BookCount} books for UserId: {UserId}",
+            paginatedBooks.Items?.Count() ?? 0,
+            userId);
 
         return this.Ok(paginatedBooks);
     }
@@ -199,13 +202,14 @@ public class BooksController : ControllerBase
     /// <summary>
     /// TEMP DEBUG: Shows current user from JWT token.
     /// </summary>
+    /// <returns>HTML string showing current user information.</returns>
     [HttpGet("debug/whoami")]
     [AllowAnonymous]
     public string WhoAmI()
     {
         var html = "<html><body style='font-family: Arial;'>";
         html += "<h1>Current User Debug</h1>";
-        
+
         if (!this.User.Identity?.IsAuthenticated ?? true)
         {
             html += "<p><strong>Status:</strong> NOT AUTHENTICATED</p>";
@@ -213,14 +217,14 @@ public class BooksController : ControllerBase
         }
         else
         {
-            try 
+            try
             {
                 var userIdClaim = this.User.FindFirst(ClaimTypes.NameIdentifier);
                 var allClaims = this.User.Claims.Select(c => new { c.Type, c.Value }).ToList();
-                
+
                 html += "<p><strong>Status:</strong> AUTHENTICATED</p>";
                 html += $"<p><strong>NameIdentifier Claim:</strong> <code>{userIdClaim?.Value ?? "NULL"}</code></p>";
-                
+
                 if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var userId))
                 {
                     html += $"<p><strong>Extracted UserId:</strong> <code>{userId}</code></p>";
@@ -229,10 +233,13 @@ public class BooksController : ControllerBase
                 {
                     html += "<p><strong>ERROR:</strong> Could not extract valid UserId from token!</p>";
                 }
-                
+
                 html += "<h3>All JWT Claims:</h3><ul>";
                 foreach (var claim in allClaims)
+                {
                     html += $"<li><strong>{claim.Type}:</strong> {claim.Value}</li>";
+                }
+
                 html += "</ul>";
             }
             catch (Exception ex)
@@ -240,7 +247,7 @@ public class BooksController : ControllerBase
                 html += $"<p><strong>ERROR:</strong> {ex.Message}</p>";
             }
         }
-        
+
         html += "</body></html>";
         return html;
     }
@@ -248,35 +255,42 @@ public class BooksController : ControllerBase
     /// <summary>
     /// TEMP DEBUG: Shows raw database state for debugging.
     /// </summary>
+    /// <returns>HTML string showing database inspection results.</returns>
     [HttpGet("debug/inspect")]
     [AllowAnonymous]
     public string GetDatabaseInspection()
     {
-        try 
+        try
         {
             using var scope = this.HttpContext.RequestServices.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<Data.LibraryDbContext>();
-            
+
             var users = context.Users.Select(u => new { u.Id, u.Email }).ToList();
             var books = context.Books.Select(b => new { b.Id, b.Title, b.UserId }).ToList();
-            
+
             var html = "<html><body style='font-family: Arial;'>";
             html += "<h1>Database Inspection (DEBUG)</h1>";
-            
+
             html += "<h2>Users:</h2><ul>";
             foreach (var user in users)
+            {
                 html += $"<li><code>{user.Email}</code> - ID: <code>{user.Id}</code></li>";
+            }
+
             html += "</ul>";
-            
+
             html += "<h2>Books:</h2><ul>";
             foreach (var book in books)
+            {
                 html += $"<li><strong>{book.Title}</strong> - UserId: <code>{book.UserId}</code></li>";
+            }
+
             html += "</ul>";
-            
+
             html += "<h2>Analysis:</h2>";
             html += $"<p><strong>Total Users:</strong> {users.Count}</p>";
             html += $"<p><strong>Total Books:</strong> {books.Count}</p>";
-            
+
             if (books.Any())
             {
                 var booksByUser = books.GroupBy(b => b.UserId).ToList();
@@ -287,9 +301,10 @@ public class BooksController : ControllerBase
                     var userEmail = user?.Email ?? "UNKNOWN USER";
                     html += $"<li><code>{userEmail}</code>: {group.Count()} books</li>";
                 }
+
                 html += "</ul>";
             }
-            
+
             html += "</body></html>";
             return html;
         }
@@ -298,7 +313,6 @@ public class BooksController : ControllerBase
             return $"<html><body><h1>Error</h1><pre>{ex}</pre></body></html>";
         }
     }
-
 
     /// <summary>
     /// Gets the current user's ID from JWT claims.
@@ -309,17 +323,17 @@ public class BooksController : ControllerBase
         Console.WriteLine("=== USER ID EXTRACTION DEBUG ===");
         Console.WriteLine($"Request Path: {this.HttpContext.Request.Path}");
         Console.WriteLine($"User IsAuthenticated: {this.User.Identity?.IsAuthenticated}");
-        
+
         var allClaims = this.User.Claims.Select(c => new { Type = c.Type, Value = c.Value }).ToList();
         Console.WriteLine($"All Claims Count: {allClaims.Count}");
         foreach (var claim in allClaims)
         {
             Console.WriteLine($"  Claim: {claim.Type} = {claim.Value}");
         }
-        
+
         var userIdClaim = this.User.FindFirst(ClaimTypes.NameIdentifier);
         Console.WriteLine($"NameIdentifier Claim: {userIdClaim?.Value ?? "NULL"}");
-        
+
         if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
         {
             Console.WriteLine($"ERROR: Failed to extract userId from token. UserIdClaim: {userIdClaim?.Value ?? "NULL"}");

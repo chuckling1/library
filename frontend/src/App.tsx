@@ -24,40 +24,40 @@ const App: React.FC = (): React.JSX.Element => {
             {/* Authentication routes */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            
+
             {/* Protected routes wrapped in Layout */}
             <Route path="/" element={<Navigate to="/books" replace />} />
-            <Route 
-              path="/books" 
+            <Route
+              path="/books"
               element={
                 <Layout>
                   <BookListPage />
                 </Layout>
-              } 
+              }
             />
-            <Route 
-              path="/books/new" 
+            <Route
+              path="/books/new"
               element={
                 <Layout>
                   <BookFormPage />
                 </Layout>
-              } 
+              }
             />
-            <Route 
-              path="/books/:id/edit" 
+            <Route
+              path="/books/:id/edit"
               element={
                 <Layout>
                   <BookFormPage />
                 </Layout>
-              } 
+              }
             />
-            <Route 
-              path="/stats" 
+            <Route
+              path="/stats"
               element={
                 <Layout>
                   <StatsPage />
                 </Layout>
-              } 
+              }
             />
           </Routes>
         </Router>

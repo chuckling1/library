@@ -17,9 +17,9 @@ import { formatIso8601ForDisplay } from '../utils/dateUtils';
 import { getApiConfiguration } from '../config/apiConfig';
 import { useAuth } from '../contexts/AuthContext';
 
-// Create authenticated API instance
-const createBooksApi = (token?: string | null): BooksApi => {
-  const configuration = getApiConfiguration(token);
+// Create authenticated API instance (uses httpOnly cookies automatically)
+const createBooksApi = (): BooksApi => {
+  const configuration = getApiConfiguration();
   return new BooksApi(configuration);
 };
 
@@ -50,46 +50,17 @@ export interface BooksFilters {
 export const useBooks = (
   filters: BooksFilters = {}
 ): UseQueryResult<PaginatedResponse<Book>, Error> => {
-  const { token } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   return useQuery({
     queryKey: booksKeys.list(filters),
     queryFn: async (): Promise<PaginatedResponse<Book>> => {
-      // === BOOKS API DEBUG ===
-      // eslint-disable-next-line no-console
-      console.log('=== BOOKS API CALL DEBUG ===');
-      // eslint-disable-next-line no-console
-      console.log('Filters:', filters);
-      // eslint-disable-next-line no-console
-      console.log('Token (first 50 chars):', token ? token.substring(0, 50) + '...' : 'NULL');
-      
-      // Decode JWT token to see what userId it contains
-      if (token) {
-        try {
-          const tokenParts = token.split('.');
-          if (tokenParts.length === 3 && tokenParts[1]) {
-            const payload = JSON.parse(atob(tokenParts[1])) as {
-              'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'?: string;
-              'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'?: string;
-              sub?: string;
-              email?: string;
-            };
-            // eslint-disable-next-line no-console
-            console.log('JWT Token UserId:', payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] ?? payload.sub);
-            // eslint-disable-next-line no-console
-            console.log('JWT Token Email:', payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] ?? payload.email);
-          }
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.log('Could not decode JWT token:', e);
-        }
+      if (!isAuthenticated) {
+        throw new Error('Authentication required');
       }
-      
-      const booksApi = createBooksApi(token);
-      
-      // eslint-disable-next-line no-console
-      console.log('Making API call to /api/Books...');
-      
+
+      const booksApi = createBooksApi();
+
       const response = await booksApi.apiBooksGet(
         filters.genres,
         filters.rating,
@@ -100,111 +71,135 @@ export const useBooks = (
         filters.pageSize
       );
 
-      const data = response.data as unknown as PaginatedResponse<Book>;
+      // The API returns a paginated response object
+      const paginatedData = response.data as unknown as {
+        items: Book[];
+        totalItems: number;
+        page: number;
+        pageSize: number;
+        totalPages: number;
+        hasPreviousPage: boolean;
+        hasNextPage: boolean;
+      };
       
-      // eslint-disable-next-line no-console
-      console.log('API Response received:');
-      // eslint-disable-next-line no-console
-      console.log('  Total books returned:', data.items.length);
-      // eslint-disable-next-line no-console
-      console.log('  Total items:', data.totalItems);
-      // eslint-disable-next-line no-console
-      console.log('  Sample books:', data.items.slice(0, 3).map(b => ({ title: b.title, id: b.id })));
-      // eslint-disable-next-line no-console
-      console.log('=== END BOOKS API CALL ===');
+      const books = paginatedData.items;
 
-      return data;
+      // Extract pagination info from the response
+      const totalCount = paginatedData.totalItems;
+      const page = paginatedData.page;
+      const pageSize = paginatedData.pageSize;
+      const totalPages = paginatedData.totalPages;
+
+      const processedBooks = books.map((book: Book) => {
+        return {
+          ...book,
+          publishedDate: formatIso8601ForDisplay(book.publishedDate),
+        };
+      });
+
+      return {
+        items: processedBooks,
+        page,
+        pageSize,
+        totalItems: totalCount,
+        totalPages,
+        hasPreviousPage: page > 1,
+        hasNextPage: page < totalPages,
+      };
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 10, // 10 minutes (was cacheTime)
-    refetchOnWindowFocus: false, // Prevent refetch on window focus
-    refetchOnReconnect: false, // Prevent refetch on reconnect
-    placeholderData: previousData => previousData, // Keep previous data while fetching
-    enabled: !!token, // Only run query when authenticated
+    enabled: isAuthenticated,
   });
 };
 
-// Custom hook for fetching a single book
-export const useBook = (id: string): UseQueryResult<Book, Error> => {
-  const { token } = useAuth();
+// Custom hook for fetching a single book by ID
+export const useBook = (
+  id: string | undefined
+): UseQueryResult<Book, Error> => {
+  const { isAuthenticated } = useAuth();
 
   return useQuery({
-    queryKey: booksKeys.detail(id),
+    queryKey: booksKeys.detail(id ?? ''),
     queryFn: async (): Promise<Book> => {
-      const booksApi = createBooksApi(token);
+      if (!id) {
+        throw new Error('Book ID is required');
+      }
+
+      const booksApi = createBooksApi();
       const response = await booksApi.apiBooksIdGet(id);
-      return response.data;
+
+      return {
+        ...response.data,
+        publishedDate: formatIso8601ForDisplay(response.data.publishedDate),
+      };
     },
-    enabled: !!id && !!token, // Only run query when authenticated and ID is provided
+    enabled: isAuthenticated && !!id,
   });
 };
 
-// Custom hook for fetching book statistics
-export const useBookStats = (): UseQueryResult<BookStatsResponse, Error> => {
-  const { token } = useAuth();
-
-  return useQuery({
-    queryKey: booksKeys.stats(),
-    queryFn: async (): Promise<BookStatsResponse> => {
-      const booksApi = createBooksApi(token);
-      const response = await booksApi.apiBooksStatsGet();
-      return response.data;
-    },
-    staleTime: 1000 * 60 * 10, // 10 minutes for stats
-    enabled: !!token, // Only run query when authenticated
-  });
-};
-
-// Custom hook for creating a book
+// Custom hook for creating a new book
 export const useCreateBook = (): UseMutationResult<
   Book,
   Error,
   CreateBookRequest
 > => {
+  const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
-  const { token } = useAuth();
 
   return useMutation({
-    mutationFn: async (bookData: CreateBookRequest): Promise<Book> => {
-      const booksApi = createBooksApi(token);
-      const response = await booksApi.apiBooksPost(bookData);
-      return response.data;
+    mutationFn: async (newBook: CreateBookRequest): Promise<Book> => {
+      if (!isAuthenticated) {
+        throw new Error('Authentication required');
+      }
+
+      const booksApi = createBooksApi();
+      const response = await booksApi.apiBooksPost(newBook);
+
+      return {
+        ...response.data,
+        publishedDate: formatIso8601ForDisplay(response.data.publishedDate),
+      };
     },
     onSuccess: () => {
-      // Invalidate and refetch books queries
+      // Invalidate and refetch books list after successful creation
       void queryClient.invalidateQueries({ queryKey: booksKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: booksKeys.stats() });
     },
   });
 };
 
-// Custom hook for updating a book
+// Custom hook for updating an existing book
 export const useUpdateBook = (): UseMutationResult<
   Book,
   Error,
-  { id: string; bookData: UpdateBookRequest }
+  { id: string; book: UpdateBookRequest }
 > => {
+  const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
-  const { token } = useAuth();
 
   return useMutation({
     mutationFn: async ({
       id,
-      bookData,
+      book,
     }: {
       id: string;
-      bookData: UpdateBookRequest;
+      book: UpdateBookRequest;
     }): Promise<Book> => {
-      const booksApi = createBooksApi(token);
-      const response = await booksApi.apiBooksIdPut(id, bookData);
-      return response.data;
+      if (!isAuthenticated) {
+        throw new Error('Authentication required');
+      }
+
+      const booksApi = createBooksApi();
+      const response = await booksApi.apiBooksIdPut(id, book);
+
+      return {
+        ...response.data,
+        publishedDate: formatIso8601ForDisplay(response.data.publishedDate),
+      };
     },
-    onSuccess: updatedBook => {
-      // Invalidate and refetch books queries
+    onSuccess: (_, { id }) => {
+      // Invalidate and refetch books list and the specific book after successful update
       void queryClient.invalidateQueries({ queryKey: booksKeys.lists() });
-      void queryClient.invalidateQueries({
-        queryKey: booksKeys.detail(updatedBook.id!),
-      });
+      void queryClient.invalidateQueries({ queryKey: booksKeys.detail(id) });
       void queryClient.invalidateQueries({ queryKey: booksKeys.stats() });
     },
   });
@@ -212,43 +207,72 @@ export const useUpdateBook = (): UseMutationResult<
 
 // Custom hook for deleting a book
 export const useDeleteBook = (): UseMutationResult<void, Error, string> => {
+  const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
-  const { token } = useAuth();
 
   return useMutation({
     mutationFn: async (id: string): Promise<void> => {
-      const booksApi = createBooksApi(token);
+      if (!isAuthenticated) {
+        throw new Error('Authentication required');
+      }
+
+      const booksApi = createBooksApi();
       await booksApi.apiBooksIdDelete(id);
     },
-    onSuccess: () => {
-      // Invalidate and refetch books queries
+    onSuccess: (_, id) => {
+      // Remove the deleted book from cache and refetch lists
+      void queryClient.removeQueries({ queryKey: booksKeys.detail(id) });
       void queryClient.invalidateQueries({ queryKey: booksKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: booksKeys.stats() });
     },
   });
 };
 
-// Helper function to extract genres from book
-export const getBookGenres = (book: Book): string[] => {
-  return book.bookGenres?.map(bg => bg.genreName ?? '') ?? [];
+// Custom hook for fetching books statistics
+export const useBooksStats = (): UseQueryResult<BookStatsResponse, Error> => {
+  const { isAuthenticated } = useAuth();
+
+  return useQuery({
+    queryKey: booksKeys.stats(),
+    queryFn: async (): Promise<BookStatsResponse> => {
+      if (!isAuthenticated) {
+        throw new Error('Authentication required');
+      }
+
+      const booksApi = createBooksApi();
+      const response = await booksApi.apiBooksStatsGet();
+      return response.data;
+    },
+    enabled: isAuthenticated,
+  });
 };
 
-// Helper function to format date - now handles ISO 8601 format properly
+// Utility function to extract genre names from a book
+export const getBookGenres = (book: Book): string[] => {
+  if (!book.bookGenres || !Array.isArray(book.bookGenres)) {
+    return [];
+  }
+
+  return book.bookGenres
+    .map(bg => bg.genreName)
+    .filter((genre): genre is string => Boolean(genre));
+};
+
+// Utility function to format date strings for display
 export const formatDate = (dateString: string): string => {
-  // Use the new ISO 8601 utility for consistent formatting
-  return formatIso8601ForDisplay(dateString, {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
 };
 
-// Helper function to format rating stars
-export const formatRating = (rating: number): string => {
-  if (rating < 0) {
-    throw new Error(`Invalid count value: ${rating}`);
-  }
-  const filledStars = Math.min(rating, 5);
-  const emptyStars = rating > 5 ? 1 : Math.max(5 - rating, 0);
-  return '★'.repeat(filledStars) + '☆'.repeat(emptyStars);
+// Utility function to format rating for display
+export const formatRating = (rating: number | undefined): string => {
+  if (typeof rating !== 'number') return 'Not Rated';
+  return `${rating}/5`;
 };
+
+// Legacy alias for useBooksStats to maintain backwards compatibility
+export const useBookStats = useBooksStats;

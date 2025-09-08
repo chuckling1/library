@@ -11,7 +11,7 @@ import type {
 import {
   useBooks,
   useBook,
-  useBookStats,
+  useBooksStats,
   useCreateBook,
   useUpdateBook,
   useDeleteBook,
@@ -55,6 +55,14 @@ vi.mock('../generated/api', () => {
     Configuration: vi.fn(),
   };
 });
+
+// Mock the auth context
+vi.mock('../contexts/AuthContext', () => ({
+  useAuth: vi.fn(() => ({
+    isAuthenticated: true,
+    user: { id: '1', email: 'test@example.com' },
+  })),
+}));
 
 const createMockBook = (overrides: Partial<Book> = {}): Book => ({
   id: '123',
@@ -101,7 +109,16 @@ describe('useBooks hook', () => {
         createMockBook(),
         createMockBook({ id: '456', title: 'Another Book' }),
       ];
-      mockApiBooksGet.mockResolvedValue({ data: mockBooks });
+      const mockPaginatedResponse = {
+        items: mockBooks,
+        page: 1,
+        pageSize: 20,
+        totalPages: 1,
+        totalItems: mockBooks.length,
+        hasPreviousPage: false,
+        hasNextPage: false,
+      };
+      mockApiBooksGet.mockResolvedValue({ data: mockPaginatedResponse });
 
       const { result } = renderHook(() => useBooks(), {
         wrapper: createWrapper(),
@@ -120,7 +137,20 @@ describe('useBooks hook', () => {
         undefined, // page
         undefined // pageSize
       );
-      expect(result.current.data).toEqual(mockBooks);
+      // The hook formats publishedDate and returns a PaginatedResponse
+      const expectedResponse = {
+        items: mockBooks.map(book => ({
+          ...book,
+          publishedDate: 'December 31, 2022', // formatIso8601ForDisplay('2023-01-01T00:00:00.000Z')
+        })),
+        page: 1,
+        pageSize: 20,
+        totalPages: 1,
+        totalItems: 2,
+        hasPreviousPage: false,
+        hasNextPage: false,
+      };
+      expect(result.current.data).toEqual(expectedResponse);
     });
 
     it('fetches books with custom filters', async () => {
@@ -168,7 +198,12 @@ describe('useBooks hook', () => {
       });
 
       expect(mockApiBooksIdGet).toHaveBeenCalledWith('123');
-      expect(result.current.data).toEqual(mockBook);
+      // The hook formats the publishedDate, so expect the formatted version
+      const expectedBook = {
+        ...mockBook,
+        publishedDate: 'December 31, 2022', // formatIso8601ForDisplay('2023-01-01T00:00:00.000Z')
+      };
+      expect(result.current.data).toEqual(expectedBook);
     });
 
     it('is disabled when no ID is provided', () => {
@@ -185,7 +220,7 @@ describe('useBooks hook', () => {
       const mockStats = { totalBooks: 100, averageRating: 4.2 };
       mockApiBooksStatsGet.mockResolvedValue({ data: mockStats });
 
-      const { result } = renderHook(() => useBookStats(), {
+      const { result } = renderHook(() => useBooksStats(), {
         wrapper: createWrapper(),
       });
 
@@ -224,7 +259,7 @@ describe('useBooks hook', () => {
     it('updates an existing book', async () => {
       const updateData = {
         id: '123',
-        bookData: {
+        book: {
           title: 'Updated Book',
           author: 'Updated Author',
           publishedDate: '2023-01-01T00:00:00.000Z',
@@ -241,10 +276,7 @@ describe('useBooks hook', () => {
 
       await result.current.mutateAsync(updateData);
 
-      expect(mockApiBooksIdPut).toHaveBeenCalledWith(
-        '123',
-        updateData.bookData
-      );
+      expect(mockApiBooksIdPut).toHaveBeenCalledWith('123', updateData.book);
     });
   });
 
@@ -295,7 +327,7 @@ describe('Helper functions', () => {
       });
       const genres = getBookGenres(book);
 
-      expect(genres).toEqual(['Fiction', '']);
+      expect(genres).toEqual(['Fiction']);
     });
   });
 
@@ -312,18 +344,18 @@ describe('Helper functions', () => {
   });
 
   describe('formatRating', () => {
-    it('formats rating as star string', () => {
-      expect(formatRating(0)).toBe('☆☆☆☆☆');
-      expect(formatRating(1)).toBe('★☆☆☆☆');
-      expect(formatRating(2)).toBe('★★☆☆☆');
-      expect(formatRating(3)).toBe('★★★☆☆');
-      expect(formatRating(4)).toBe('★★★★☆');
-      expect(formatRating(5)).toBe('★★★★★');
+    it('formats rating as numeric string', () => {
+      expect(formatRating(0)).toBe('0/5');
+      expect(formatRating(1)).toBe('1/5');
+      expect(formatRating(2)).toBe('2/5');
+      expect(formatRating(3)).toBe('3/5');
+      expect(formatRating(4)).toBe('4/5');
+      expect(formatRating(5)).toBe('5/5');
     });
 
     it('handles edge cases', () => {
-      expect(() => formatRating(-1)).toThrow('Invalid count value: -1');
-      expect(formatRating(6)).toBe('★★★★★☆');
+      expect(formatRating(undefined)).toBe('Not Rated');
+      expect(formatRating(6)).toBe('6/5');
     });
   });
 });

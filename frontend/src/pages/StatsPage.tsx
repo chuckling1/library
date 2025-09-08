@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useBookStats, useBooks, formatRating } from '../hooks/useBooks';
+import { useBooksStats, useBooks, formatRating } from '../hooks/useBooks';
 import { useGenreFilter } from '../hooks/useGenreFilter';
 import {
   BarChart,
@@ -17,7 +17,7 @@ import {
 import './StatsPage.scss';
 
 const StatsPage: React.FC = () => {
-  const { data: stats, isLoading, error } = useBookStats();
+  const { data: stats, isLoading, error } = useBooksStats();
   const { data: recentBooks } = useBooks({
     sortBy: 'createdAt',
     sortDirection: 'desc',
@@ -245,7 +245,7 @@ const StatsPage: React.FC = () => {
                         backgroundColor: '#1f2937',
                         border: '1px solid #374151',
                         borderRadius: '6px',
-                        color: '#f9fafb'
+                        color: '#f9fafb',
                       }}
                       cursor={{ fill: 'rgba(20, 184, 166, 0.1)' }}
                     />
@@ -295,7 +295,7 @@ const StatsPage: React.FC = () => {
                         backgroundColor: '#1f2937',
                         border: '1px solid #374151',
                         borderRadius: '6px',
-                        color: '#f9fafb'
+                        color: '#f9fafb',
                       }}
                     />
                   </PieChart>
@@ -348,7 +348,7 @@ const StatsPage: React.FC = () => {
                         backgroundColor: '#1f2937',
                         border: '1px solid #374151',
                         borderRadius: '6px',
-                        color: '#f9fafb'
+                        color: '#f9fafb',
                       }}
                       cursor={{ fill: 'rgba(20, 184, 166, 0.1)' }}
                     />
@@ -405,7 +405,7 @@ const StatsPage: React.FC = () => {
                         backgroundColor: '#1f2937',
                         border: '1px solid #374151',
                         borderRadius: '6px',
-                        color: '#f9fafb'
+                        color: '#f9fafb',
                       }}
                     />
                   </PieChart>

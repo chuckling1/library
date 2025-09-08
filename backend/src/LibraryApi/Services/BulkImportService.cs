@@ -284,7 +284,8 @@ namespace LibraryApi.Services
             }).ToList();
 
             this.logger.LogInformation("Creating {BookCount} books for UserId: {UserId}", books.Count, userId);
-            this.logger.LogInformation("Sample book creation data: {@BookSample}", 
+            this.logger.LogInformation(
+                "Sample book creation data: {@BookSample}",
                 books.Take(3).Select(b => new { Title = b.Title, UserId = b.UserId }).ToList());
 
             // Execute bulk insert
@@ -309,13 +310,14 @@ namespace LibraryApi.Services
         {
             this.logger.LogInformation("=== EXPORT BOOKS DEBUG ===");
             this.logger.LogInformation("Exporting books for UserId: {UserId}", userId);
-            
+
             var books = await this.bookRepository.GetAllBooksAsync(userId, cancellationToken);
-            
+
             this.logger.LogInformation("Retrieved {BookCount} books for export for UserId: {UserId}", books.Count(), userId);
-            this.logger.LogInformation("Sample exported book UserIds: {@BookUserIds}", 
+            this.logger.LogInformation(
+                "Sample exported book UserIds: {@BookUserIds}",
                 books.Take(3).Select(b => new { BookId = b.Id, Title = b.Title, UserId = b.UserId }).ToList());
-            
+
             var csv = new System.Text.StringBuilder();
 
             // If no books, return a template with instructions

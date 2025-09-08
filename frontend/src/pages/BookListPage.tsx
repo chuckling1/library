@@ -57,7 +57,8 @@ const BookListPage: React.FC = () => {
   const { activeGenres } = useGenreFilter();
 
   // Bulk import functionality
-  const { isImporting, fileInputRef, handleImportBooks, handleFileSelect } = useBulkImport();
+  const { isImporting, fileInputRef, handleImportBooks, handleFileSelect } =
+    useBulkImport();
 
   // Export functionality
   const { exportBooks, getButtonLabel } = useBookExport();
@@ -200,7 +201,11 @@ const BookListPage: React.FC = () => {
           <button
             onClick={() => void exportBooks()}
             className="btn-secondary"
-            title={hasBooks ? "Export your book collection to CSV" : "Download CSV template for importing books"}
+            title={
+              hasBooks
+                ? 'Export your book collection to CSV'
+                : 'Download CSV template for importing books'
+            }
           >
             {getButtonLabel(hasBooks)}
           </button>
@@ -269,7 +274,8 @@ const BookListPage: React.FC = () => {
             <>
               {pagination.totalItems > 0 ? (
                 <>
-                  Showing {(pagination.currentPage - 1) * pagination.pageSize + 1}-
+                  Showing{' '}
+                  {(pagination.currentPage - 1) * pagination.pageSize + 1}-
                   {Math.min(
                     pagination.currentPage * pagination.pageSize,
                     pagination.totalItems

@@ -18,16 +18,22 @@ using Microsoft.AspNetCore.Mvc;
 public class AuthController : ControllerBase
 {
     private readonly IUserService userService;
+    private readonly ISecurityEventService securityEventService;
     private readonly ILogger<AuthController> logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AuthController"/> class.
     /// </summary>
     /// <param name="userService">The user service.</param>
+    /// <param name="securityEventService">The security event service.</param>
     /// <param name="logger">The logger.</param>
-    public AuthController(IUserService userService, ILogger<AuthController> logger)
+    public AuthController(
+        IUserService userService,
+        ISecurityEventService securityEventService,
+        ILogger<AuthController> logger)
     {
         this.userService = userService;
+        this.securityEventService = securityEventService;
         this.logger = logger;
     }
 
@@ -59,8 +65,17 @@ public class AuthController : ControllerBase
             return this.Unauthorized("Invalid email or password");
         }
 
+        // SECURITY ENHANCEMENT: Set httpOnly cookie for secure token storage (Phase 2)
+        this.SetSecureAuthCookie(authResponse.Token);
+        await this.securityEventService.LogSecurityEventAsync(
+            "LOGIN_SUCCESS",
+            "User login successful with secure cookie set",
+            new { email = request.Email, cookieSet = true });
+
         this.logger.LogInformation("Login successful for user: {Email}", request.Email);
-        return this.Ok(authResponse);
+
+        // SECURITY: Don't expose token in response body - it's secure in httpOnly cookie
+        return this.Ok(new { email = authResponse.Email, message = "Login successful" });
     }
 
     /// <summary>
@@ -91,7 +106,81 @@ public class AuthController : ControllerBase
             return this.Conflict("A user with this email address already exists");
         }
 
+        // SECURITY ENHANCEMENT: Set httpOnly cookie for secure token storage (Phase 2)
+        this.SetSecureAuthCookie(authResponse.Token);
+        await this.securityEventService.LogSecurityEventAsync(
+            "REGISTER_SUCCESS",
+            "User registration successful with secure cookie set",
+            new { email = request.Email, cookieSet = true });
+
         this.logger.LogInformation("Registration successful for user: {Email}", request.Email);
-        return this.CreatedAtAction(nameof(this.Register), authResponse);
+
+        // SECURITY: Don't expose token in response body - it's secure in httpOnly cookie
+        return this.CreatedAtAction(nameof(this.Register), new { email = authResponse.Email, message = "Registration successful" });
+    }
+
+    /// <summary>
+    /// Logs out the current user by clearing the authentication cookie.
+    /// </summary>
+    /// <returns>Success response.</returns>
+    [HttpPost("logout")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult> Logout()
+    {
+        // SECURITY ENHANCEMENT: Clear httpOnly authentication cookie
+        this.Response.Cookies.Delete("auth-token", new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = false,
+            SameSite = SameSiteMode.Lax,
+            Path = "/",
+        });
+
+        await this.securityEventService.LogSecurityEventAsync(
+            "LOGOUT_SUCCESS",
+            "User logout successful - secure cookie cleared",
+            new { cookieCleared = true });
+
+        this.logger.LogInformation("User logout successful");
+        return this.Ok(new { message = "Logout successful" });
+    }
+
+    /// <summary>
+    /// Gets the current authenticated user's information.
+    /// Used to verify authentication status via httpOnly cookies.
+    /// </summary>
+    /// <returns>Current user information.</returns>
+    [HttpGet("me")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public ActionResult GetCurrentUser()
+    {
+        // Extract email from JWT claims (from httpOnly cookie)
+        var email = this.User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value
+                    ?? this.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+
+        if (string.IsNullOrEmpty(email))
+        {
+            return this.Unauthorized("Invalid authentication state");
+        }
+
+        return this.Ok(new { email });
+    }
+
+    /// <summary>
+    /// Sets a secure httpOnly authentication cookie with the JWT token.
+    /// </summary>
+    /// <param name="token">The JWT token to store in the cookie.</param>
+    private void SetSecureAuthCookie(string token)
+    {
+        this.Response.Cookies.Append("auth-token", token, new CookieOptions
+        {
+            HttpOnly = true,        // Prevents JavaScript access (XSS protection)
+            Secure = false,         // Allow HTTP for development (Docker localhost setup)
+            SameSite = SameSiteMode.Lax,  // Allow same-site requests (changed from None for HTTP development)
+            Path = "/",             // Available for all paths
+            Expires = DateTimeOffset.UtcNow.AddHours(24), // Same as JWT expiration
+        });
     }
 }

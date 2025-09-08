@@ -95,6 +95,7 @@ public class BookRepository : IBookRepository
         {
             Console.WriteLine($"  - {book.Title} (UserId: {book.UserId})");
         }
+
         Console.WriteLine("=== END REPOSITORY QUERY ===");
 
         return (books, totalCount);

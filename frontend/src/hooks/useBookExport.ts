@@ -9,22 +9,24 @@ export const useBookExport = (): {
   getButtonLabel: (hasBooks: boolean) => string;
 } => {
   const queryClient = useQueryClient();
-  const { token } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const exportBooks = useCallback(async (): Promise<void> => {
-    try {
-      const headers: Record<string, string> = {
-        'Accept': 'text/csv',
-      };
-      
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
+    if (!isAuthenticated) {
+      throw new Error('Authentication required');
+    }
 
-      const response = await fetch(`${getApiBaseUrl()}/api/BulkImport/export/books`, {
-        method: 'GET',
-        headers,
-      });
+    try {
+      const response = await fetch(
+        `${getApiBaseUrl()}/api/BulkImport/export/books`,
+        {
+          method: 'GET',
+          headers: {
+            Accept: 'text/csv',
+          },
+          credentials: 'include',
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Export failed: ${response.statusText}`);
@@ -33,9 +35,11 @@ export const useBookExport = (): {
       // Get the filename from the Content-Disposition header if available
       const contentDisposition = response.headers.get('Content-Disposition');
       let filename = 'library_export.csv';
-      
+
       if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="?([^";\s]+)"?/);
+        const filenameMatch = contentDisposition.match(
+          /filename="?([^";\s]+)"?/
+        );
         if (filenameMatch?.[1]) {
           filename = filenameMatch[1];
         }
@@ -43,22 +47,23 @@ export const useBookExport = (): {
 
       // Get the CSV content
       const blob = await response.blob();
-      
+
       // Check if we have any books by looking at cache
       const cachedData = queryClient.getQueryData(booksKeys.lists());
-      const hasBooks = cachedData && Array.isArray(cachedData) && cachedData.length > 0;
+      const hasBooks =
+        cachedData && Array.isArray(cachedData) && cachedData.length > 0;
 
       // Create download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = hasBooks ? filename : 'library_import_template.csv';
-      
+
       // Trigger download
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       // Clean up
       window.URL.revokeObjectURL(url);
     } catch (error) {
@@ -66,7 +71,7 @@ export const useBookExport = (): {
       console.error('Failed to export books:', error);
       alert('Failed to export books. Please try again.');
     }
-  }, [queryClient, token]);
+  }, [queryClient, isAuthenticated]);
 
   const getButtonLabel = useCallback((hasBooks: boolean): string => {
     return hasBooks ? 'Export Collection' : 'Download Import Template';

@@ -16,6 +16,7 @@ import * as useBooks from '../hooks/useBooks';
 // Mock the hooks module
 vi.mock('../hooks/useBooks', () => ({
   useBookStats: vi.fn(),
+  useBooksStats: vi.fn(),
   useBooks: vi.fn(),
   formatRating: vi.fn(
     (rating: number) => '★'.repeat(rating) + '☆'.repeat(5 - rating)
@@ -75,7 +76,7 @@ describe('StatsPage', () => {
   let mockUseBooks: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    mockUseBookStats = vi.mocked(useBooks.useBookStats);
+    mockUseBookStats = vi.mocked(useBooks.useBooksStats);
     mockUseBooks = vi.mocked(useBooks.useBooks);
     vi.clearAllMocks();
   });

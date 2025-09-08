@@ -1,6 +1,6 @@
 # Book Library Application
 
-A full-stack book management application demonstrating professional AI-assisted development workflows with clean architecture, strict type safety, and comprehensive testing.
+A production-ready full-stack book management application with secure httpOnly cookie JWT authentication, multi-user data isolation, comprehensive CSV import/export, and advanced analytics. Built with AI-assisted development workflows emphasizing clean architecture, strict type safety, and comprehensive testing.
 
 ## 🚀 Quick Start
 
@@ -25,6 +25,12 @@ That's it! The application will be running at:
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:5000  
 - **Swagger UI**: http://localhost:5000/swagger
+
+**First Time Users:**
+1. Navigate to http://localhost:3000
+2. Click "Sign Up" to create your account
+3. Log in with your credentials
+4. Start building your personal book library
 
 ## 🐳 Docker Setup
 
@@ -158,39 +164,52 @@ npm run setup
 **Backend (.NET 9+)**
 - ASP.NET Core Web API (latest stable)
 - Entity Framework Core with SQLite
+- httpOnly Cookie JWT Authentication with BCrypt password hashing
+- Multi-user data isolation with automatic user scoping
 - OpenAPI/Swagger for API documentation
 - Interface-based architecture with dependency injection
-- Comprehensive logging with Serilog
+- Comprehensive structured logging with Serilog
 
 **Frontend (React 19+)**  
 - React with TypeScript (ultra-strict configuration)
 - Vite for fast development and building
-- React Query for API state management
+- React Query for server state management with caching
 - React Router for client-side routing
-- Recharts for data visualization
+- Recharts for interactive data visualizations
+- Context API for authentication state management
 - Auto-generated API client from OpenAPI spec
 
 ### Key Features
 
-- **📚 Book Management**: Full CRUD operations for books
-- **🏷️ Genre System**: Hybrid tag system (base genres + custom)  
-- **⭐ Ratings**: Integer input (1-5) with fractional averages
-- **📊 Analytics**: Genre distribution charts and statistics
-- **🔍 Search & Filter**: Advanced filtering by genre, rating, dates
-- **📱 Responsive Design**: Works on desktop, tablet, and mobile
+- **🔐 Multi-User Authentication**: Secure httpOnly cookie JWT authentication with complete data isolation
+- **📚 Book Management**: Full CRUD operations with user-specific collections
+- **📊 Bulk Operations**: CSV import/export with duplicate detection and validation
+- **🏷️ Advanced Genre System**: Dynamic genre creation with intelligent filtering and sorting
+- **⭐ Smart Analytics**: Genre distribution charts, rating statistics, and collection insights
+- **🔍 Powerful Search & Filter**: Real-time search with advanced filtering by genre, rating, and dates
+- **📱 Production-Ready Design**: Responsive UI with accessibility features and dark theme
+- **🚀 Professional Development**: Complete CI/CD workflow with zero-warning policy
 
 ## 🔧 Development Workflow
 
 ### OpenAPI-First Development
 
-1. **Backend**: C# models and controllers auto-generate OpenAPI spec
-2. **Frontend**: Generates TypeScript client from OpenAPI spec
-3. **Type Safety**: Breaking changes caught at compile time
+1. **Backend**: C# models and controllers auto-generate OpenAPI spec with httpOnly cookie JWT authentication
+2. **Frontend**: Generates TypeScript client from OpenAPI spec with auth headers
+3. **Type Safety**: Breaking changes caught at compile time across authentication boundaries
+4. **Multi-User Support**: All endpoints automatically scoped to authenticated user
 
 ```bash
 # After backend changes, regenerate frontend client
 npm run generate-client
 ```
+
+### Authentication-First Architecture
+
+- **Secure by Default**: All book operations require httpOnly cookie authentication
+- **User Data Isolation**: Complete separation between user accounts
+- **httpOnly Cookie Management**: Automatic cookie-based JWT handling with no JavaScript access
+- **Permission Boundaries**: No cross-user data access possible
 
 ### Validation Gates
 
@@ -280,18 +299,20 @@ Each phase has specific deliverables, success criteria, and validation requireme
 ## 🔒 Security & Performance
 
 **Security Features:**
-- Input validation on all API endpoints
-- SQL injection prevention via parameterized queries
-- XSS prevention with proper React sanitization
-- No hardcoded secrets (environment variables only)
-- Comprehensive error handling without information leakage
+- **httpOnly Cookie Authentication**: Secure cookie-based JWT authentication with 24-hour expiration
+- **Multi-User Data Isolation**: Complete separation of user data at database level
+- **Input Validation**: Comprehensive validation on all API endpoints and forms
+- **SQL Injection Prevention**: Parameterized queries with Entity Framework
+- **XSS Prevention**: Proper React sanitization and CSP headers
+- **Secure Configuration**: Environment variables only, no hardcoded secrets
+- **Error Handling**: Structured error responses without information leakage
 
 **Performance Features:**
-- Async/await patterns throughout
-- Database query optimization with Entity Framework
-- React.memo for expensive components
-- Lazy loading and code splitting
-- Efficient bundle size management
+- **Async/Await**: Non-blocking operations throughout the application
+- **Database Optimization**: Strategic indexing and efficient EF Core queries
+- **React Optimization**: React.memo, useCallback, and lazy loading
+- **Bundle Optimization**: Code splitting and tree shaking with Vite
+- **Caching Strategy**: React Query with intelligent cache invalidation
 
 ## 🧪 Testing Strategy
 
@@ -310,8 +331,8 @@ Each phase has specific deliverables, success criteria, and validation requireme
 
 ## 🚢 Deployment
 
-### Current: Manual Setup
-Currently requires Node.js 18+ and .NET 8+ SDK installation as described in Quick Start.
+### Manual Setup
+Requires Node.js 22+ and .NET 9+ SDK installation as described in Quick Start. Fully automated setup available via `npm run setup`.
 
 ### ✅ Complete Docker Containerization
 
@@ -360,8 +381,17 @@ This provides a universal setup experience that eliminates all dependency manage
 
 ## 📖 Documentation
 
-- **API Documentation**: Auto-generated Swagger UI at `/swagger`
-- **Frontend Components**: JSDoc comments on all interfaces
+Comprehensive documentation is available in the `docs/` directory:
+
+- **[📘 API Documentation](docs/API.md)**: Complete REST API reference with authentication
+- **[🏗️ Architecture Guide](docs/ARCHITECTURE.md)**: System design, patterns, and technical decisions
+- **[🚀 Deployment Guide](docs/DEPLOYMENT.md)**: Development, Docker, and production deployment
+- **[👩‍💻 Development Guide](docs/DEVELOPMENT.md)**: Setup, workflow, coding standards, and validation
+- **[📖 User Guide](docs/USER_GUIDE.md)**: Complete user manual for all application features
+- **[🔧 Troubleshooting Guide](docs/TROUBLESHOOTING.md)**: Solutions for common issues and debugging
+
+**Additional Resources:**
+- **Auto-generated Swagger UI**: http://localhost:5000/swagger
 - **Architecture Decisions**: Documented in `project-docs/`
 - **Development Process**: Complete AI-assisted workflow documentation
 

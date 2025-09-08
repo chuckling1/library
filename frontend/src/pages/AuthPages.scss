@@ -5,11 +5,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, vars.$accent-primary 0%, vars.$accent-hover 100%);
+  background: vars.$bg-primary;
   padding: vars.$spacing-lg;
 
   .auth-container {
-    background: vars.$bg-primary;
+    background: vars.$bg-surface;
     border: 1px solid vars.$border-color;
     border-radius: vars.$border-radius-lg;
     box-shadow: vars.$box-shadow-md;
@@ -20,6 +20,20 @@
     .auth-header {
       text-align: center;
       margin-bottom: vars.$spacing-xl;
+
+      .auth-logo {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+        margin-bottom: vars.$spacing-md;
+        background-color: transparent;
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
 
       h1 {
         color: vars.$text-primary;
@@ -54,7 +68,9 @@
           background-color: vars.$bg-secondary;
           color: vars.$text-primary;
           font-size: vars.$font-size-md;
-          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+          transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
 
           &:focus {
             outline: none;
@@ -109,7 +125,9 @@
         font-size: vars.$font-size-md;
         font-weight: vars.$font-weight-medium;
         cursor: pointer;
-        transition: background-color 0.2s ease, transform 0.1s ease;
+        transition:
+          background-color 0.2s ease,
+          transform 0.1s ease;
 
         &:hover:not(:disabled) {
           background: vars.$accent-hover;

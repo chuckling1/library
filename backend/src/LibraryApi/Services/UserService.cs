@@ -65,7 +65,8 @@ namespace LibraryApi.Services
             // Decode and verify the token we just generated
             var handler = new JwtSecurityTokenHandler();
             var jsonToken = handler.ReadJwtToken(token);
-            this.logger.LogInformation("Generated login token claims: {@Claims}", 
+            this.logger.LogInformation(
+                "Generated login token claims: {@Claims}",
                 jsonToken.Claims.Select(c => new { Type = c.Type, Value = c.Value }).ToList());
 
             var expirationHours = this.configuration.GetValue<int>("JwtSettings:ExpirationHours");
@@ -110,7 +111,8 @@ namespace LibraryApi.Services
             // Decode and verify the token we just generated
             var handler = new JwtSecurityTokenHandler();
             var jsonToken = handler.ReadJwtToken(token);
-            this.logger.LogInformation("Generated register token claims: {@Claims}", 
+            this.logger.LogInformation(
+                "Generated register token claims: {@Claims}",
                 jsonToken.Claims.Select(c => new { Type = c.Type, Value = c.Value }).ToList());
 
             var expirationHours = this.configuration.GetValue<int>("JwtSettings:ExpirationHours");
@@ -142,9 +144,20 @@ namespace LibraryApi.Services
         public string GenerateJwtToken(User user)
         {
             var jwtSettings = this.configuration.GetSection("JwtSettings");
-            var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey is not configured");
-            var issuer = jwtSettings["Issuer"] ?? throw new InvalidOperationException("JWT Issuer is not configured");
-            var audience = jwtSettings["Audience"] ?? throw new InvalidOperationException("JWT Audience is not configured");
+
+            // SECURITY: Use environment variables for JWT secret (consistent with Program.cs)
+            var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
+                ?? jwtSettings["SecretKey"]
+                ?? throw new InvalidOperationException("JWT SecretKey is not configured");
+
+            var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER")
+                ?? jwtSettings["Issuer"]
+                ?? throw new InvalidOperationException("JWT Issuer is not configured");
+
+            var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE")
+                ?? jwtSettings["Audience"]
+                ?? throw new InvalidOperationException("JWT Audience is not configured");
+
             var expirationHours = jwtSettings.GetValue<int>("ExpirationHours");
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));

@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { LoginRequest } from '../types/auth';
 import { logger } from '../utils/logger';
+import logo from '../images/logo.png';
 import './AuthPages.scss';
 
 const LoginPage: React.FC = (): React.JSX.Element => {
@@ -70,7 +71,7 @@ const LoginPage: React.FC = (): React.JSX.Element => {
 
     try {
       await login(formData);
-      
+
       logger.info('Login page submission successful', {
         appLayer: 'Frontend-UI',
         sourceContext: 'LoginPage',
@@ -79,18 +80,26 @@ const LoginPage: React.FC = (): React.JSX.Element => {
       });
 
       // Navigate to the intended destination or default to /books
-      const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '/books';
+      const from =
+        (location.state as { from?: { pathname?: string } } | null)?.from
+          ?.pathname ?? '/books';
       void navigate(from, { replace: true });
     } catch (error) {
       logger.error('Login page submission failed', {
         appLayer: 'Frontend-UI',
         sourceContext: 'LoginPage',
         functionName: 'handleSubmit',
-        payload: { email: formData.email, error: error instanceof Error ? error.message : 'Unknown error' },
+        payload: {
+          email: formData.email,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
       });
 
       setErrors({
-        general: error instanceof Error ? error.message : 'Login failed. Please try again.',
+        general:
+          error instanceof Error
+            ? error.message
+            : 'Login failed. Please try again.',
       });
     } finally {
       setIsSubmitting(false);
@@ -101,15 +110,19 @@ const LoginPage: React.FC = (): React.JSX.Element => {
     <div className="auth-page">
       <div className="auth-container">
         <div className="auth-header">
+          <img src={logo} alt="My Library Logo" className="auth-logo" />
           <h1>Welcome Back</h1>
           <p>Sign in to your library account</p>
         </div>
 
-        <form className="auth-form" onSubmit={(e) => { void handleSubmit(e); }}>
+        <form
+          className="auth-form"
+          onSubmit={e => {
+            void handleSubmit(e);
+          }}
+        >
           {errors.general && (
-            <div className="error-message general-error">
-              {errors.general}
-            </div>
+            <div className="error-message general-error">{errors.general}</div>
           )}
 
           <div className="form-group">
@@ -128,9 +141,7 @@ const LoginPage: React.FC = (): React.JSX.Element => {
               required
             />
             {errors.email && (
-              <div className="error-message field-error">
-                {errors.email}
-              </div>
+              <div className="error-message field-error">{errors.email}</div>
             )}
           </div>
 
@@ -150,9 +161,7 @@ const LoginPage: React.FC = (): React.JSX.Element => {
               required
             />
             {errors.password && (
-              <div className="error-message field-error">
-                {errors.password}
-              </div>
+              <div className="error-message field-error">{errors.password}</div>
             )}
           </div>
 

@@ -276,7 +276,7 @@ const BookForm: React.FC<BookFormProps> = ({ book, isEditing }) => {
 
     try {
       if (isEditing && book?.id) {
-        await updateBookMutation.mutateAsync({ id: book.id, bookData });
+        await updateBookMutation.mutateAsync({ id: book.id, book: bookData });
       } else {
         await createBookMutation.mutateAsync(bookData);
       }

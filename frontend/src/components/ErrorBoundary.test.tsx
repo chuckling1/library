@@ -40,7 +40,9 @@ describe('ErrorBoundary', () => {
     );
 
     expect(screen.getByText('Oops! Something went wrong')).toBeInTheDocument();
-    expect(screen.getByText(/We've encountered an unexpected error/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/We've encountered an unexpected error/)
+    ).toBeInTheDocument();
     expect(screen.getByText('Try Again')).toBeInTheDocument();
     expect(screen.getByText('Reload Page')).toBeInTheDocument();
   });
@@ -54,11 +56,11 @@ describe('ErrorBoundary', () => {
 
     // Error UI should be shown
     expect(screen.getByText('Oops! Something went wrong')).toBeInTheDocument();
-    
+
     // Retry button should be available
     const retryButton = screen.getByText('Try Again');
     expect(retryButton).toBeInTheDocument();
-    
+
     // Button should be clickable (testing the handler exists)
     fireEvent.click(retryButton);
     // After clicking, the error boundary will attempt to re-render children
@@ -77,8 +79,10 @@ describe('ErrorBoundary', () => {
       </ErrorBoundary>
     );
 
-    expect(screen.getByText('Error Details (Development Only)')).toBeInTheDocument();
-    
+    expect(
+      screen.getByText('Error Details (Development Only)')
+    ).toBeInTheDocument();
+
     // Restore original
     // @ts-expect-error - restoring import.meta for test
     import.meta.env = originalImportMeta;
@@ -96,7 +100,9 @@ describe('ErrorBoundary', () => {
     );
 
     expect(screen.getByText('Custom error message')).toBeInTheDocument();
-    expect(screen.queryByText('Oops! Something went wrong')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Oops! Something went wrong')
+    ).not.toBeInTheDocument();
   });
 
   it('logs error to console', () => {

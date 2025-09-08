@@ -15,6 +15,10 @@ services:
       - ConnectionStrings__DefaultConnection=Data Source=/app/data/library.db
       - CORS__AllowedOrigins__0=http://localhost:3000
       - CORS__AllowedOrigins__1=http://frontend:3000
+      # JWT Configuration for Development
+      - JWT_SECRET_KEY=oXSGzdX7190XnmCTGOgMNbsyC6BBZaIeIAjhAJY9gPs=
+      - JWT_ISSUER=LibraryAPI
+      - JWT_AUDIENCE=LibraryAPIUsers
     volumes:
       - ./backend/src/LibraryApi:/app/src/LibraryApi  # Hot reload source code
       - ./backend/data:/app/data  # Persist SQLite database

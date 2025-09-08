@@ -14,7 +14,10 @@ interface ErrorBoundaryState {
 /**
  * Global error boundary to catch JavaScript errors anywhere in the child component tree
  */
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
 
@@ -34,7 +37,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     // Log error details for debugging
     // eslint-disable-next-line no-console
     console.error('ErrorBoundary caught an error:', error, errorInfo);
-    
+
     // Update state with error details
     this.setState({
       error,
@@ -69,11 +72,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         <div className="error-boundary">
           <div className="error-boundary__container">
             <div className="error-boundary__icon">
-              <svg 
-                width="64" 
-                height="64" 
-                viewBox="0 0 24 24" 
-                fill="none" 
+              <svg
+                width="64"
+                height="64"
+                viewBox="0 0 24 24"
+                fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
@@ -85,24 +88,25 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 />
               </svg>
             </div>
-            
+
             <h2 className="error-boundary__title">
               Oops! Something went wrong
             </h2>
-            
+
             <p className="error-boundary__message">
-              We've encountered an unexpected error. This has been logged and we'll look into it.
+              We've encountered an unexpected error. This has been logged and
+              we'll look into it.
             </p>
 
             <div className="error-boundary__actions">
-              <button 
+              <button
                 onClick={this.handleRetry}
                 className="btn btn-primary"
                 type="button"
               >
                 Try Again
               </button>
-              <button 
+              <button
                 onClick={this.handleReload}
                 className="btn btn-secondary"
                 type="button"
@@ -118,7 +122,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 <div className="error-boundary__error-info">
                   <h4>Error:</h4>
                   <pre>{this.state.error.toString()}</pre>
-                  
+
                   {this.state.errorInfo && (
                     <>
                       <h4>Component Stack:</h4>

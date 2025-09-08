@@ -50,7 +50,7 @@
 
     .user-menu-arrow {
       transition: transform 0.2s ease;
-      
+
       &.open {
         transform: rotate(180deg);
       }
@@ -131,7 +131,7 @@
   @media (max-width: 768px) {
     .user-menu-trigger {
       padding: vars.$spacing-xs vars.$spacing-sm;
-      
+
       .user-email {
         display: none;
       }

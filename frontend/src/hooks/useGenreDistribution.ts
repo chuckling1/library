@@ -10,7 +10,7 @@ interface UseGenreDistributionResult {
 }
 
 export const useGenreDistribution = (): UseGenreDistributionResult => {
-  const { token } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [genreDistribution, setGenreDistribution] = useState<GenreCount[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +21,7 @@ export const useGenreDistribution = (): UseGenreDistributionResult => {
         setIsLoading(true);
         setError(null);
 
-        const configuration = getApiConfiguration(token);
+        const configuration = getApiConfiguration();
         const api = new BooksApi(configuration);
         const response = await api.apiBooksStatsGet();
 
@@ -36,8 +36,10 @@ export const useGenreDistribution = (): UseGenreDistributionResult => {
       }
     };
 
-    void fetchGenreDistribution();
-  }, [token]);
+    if (isAuthenticated) {
+      void fetchGenreDistribution();
+    }
+  }, [isAuthenticated]);
 
   return {
     genreDistribution,

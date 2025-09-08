@@ -70,12 +70,13 @@ public static class Program
         {
             // Get allowed origins from configuration (environment variables)
             var allowedOrigins = builder.Configuration.GetSection("CORS:AllowedOrigins").Get<string[]>()
-                ?? new[] { "http://localhost:3000", "http://localhost:5173" }; // Fallback for development
+                ?? new[] { "http://localhost:3000", "http://localhost:3001", "http://localhost:5173" }; // Fallback for development
 
             options.AddPolicy("AllowReactApp", policy =>
                 policy.WithOrigins(allowedOrigins)
                       .AllowAnyHeader()
-                      .AllowAnyMethod());
+                      .AllowAnyMethod()
+                      .AllowCredentials()); // Required for httpOnly cookies
         });
 
         // Register repositories (Interface-first design)
@@ -90,15 +91,40 @@ public static class Program
         builder.Services.AddScoped<IStatsService, StatsService>();
         builder.Services.AddScoped<IBulkImportService, BulkImportService>();
         builder.Services.AddScoped<IUserService, UserService>();
+        builder.Services.AddScoped<ISecurityEventService, SecurityEventService>();
 
         // Register validators
         builder.Services.AddValidatorsFromAssemblyContaining<LibraryApi.Validators.CreateBookRequestValidator>();
 
-        // Configure JWT Authentication
+        // Configure JWT Authentication with environment variables (security enhancement)
         var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-        var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey is not configured");
-        var issuer = jwtSettings["Issuer"] ?? throw new InvalidOperationException("JWT Issuer is not configured");
-        var audience = jwtSettings["Audience"] ?? throw new InvalidOperationException("JWT Audience is not configured");
+
+        // SECURITY: Use environment variables for JWT secret (never store in config files)
+        var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
+
+        // Development fallback - only for local development, never in production
+        if (string.IsNullOrEmpty(secretKey))
+        {
+            if (builder.Environment.IsDevelopment())
+            {
+                // DEVELOPMENT ONLY: Use a secure generated key for local development
+                // In production, JWT_SECRET_KEY environment variable is required
+                secretKey = "oXSGzdX7190XnmCTGOgMNbsyC6BBZaIeIAjhAJY9gPs=";
+                Log.Warning("Using development JWT secret key. Set JWT_SECRET_KEY environment variable for production.");
+            }
+            else
+            {
+                throw new InvalidOperationException("JWT_SECRET_KEY environment variable is required in production. Generate with: openssl rand -base64 32");
+            }
+        }
+
+        var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER")
+            ?? jwtSettings["Issuer"]
+            ?? throw new InvalidOperationException("JWT Issuer is not configured");
+
+        var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE")
+            ?? jwtSettings["Audience"]
+            ?? throw new InvalidOperationException("JWT Audience is not configured");
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -113,6 +139,46 @@ public static class Program
                     ValidAudience = audience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
                     ClockSkew = TimeSpan.Zero,
+                };
+
+                // SECURITY ENHANCEMENT: Support JWT tokens from both Authorization headers and httpOnly cookies
+                options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        // DEBUG: Log request details for troubleshooting
+                        var logger = context.HttpContext.RequestServices.GetService<ILoggerFactory>()?.CreateLogger("JWTAuth");
+                        var requestPath = context.Request.Path;
+                        var hasCookie = context.Request.Cookies.ContainsKey("auth-token");
+                        var hasAuthHeader = context.Request.Headers.Authorization.Any();
+
+                        logger?.LogInformation(
+                            "JWT OnMessageReceived - Path: {Path}, HasCookie: {HasCookie}, HasAuthHeader: {HasAuthHeader}",
+                            requestPath,
+                            hasCookie,
+                            hasAuthHeader);
+
+                        // First, try to get token from Authorization header (existing behavior)
+                        var authHeader = context.Request.Headers.Authorization.FirstOrDefault();
+                        if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+                        {
+                            context.Token = authHeader.Substring("Bearer ".Length).Trim();
+                            logger?.LogInformation("JWT Token from Authorization header");
+                        }
+
+                        // If no Authorization header, check for httpOnly cookie (Phase 2 security enhancement)
+                        else if (context.Request.Cookies.ContainsKey("auth-token"))
+                        {
+                            context.Token = context.Request.Cookies["auth-token"];
+                            logger?.LogInformation("JWT Token from auth-token cookie");
+                        }
+                        else
+                        {
+                            logger?.LogInformation("No JWT token found in request");
+                        }
+
+                        return Task.CompletedTask;
+                    },
                 };
             });
 
@@ -134,6 +200,27 @@ public static class Program
 
         // Global exception handling middleware
         app.UseMiddleware<GlobalExceptionMiddleware>();
+
+        // Security headers middleware (Phase 1 security hardening)
+        app.Use(async (context, next) =>
+        {
+            // Prevent MIME sniffing attacks
+            context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+
+            // Prevent clickjacking attacks
+            context.Response.Headers["X-Frame-Options"] = "DENY";
+
+            // Enable XSS filtering (legacy support)
+            context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
+
+            // Control referrer information
+            context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+
+            // Content Security Policy (basic implementation)
+            context.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:;";
+
+            await next();
+        });
 
         app.UseHttpsRedirection();
         app.UseCors("AllowReactApp");

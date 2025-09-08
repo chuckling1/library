@@ -6,18 +6,30 @@ class AuthService {
   private readonly baseUrl: string;
 
   constructor() {
-    // Use relative URL to work with Vite proxy configuration
-    // In development, Vite will proxy /api requests to the backend
+    // Use proxy-relative URL for consistent cookie domain handling
+    // This ensures auth requests go through Vite proxy like other API calls
     this.baseUrl = '/api/Auth';
+    
+    // URL construction working correctly - using proxy for consistency
   }
 
   async login(request: LoginRequest): Promise<AuthResponse> {
     try {
-      const response = await axios.post<AuthResponse>(`${this.baseUrl}/login`, request, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const loginUrl = `${this.baseUrl}/login`;
+      
+      // Login request to backend API
+      
+      // SECURITY ENHANCEMENT: Include credentials for httpOnly cookie support (Phase 2)
+      const response = await axios.post<AuthResponse>(
+        loginUrl,
+        request,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          withCredentials: true, // Send and receive httpOnly cookies
+        }
+      );
 
       logger.info('User logged in successfully', {
         appLayer: 'Frontend-UI',
@@ -32,7 +44,10 @@ class AuthService {
         appLayer: 'Frontend-UI',
         sourceContext: 'AuthService',
         functionName: 'login',
-        payload: { email: request.email, error: error instanceof Error ? error.message : 'Unknown error' },
+        payload: {
+          email: request.email,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
       });
       throw error;
     }
@@ -40,11 +55,17 @@ class AuthService {
 
   async register(request: RegisterRequest): Promise<AuthResponse> {
     try {
-      const response = await axios.post<AuthResponse>(`${this.baseUrl}/register`, request, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      // SECURITY ENHANCEMENT: Include credentials for httpOnly cookie support (Phase 2)
+      const response = await axios.post<AuthResponse>(
+        `${this.baseUrl}/register`,
+        request,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          withCredentials: true, // Send and receive httpOnly cookies
+        }
+      );
 
       logger.info('User registered successfully', {
         appLayer: 'Frontend-UI',
@@ -59,43 +80,42 @@ class AuthService {
         appLayer: 'Frontend-UI',
         sourceContext: 'AuthService',
         functionName: 'register',
-        payload: { email: request.email, error: error instanceof Error ? error.message : 'Unknown error' },
+        payload: {
+          email: request.email,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
       });
       throw error;
     }
   }
 
-  logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    
-    logger.info('User logged out', {
-      appLayer: 'Frontend-UI',
-      sourceContext: 'AuthService',
-      functionName: 'logout',
-      payload: {},
-    });
-  }
-
-  getToken(): string | null {
-    return localStorage.getItem('token');
-  }
-
-  isAuthenticated(): boolean {
-    const token = this.getToken();
-    if (!token) return false;
-
+  async logout(): Promise<void> {
     try {
-      // Simple token expiration check - decode JWT payload
-      const tokenParts = token.split('.');
-      if (tokenParts.length !== 3 || !tokenParts[1]) {
-        return false;
-      }
-      const payload = JSON.parse(atob(tokenParts[1])) as { exp?: number };
-      const currentTime = Math.floor(Date.now() / 1000);
-      return (payload.exp ?? 0) > currentTime;
-    } catch {
-      return false;
+      // SECURITY: Call backend logout to clear httpOnly cookies (JWT authentication)
+      await axios.post(
+        `${this.baseUrl}/logout`,
+        {},
+        {
+          withCredentials: true, // Include httpOnly cookies for authentication
+        }
+      );
+
+      logger.info('Backend logout successful - httpOnly cookies cleared', {
+        appLayer: 'Frontend-UI',
+        sourceContext: 'AuthService',
+        functionName: 'logout',
+        payload: { cookiesCleared: true },
+      });
+    } catch (error) {
+      logger.warn('Backend logout failed', {
+        appLayer: 'Frontend-UI',
+        sourceContext: 'AuthService',
+        functionName: 'logout',
+        payload: {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+      });
+      throw error; // Re-throw so caller can handle
     }
   }
 }

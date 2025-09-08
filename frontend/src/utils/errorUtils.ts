@@ -16,22 +16,22 @@ export const throwTestError = (): never => {
  */
 export const setupGlobalErrorHandlers = (): void => {
   // Handle unhandled promise rejections
-  window.addEventListener('unhandledrejection', (event) => {
+  window.addEventListener('unhandledrejection', event => {
     // eslint-disable-next-line no-console
     console.error('Unhandled promise rejection:', event.reason);
-    
+
     // You could send this to a logging service
     // errorLoggingService.logError(event.reason);
-    
+
     // Prevent the default behavior of logging to console
     // event.preventDefault();
   });
 
   // Handle other global errors
-  window.addEventListener('error', (event) => {
+  window.addEventListener('error', event => {
     // eslint-disable-next-line no-console
     console.error('Global error:', event.error);
-    
+
     // You could send this to a logging service
     // errorLoggingService.logError(event.error);
   });
@@ -53,7 +53,11 @@ export interface ErrorLoggingService {
 export const mockErrorLoggingService: ErrorLoggingService = {
   logError: (error: Error, context?: Record<string, unknown>) => {
     // eslint-disable-next-line no-console
-    console.error('Error logged:', { error: error.message, stack: error.stack, context });
+    console.error('Error logged:', {
+      error: error.message,
+      stack: error.stack,
+      context,
+    });
   },
   logInfo: (message: string, context?: Record<string, unknown>) => {
     // eslint-disable-next-line no-console

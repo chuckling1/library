@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { RegisterRequest } from '../types/auth';
 import { logger } from '../utils/logger';
+import logo from '../images/logo.png';
 import './AuthPages.scss';
 
 const RegisterPage: React.FC = (): React.JSX.Element => {
@@ -79,7 +80,7 @@ const RegisterPage: React.FC = (): React.JSX.Element => {
 
     try {
       await register(formData);
-      
+
       logger.info('Registration page submission successful', {
         appLayer: 'Frontend-UI',
         sourceContext: 'RegisterPage',
@@ -93,11 +94,17 @@ const RegisterPage: React.FC = (): React.JSX.Element => {
         appLayer: 'Frontend-UI',
         sourceContext: 'RegisterPage',
         functionName: 'handleSubmit',
-        payload: { email: formData.email, error: error instanceof Error ? error.message : 'Unknown error' },
+        payload: {
+          email: formData.email,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
       });
 
       setErrors({
-        general: error instanceof Error ? error.message : 'Registration failed. Please try again.',
+        general:
+          error instanceof Error
+            ? error.message
+            : 'Registration failed. Please try again.',
       });
     } finally {
       setIsSubmitting(false);
@@ -108,15 +115,19 @@ const RegisterPage: React.FC = (): React.JSX.Element => {
     <div className="auth-page">
       <div className="auth-container">
         <div className="auth-header">
+          <img src={logo} alt="My Library Logo" className="auth-logo" />
           <h1>Create Account</h1>
           <p>Join our library community</p>
         </div>
 
-        <form className="auth-form" onSubmit={(e) => { void handleSubmit(e); }}>
+        <form
+          className="auth-form"
+          onSubmit={e => {
+            void handleSubmit(e);
+          }}
+        >
           {errors.general && (
-            <div className="error-message general-error">
-              {errors.general}
-            </div>
+            <div className="error-message general-error">{errors.general}</div>
           )}
 
           <div className="form-group">
@@ -135,9 +146,7 @@ const RegisterPage: React.FC = (): React.JSX.Element => {
               required
             />
             {errors.email && (
-              <div className="error-message field-error">
-                {errors.email}
-              </div>
+              <div className="error-message field-error">{errors.email}</div>
             )}
           </div>
 
@@ -157,9 +166,7 @@ const RegisterPage: React.FC = (): React.JSX.Element => {
               required
             />
             {errors.password && (
-              <div className="error-message field-error">
-                {errors.password}
-              </div>
+              <div className="error-message field-error">{errors.password}</div>
             )}
           </div>
 
@@ -190,7 +197,9 @@ const RegisterPage: React.FC = (): React.JSX.Element => {
             className="auth-submit-button"
             disabled={isSubmitting || isLoading}
           >
-            {isSubmitting || isLoading ? 'Creating Account...' : 'Create Account'}
+            {isSubmitting || isLoading
+              ? 'Creating Account...'
+              : 'Create Account'}
           </button>
         </form>
 
