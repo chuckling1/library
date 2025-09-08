@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BooksApi, GenreCount } from '../generated/api';
 import { getApiConfiguration } from '../config/apiConfig';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from './useAuth';
 
 interface UseGenreDistributionResult {
   genreDistribution: GenreCount[];

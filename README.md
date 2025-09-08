@@ -264,6 +264,45 @@ npm run test         # Run all tests
 npm run validate     # Run comprehensive validation gates
 ```
 
+### Fresh Start Script (Complete Environment Reset)
+
+**Need a completely clean development environment?** The fresh-start script provides a one-command solution to reset everything and start fresh.
+
+```bash
+# Full fresh start (recommended)
+node fresh-start.js
+
+# With options
+node fresh-start.js --skip-deps --skip-db    # Keep dependencies and database
+node fresh-start.js --skip-start             # Don't start dev servers after setup
+node fresh-start.js --verbose                # Show detailed output
+node fresh-start.js --help                   # Show all options
+```
+
+**What the fresh-start script does:**
+1. **🔍 Environment Check** - Verifies Node.js, npm, and .NET SDK are installed
+2. **🧹 Clean Everything** - Removes all build artifacts, caches, and temp files
+3. **🗄️ Database Reset** - Deletes SQLite database files for clean start
+4. **📦 Fresh Dependencies** - Removes and reinstalls all node_modules
+5. **🔨 Build & Validate** - Builds both projects and runs database migrations
+6. **🎯 Final Setup** - Creates required directories and environment files
+7. **🚀 Start Servers** - Launches both backend and frontend development servers
+
+**When to use fresh-start:**
+- ✅ After major dependency updates
+- ✅ When encountering mysterious build issues
+- ✅ Before important development sessions
+- ✅ When switching between major features
+- ✅ For onboarding new developers
+- ✅ After system updates or environment changes
+
+**Cross-platform compatibility:**
+- ✅ Windows, macOS, and Linux
+- ✅ PowerShell and Bash terminals
+- ✅ Works with all Node.js versions 18+
+
+The script is intelligent - it uses colored output, provides clear progress indicators, and handles interruptions gracefully. Perfect for ensuring a clean, working development environment every time.
+
 ### Backend Commands (from backend/)
 ```bash
 dotnet run --project src/LibraryApi    # Start API server

@@ -15,7 +15,7 @@ import {
 import type { PaginatedResponse } from '../types/PaginatedResponse';
 import { formatIso8601ForDisplay } from '../utils/dateUtils';
 import { getApiConfiguration } from '../config/apiConfig';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from './useAuth';
 
 // Create authenticated API instance (uses httpOnly cookies automatically)
 const createBooksApi = (): BooksApi => {

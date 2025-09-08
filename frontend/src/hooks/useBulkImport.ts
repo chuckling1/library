@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from './useAuth';
 import { getApiBaseUrl } from '../config/apiConfig';
 
 interface BulkImportResult {

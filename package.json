@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Full-stack Book Library application with AI-assisted development workflow",
   "scripts": {
-    "setup": "node setup.js",
+    "setup": "node fresh-start.js",
     "fresh-start": "node fresh-start.js",
     "fresh-start:ps": "powershell -ExecutionPolicy Bypass -File fresh-start.ps1",
     "fresh-start:fast": "node fresh-start.js --skip-deps --skip-build",

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { RegisterRequest } from '../types/auth';
 import { logger } from '../utils/logger';
 import logo from '../images/logo.png';

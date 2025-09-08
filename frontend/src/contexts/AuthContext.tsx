@@ -1,20 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { LoginRequest, RegisterRequest, AuthResponse } from '../types/auth';
 import { authService } from '../services/authService';
 import { logger } from '../utils/logger';
 import { getApiBaseUrl } from '../config/apiConfig';
-
-export interface AuthContextType {
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  userEmail: string | null;
-  login: (request: LoginRequest) => Promise<void>;
-  register: (request: RegisterRequest) => Promise<void>;
-  logout: () => Promise<void>;
-}
-
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import { AuthContext, AuthContextType } from './AuthContextDefinition';
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -191,13 +181,4 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
   return (
     <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
-};
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 };

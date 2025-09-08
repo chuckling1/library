@@ -56,8 +56,15 @@ vi.mock('../generated/api', () => {
   };
 });
 
-// Mock the auth context
-vi.mock('../contexts/AuthContext', () => ({
+// Mock the auth context definition
+vi.mock('../contexts/AuthContextDefinition', () => ({
+  AuthContext: {
+    Provider: ({ children }: { children: React.ReactNode }) => children,
+  },
+}));
+
+// Mock the auth hook
+vi.mock('./useAuth', () => ({
   useAuth: vi.fn(() => ({
     isAuthenticated: true,
     user: { id: '1', email: 'test@example.com' },

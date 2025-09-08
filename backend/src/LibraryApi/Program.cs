@@ -70,7 +70,7 @@ public static class Program
         {
             // Get allowed origins from configuration (environment variables)
             var allowedOrigins = builder.Configuration.GetSection("CORS:AllowedOrigins").Get<string[]>()
-                ?? new[] { "http://localhost:3000", "http://localhost:3001", "http://localhost:5173" }; // Fallback for development
+                ?? new[] { "http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://localhost:3003", "http://localhost:5173" }; // Fallback for development
 
             options.AddPolicy("AllowReactApp", policy =>
                 policy.WithOrigins(allowedOrigins)
