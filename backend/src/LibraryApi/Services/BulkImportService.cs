@@ -265,22 +265,27 @@ namespace LibraryApi.Services
             var genreMap = genres.ToDictionary(g => g.Name, g => g);
 
             // Convert candidates to Book entities
-            var books = candidates.Select(candidate => new Book
+            var books = candidates.Select(candidate =>
             {
-                Id = Guid.NewGuid(),
-                Title = candidate.Title,
-                Author = candidate.Author,
-                PublishedDate = candidate.PublishedDate,
-                Rating = candidate.Rating,
-                Edition = candidate.Edition,
-                Isbn = candidate.Isbn,
-                UserId = userId,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                BookGenres = candidate.Genres.Select(genreName => new BookGenre
+                var bookId = Guid.NewGuid();
+                return new Book
                 {
-                    GenreName = genreName,
-                }).ToList(),
+                    Id = bookId,
+                    Title = candidate.Title,
+                    Author = candidate.Author,
+                    PublishedDate = candidate.PublishedDate,
+                    Rating = candidate.Rating,
+                    Edition = candidate.Edition,
+                    Isbn = candidate.Isbn,
+                    UserId = userId,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    BookGenres = candidate.Genres.Select(genreName => new BookGenre
+                    {
+                        BookId = bookId,
+                        GenreName = genreName,
+                    }).ToList(),
+                };
             }).ToList();
 
             this.logger.LogInformation("Creating {BookCount} books for UserId: {UserId}", books.Count, userId);

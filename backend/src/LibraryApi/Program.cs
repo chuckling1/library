@@ -197,7 +197,7 @@ public static class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-        
+
         // Global exception handling middleware
         app.UseMiddleware<GlobalExceptionMiddleware>();
 
