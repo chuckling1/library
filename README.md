@@ -38,6 +38,22 @@ That's it! The application will be running at:
 4. **Quick Start with Sample Data**: Click "Import Books" and select `test-books-import.csv` for 81 sample books
 5. Start building your personal book library
 
+## 📋 Discover All Features
+
+**🎯 Want to explore everything this app can do?**
+
+**[📋 Complete Features Cheat Sheet →](FEATURES_CHEATSHEET.md)**
+
+This comprehensive guide covers all the hidden gems and advanced functionality:
+- 🔍 **OpenLibrary Integration** - Auto-fill book details from search
+- 📊 **Interactive Charts** - Click charts to filter your collection  
+- 🏷️ **Advanced Genre System** - Multi-select filtering with smart sorting
+- 📤 **Smart Import/Export** - Context-aware CSV operations
+- 🎛️ **Multi-Filter Search** - Combine search, genre, and rating filters
+- 💡 **Hidden UI Features** - Show/hide controls, keyboard shortcuts, and more
+
+Perfect for discovering features you might have missed and learning pro tips for efficient library management!
+
 ## 🐳 Docker Setup
 
 **Prefer Docker?** Run the entire application with Docker - no Node.js or .NET installation required!
